@@ -9,16 +9,21 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { PriorityBadge } from '@/components/ui/priority-badge';
 import { Button } from '@/components/ui/button';
 import { AIDecompositionDialog } from '@/components/ai/AIDecompositionDialog';
-import { Epic, Task, EpicStatus, Priority, AITaskSuggestion } from '@/types';
-import { epicsApi, tasksApi, aiDecompositionApi, ApiErrorClass } from '@/lib/api-client';
+import { TaskCreateModal } from '@/components/tasks/TaskCreateModal';
+import { Epic, Task, EpicStatus, Priority, AITaskSuggestion, User } from '@/types';
+import { epicsApi, tasksApi, aiDecompositionApi, usersApi, ApiErrorClass } from '@/lib/api-client';
 
 export default function EpicDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [epic, setEpic] = useState<Epic | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [tasksLoading, setTasksLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Create Task Modal state
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   // AI Decomposition state
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
@@ -32,12 +37,14 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
       setLoading(true);
       setError(null);
       try {
-        const [epicData, tasksData] = await Promise.all([
+        const [epicData, tasksData, usersData] = await Promise.all([
           epicsApi.get(params.id),
           tasksApi.list({ epicId: params.id, limit: 100 }),
+          usersApi.list(),
         ]);
         setEpic(epicData);
         setTasks(tasksData.data);
+        setUsers(usersData.data);
       } catch (err) {
         if (err instanceof ApiErrorClass) {
           setError(err.message);
@@ -87,6 +94,16 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
       }
     } finally {
       setAiLoading(false);
+    }
+  };
+
+  const handleTaskCreated = async () => {
+    // Refresh the task list after creation
+    try {
+      const tasksData = await tasksApi.list({ epicId: params.id, limit: 100 });
+      setTasks(tasksData.data);
+    } catch (err) {
+      console.error('Failed to refresh tasks:', err);
     }
   };
 
@@ -221,7 +238,7 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
             <Sparkles className="h-4 w-4" />
             AI Assist
           </Button>
-          <Button onClick={() => router.push(`/epics/${epic.id}/tasks/new`)}>
+          <Button onClick={() => setCreateModalOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             New Task
           </Button>
@@ -233,6 +250,10 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
         data={tasks as unknown as Record<string, unknown>[]}
         loading={tasksLoading}
         emptyMessage="No tasks found. Create your first task to get started."
+        onRowClick={(row) => {
+          const task = row as unknown as Task;
+          router.push(`/tasks/${task.id}`);
+        }}
       />
 
       {/* AI Decomposition Dialog */}
@@ -250,6 +271,15 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
         error={aiError}
         meta={aiMeta}
         onGenerate={handleAIDecompose}
+      />
+
+      {/* Create Task Modal */}
+      <TaskCreateModal
+        open={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        epicId={epic.id}
+        epic={epic}
+        users={users}
       />
     </div>
   );

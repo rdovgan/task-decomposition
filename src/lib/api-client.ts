@@ -5,6 +5,7 @@ import {
   Dependency,
   TaskLink,
   Comment,
+  User,
   PaginatedResponse,
   CreateProjectRequest,
   UpdateProjectRequest,
@@ -224,6 +225,13 @@ export const aiDecompositionApi = {
         epicTitle: string;
       };
     }>(`/api/epics/${epicId}/ai-decompose`, data),
+};
+
+// Users API
+export const usersApi = {
+  list: () => api.get<{ data: User[] }>(`/api/users`),
+
+  get: (id: string) => api.get<{ data: User }>(`/api/users/${id}`),
 };
 
 // User Settings API

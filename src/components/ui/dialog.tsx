@@ -48,12 +48,15 @@ export function Dialog({ open, onClose, title, children, footer, size = 'md' }: 
       onClick={onClose}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dialog-title"
         className={`relative w-full ${sizeClasses[size]} bg-background rounded-lg shadow-lg`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b p-6">
-          <h2 className="text-xl font-semibold">{title}</h2>
+          <h2 id="dialog-title" className="text-xl font-semibold">{title}</h2>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-5 w-5" />
           </Button>

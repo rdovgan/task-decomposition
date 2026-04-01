@@ -19,6 +19,7 @@ interface DataTableProps<T> {
   sortKey?: string;
   sortDirection?: 'asc' | 'desc';
   onSort?: (key: string) => void;
+  onRowClick?: (row: T) => void;
   emptyMessage?: string;
   className?: string;
 }
@@ -30,6 +31,7 @@ export function DataTable<T extends Record<string, unknown>>({
   sortKey,
   sortDirection,
   onSort,
+  onRowClick,
   emptyMessage = 'No data available',
   className,
 }: DataTableProps<T>) {
@@ -95,7 +97,11 @@ export function DataTable<T extends Record<string, unknown>>({
           {data.map((row, rowIndex) => (
             <tr
               key={rowIndex}
-              className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+              className={cn(
+                "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+                onRowClick && "cursor-pointer"
+              )}
+              onClick={() => onRowClick?.(row)}
             >
               {columns.map((column) => (
                 <td
