@@ -9,15 +9,17 @@ An intelligent tool for breaking down complex tasks into manageable subtasks, bu
 - **TypeScript** - Type-safe JavaScript
 - **React 19** - Latest React features
 - **CSS Modules** - Component-scoped styling (Tailwind CSS can be added by dev team)
+- **shadcn/ui** - High-quality React components
 
-### Backend (Planned)
+### Backend
 - **Node.js/Express** - Backend API server
-- **PostgreSQL** - Primary database
-- **Redis** - Caching and session management
+- **PostgreSQL** - Primary database with Prisma ORM
+- **Zod** - Runtime type validation
+- **TypeScript** - End-to-end type safety
 
-### Infrastructure (Planned)
+### Infrastructure
 - **Docker** - Containerized development and deployment
-- **GitHub Actions** - CI/CD pipelines
+- **GitHub Actions** - CI/CD pipelines (planned)
 
 ## Project Structure
 
@@ -79,11 +81,23 @@ docker run -p 3000:3000 task-decomposition-tool
 
 ### Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
+- `npm run dev` - Start Next.js frontend development server
+- `npm run dev:server` - Start Express backend development server
+- `npm run dev:all` - Start both frontend and backend concurrently
+- `npm run build` - Build Next.js for production
+- `npm run build:server` - Build backend TypeScript
+- `npm run start` - Start Next.js production server
+- `npm run start:server` - Start Express production server
 - `npm run lint` - Run ESLint
 - `npm run format` - Format code with Prettier
+
+### Database Scripts
+
+- `npm run db:generate` - Generate Prisma client
+- `npm run db:push` - Push schema changes to database
+- `npm run db:migrate` - Create and apply database migration
+- `npm run db:studio` - Open Prisma Studio (database GUI)
+- `npm run db:seed` - Seed database with sample data
 
 ### Code Quality
 
@@ -91,6 +105,81 @@ The project uses:
 - **ESLint** - JavaScript/TypeScript linting
 - **Prettier** - Code formatting
 - **TypeScript** - Static type checking
+- **Zod** - Runtime validation for API
+
+## Backend API
+
+### Running the Backend
+
+1. Start PostgreSQL database:
+```bash
+# Using Docker
+docker-compose up -d
+
+# Or use local PostgreSQL
+```
+
+2. Set up database:
+```bash
+npm run db:generate
+npm run db:push
+npm run db:seed
+```
+
+3. Start the backend server:
+```bash
+npm run dev:server
+```
+
+The API will be available at `http://localhost:3001`
+
+### API Endpoints
+
+#### Projects
+- `GET /api/projects` - List all projects (with pagination)
+- `GET /api/projects/:id` - Get project by ID
+- `POST /api/projects` - Create new project
+- `PATCH /api/projects/:id` - Update project
+- `DELETE /api/projects/:id` - Delete project
+
+#### Epics
+- `GET /api/epics` - List all epics (with pagination)
+- `GET /api/epics/:id` - Get epic by ID
+- `POST /api/epics` - Create new epic
+- `PATCH /api/epics/:id` - Update epic
+- `DELETE /api/epics/:id` - Delete epic
+
+#### Tasks
+- `GET /api/tasks` - List all tasks (with pagination)
+- `GET /api/tasks/:id` - Get task by ID
+- `POST /api/tasks` - Create new task
+- `PATCH /api/tasks/:id` - Update task
+- `DELETE /api/tasks/:id` - Delete task
+- `GET /api/tasks/:id/dependencies` - Get task dependencies
+- `POST /api/tasks/:id/dependencies` - Create task dependency
+
+### Database Schema
+
+**Users**: Team members with authentication
+- id, email, name, role (ADMIN, PROJECT_MANAGER, DEVELOPER, DESIGNER, QA)
+
+**Projects**: Top-level containers
+- id, name, description, ownerId, status
+
+**Epics**: Large features/user stories
+- id, projectId, title, description, status, priority
+
+**Tasks**: Individual work items
+- id, epicId, title, description, assigneeId, status, priority, storyPoints, estimatedHours, actualHours
+
+**Dependencies**: Task relationships
+- id, taskId, dependsOnTaskId, type (BLOCKS, RELATED_TO, DUPLICATES)
+
+**TaskLinks**: External documentation
+- id, taskId, url, linkType (CONFLUENCE, NOTION, GITHUB, JIRA, FIGMA, EXTERNAL)
+
+**Comments**: Task discussions
+- id, taskId, authorId, content
 
 ## Contributing
 
