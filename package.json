@@ -24,6 +24,8 @@
     "test": "npx jest",
     "test:watch": "npx jest --watch",
     "test:coverage": "npx jest --coverage",
+    "test:server": "npx jest --config jest.server.config.js",
+    "test:server:watch": "npx jest --config jest.server.config.js --watch",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:all": "npm run test && npm run test:e2e"
@@ -37,8 +39,8 @@
     "express": "^5.2.1",
     "lucide-react": "^1.7.0",
     "next": "16.2.2",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "shadcn": "^4.1.2",
     "tailwind-merge": "^3.5.0",
     "zod": "^4.3.6"
@@ -52,9 +54,9 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/node": "^20.19.37",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "concurrently": "^9.2.1",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
@@ -67,8 +69,13 @@
     "prettier": "^3.8.1",
     "prisma": "^7.6.0",
     "supertest": "^7.2.2",
+    "ts-jest": "^29.4.9",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
-    "typescript": "^5"
+    "typescript": "^5.9.3"
+  },
+  "resolutions": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   }
 }
