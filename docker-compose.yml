@@ -1,12 +1,12 @@
 version: '3.8'
 
 services:
-  # Next.js development server
+  # Next.js development server (frontend)
   app:
     build:
       context: .
       target: dev
-    container_name: task-decomp-tool
+    container_name: task-decomp-frontend
     ports:
       - "3000:3000"
     volumes:
@@ -15,11 +15,38 @@ services:
       - /app/.next
     environment:
       - NODE_ENV=development
+      - DATABASE_URL=postgresql://taskdecomp:taskdecomp@postgres:5432/task_decomposition?schema=public
+      - NEXT_PUBLIC_API_URL=http://localhost:3001/api
+    depends_on:
+      - postgres
     restart: unless-stopped
     networks:
       - task-decomp-network
 
-  # PostgreSQL database (for future backend)
+  # Express API server (backend)
+  server:
+    build:
+      context: .
+      target: dev
+    container_name: task-decomp-server
+    ports:
+      - "3001:3001"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://taskdecomp:taskdecomp@postgres:5432/task_decomposition?schema=public
+      - PORT=3001
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    depends_on:
+      - postgres
+    command: npm run dev:server
+    restart: unless-stopped
+    networks:
+      - task-decomp-network
+
+  # PostgreSQL database
   postgres:
     image: postgres:16-alpine
     container_name: task-decomp-db
@@ -31,11 +58,18 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # Optional: Mount init scripts
+      # - ./docker/init-db:/docker-entrypoint-initdb.d
     networks:
       - task-decomp-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taskdecomp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # Redis (for future caching)
+  # Redis (for future caching/sessions)
   redis:
     image: redis:7-alpine
     container_name: task-decomp-redis
@@ -46,6 +80,32 @@ services:
     networks:
       - task-decomp-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Prisma Studio (database browser) - optional
+  studio:
+    build:
+      context: .
+      target: dev
+    container_name: task-decomp-studio
+    ports:
+      - "5555:5555"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - DATABASE_URL=postgresql://taskdecomp:taskdecomp@postgres:5432/task_decomposition?schema=public
+    depends_on:
+      - postgres
+    command: npx prisma studio --browser none
+    networks:
+      - task-decomp-network
+    profiles:
+      - tools
 
 volumes:
   postgres_data:

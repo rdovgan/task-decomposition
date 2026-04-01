@@ -76,34 +76,6 @@ export const updateCommentSchema = z.object({
   content: z.string().min(1, 'Comment content is required').max(2000, 'Comment too long'),
 });
 
-// Dependency schemas
-export const createDependencySchema = z.object({
-  taskId: z.string().cuid('Invalid task ID'),
-  dependsOnTaskId: z.string().cuid('Invalid dependency task ID'),
-  type: z.enum(['BLOCKS', 'RELATED_TO', 'DUPLICATES']).optional(),
-});
-
-// TaskLink schemas
-export const createTaskLinkSchema = z.object({
-  taskId: z.string().cuid('Invalid task ID'),
-  url: z.string().url('Invalid URL'),
-  linkType: z.enum(['CONFLUENCE', 'NOTION', 'GITHUB', 'JIRA', 'FIGMA', 'EXTERNAL']),
-  title: z.string().max(200, 'Title too long').optional(),
-});
-
-export const updateTaskLinkSchema = createTaskLinkSchema.partial();
-
-// Comment schemas
-export const createCommentSchema = z.object({
-  taskId: z.string().cuid('Invalid task ID'),
-  authorId: z.string().cuid('Invalid author ID'),
-  content: z.string().min(1, 'Comment content is required').max(2000, 'Comment too long'),
-});
-
-export const updateCommentSchema = z.object({
-  content: z.string().min(1, 'Comment content is required').max(2000, 'Comment too long'),
-});
-
 // Query parameter schemas
 export const paginationSchema = z.object({
   page: z.string().optional().transform((val) => (val ? parseInt(val) : 1)),
