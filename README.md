@@ -5,11 +5,10 @@ An intelligent tool for breaking down complex tasks into manageable subtasks, bu
 ## Tech Stack
 
 ### Frontend
-- **Next.js 14+** - React framework with App Router
+- **Next.js 16+** - React framework with App Router
 - **TypeScript** - Type-safe JavaScript
-- **Tailwind CSS v4** - Utility-first CSS framework
-- **shadcn/ui** - High-quality React components built on Radix UI
 - **React 19** - Latest React features
+- **CSS Modules** - Component-scoped styling (Tailwind CSS can be added by dev team)
 
 ### Backend (Planned)
 - **Node.js/Express** - Backend API server
