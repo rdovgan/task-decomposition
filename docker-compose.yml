@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # Next.js development server
+  app:
+    build:
+      context: .
+      target: dev
+    container_name: task-decomp-tool
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
+    networks:
+      - task-decomp-network
+
+  # PostgreSQL database (for future backend)
+  postgres:
+    image: postgres:16-alpine
+    container_name: task-decomp-db
+    environment:
+      POSTGRES_USER: taskdecomp
+      POSTGRES_PASSWORD: taskdecomp
+      POSTGRES_DB: task_decomposition
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - task-decomp-network
+    restart: unless-stopped
+
+  # Redis (for future caching)
+  redis:
+    image: redis:7-alpine
+    container_name: task-decomp-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - task-decomp-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  task-decomp-network:
+    driver: bridge
