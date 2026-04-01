@@ -2,6 +2,14 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Button } from '../button'
 
+// First, verify basic React rendering works
+describe('React rendering', () => {
+  it('renders basic HTML button', () => {
+    render(<button>Basic Button</button>)
+    expect(screen.getByRole('button', { name: 'Basic Button' })).toBeInTheDocument()
+  })
+})
+
 describe('Button', () => {
   it('renders button with text', () => {
     render(<Button>Click me</Button>)
