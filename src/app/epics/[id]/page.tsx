@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Edit, Trash2, Plus } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Plus, Sparkles } from 'lucide-react';
 import { DataTable } from '@/components/ui/data-table';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { PriorityBadge } from '@/components/ui/priority-badge';
 import { Button } from '@/components/ui/button';
-import { Epic, Task, EpicStatus, Priority } from '@/types';
-import { epicsApi, tasksApi, ApiErrorClass } from '@/lib/api-client';
+import { AIDecompositionDialog } from '@/components/ai/AIDecompositionDialog';
+import { Epic, Task, EpicStatus, Priority, AITaskSuggestion } from '@/types';
+import { epicsApi, tasksApi, aiDecompositionApi, ApiErrorClass } from '@/lib/api-client';
 
 export default function EpicDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -18,6 +19,13 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [tasksLoading, setTasksLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // AI Decomposition state
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiSuggestions, setAiSuggestions] = useState<AITaskSuggestion[] | null>(null);
+  const [aiMeta, setAiMeta] = useState<{ decompositionTime: number; modelUsed: string; epicId: string; epicTitle: string } | null>(null);
 
   useEffect(() => {
     async function loadEpic() {
@@ -56,6 +64,29 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
       if (err instanceof ApiErrorClass) {
         setError(err.message);
       }
+    }
+  };
+
+  const handleAIDecompose = async (customPrompt?: string) => {
+    setAiLoading(true);
+    setAiError(null);
+
+    try {
+      const response = await aiDecompositionApi.decomposeEpic(params.id, {
+        userId: 'demo-user-id', // In production, get from auth
+        customPrompt,
+      });
+
+      setAiSuggestions(response.data);
+      setAiMeta(response.meta);
+    } catch (err) {
+      if (err instanceof ApiErrorClass) {
+        setAiError(err.message);
+      } else {
+        setAiError('Failed to generate task suggestions');
+      }
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -181,10 +212,20 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
 
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Tasks</h2>
-        <Button onClick={() => router.push(`/epics/${epic.id}/tasks/new`)}>
-          <Plus className="mr-2 h-4 w-4" />
-          New Task
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setAiDialogOpen(true)}
+            className="gap-2"
+          >
+            <Sparkles className="h-4 w-4" />
+            AI Assist
+          </Button>
+          <Button onClick={() => router.push(`/epics/${epic.id}/tasks/new`)}>
+            <Plus className="mr-2 h-4 w-4" />
+            New Task
+          </Button>
+        </div>
       </div>
 
       <DataTable
@@ -192,6 +233,23 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
         data={tasks as unknown as Record<string, unknown>[]}
         loading={tasksLoading}
         emptyMessage="No tasks found. Create your first task to get started."
+      />
+
+      {/* AI Decomposition Dialog */}
+      <AIDecompositionDialog
+        open={aiDialogOpen}
+        onClose={() => {
+          setAiDialogOpen(false);
+          setAiSuggestions(null);
+          setAiError(null);
+        }}
+        epicId={epic.id}
+        epicTitle={epic.title}
+        suggestions={aiSuggestions}
+        loading={aiLoading}
+        error={aiError}
+        meta={aiMeta}
+        onGenerate={handleAIDecompose}
       />
     </div>
   );

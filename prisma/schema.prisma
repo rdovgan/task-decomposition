@@ -21,8 +21,23 @@ model User {
   ownedProjects Project[]      @relation("ProjectOwner")
   assignedTasks Task[]         @relation("TaskAssignee")
   comments      Comment[]
+  settings      UserSettings?
 
   @@map("users")
+}
+
+// User settings for storing preferences and API keys
+model UserSettings {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  anthropicApiKey String?  // Encrypted API key for Anthropic/Claude
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
 }
 
 enum UserRole {

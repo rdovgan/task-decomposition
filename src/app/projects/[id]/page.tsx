@@ -163,7 +163,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
 
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Epics</h2>
-        <Button onClick={() => router.push(`/projects/${project.id}/epics/new`)}>
+        <Button onClick={() => router.push(`/epics/new?projectId=${project.id}`)}>
           <Plus className="mr-2 h-4 w-4" />
           New Epic
         </Button>

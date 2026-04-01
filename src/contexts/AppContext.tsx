@@ -5,15 +5,21 @@ import {
   Project,
   Epic,
   Task,
+  Comment,
+  TaskLink,
+  Dependency,
   CreateProjectRequest,
   UpdateProjectRequest,
   CreateEpicRequest,
   UpdateEpicRequest,
+  CreateTaskRequest,
+  UpdateTaskRequest,
   ProjectStatus,
   EpicStatus,
+  TaskStatus,
   Priority
 } from '@/types';
-import { projectsApi, epicsApi, tasksApi, ApiErrorClass } from '@/lib/api-client';
+import { projectsApi, epicsApi, tasksApi, commentsApi, taskLinksApi, dependenciesApi, ApiErrorClass } from '@/lib/api-client';
 
 interface AppContextType {
   // Projects
@@ -33,6 +39,31 @@ interface AppContextType {
   createEpic: (data: CreateEpicRequest) => Promise<Epic>;
   updateEpic: (id: string, data: UpdateEpicRequest) => Promise<Epic>;
   deleteEpic: (id: string) => Promise<void>;
+
+  // Tasks
+  tasks: Task[];
+  tasksLoading: boolean;
+  tasksError: string | null;
+  fetchTasks: (filters?: { status?: TaskStatus; epicId?: string; assigneeId?: string }) => Promise<void>;
+  createTask: (data: CreateTaskRequest) => Promise<Task>;
+  updateTask: (id: string, data: UpdateTaskRequest) => Promise<Task>;
+  deleteTask: (id: string) => Promise<void>;
+
+  // Comments
+  fetchComments: (taskId: string) => Promise<Comment[]>;
+  createComment: (taskId: string, data: { content: string }) => Promise<Comment>;
+  updateComment: (taskId: string, commentId: string, data: { content: string }) => Promise<Comment>;
+  deleteComment: (taskId: string, commentId: string) => Promise<void>;
+
+  // Task Links
+  fetchTaskLinks: (taskId: string) => Promise<TaskLink[]>;
+  createTaskLink: (taskId: string, data: { url: string; linkType: string; title?: string }) => Promise<TaskLink>;
+  deleteTaskLink: (taskId: string, linkId: string) => Promise<void>;
+
+  // Dependencies
+  fetchDependencies: (taskId: string) => Promise<Dependency[]>;
+  createDependency: (taskId: string, data: { dependsOnTaskId: string; type: string }) => Promise<Dependency>;
+  deleteDependency: (taskId: string, dependencyId: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -45,6 +76,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [epics, setEpics] = useState<Epic[]>([]);
   const [epicsLoading, setEpicsLoading] = useState(false);
   const [epicsError, setEpicsError] = useState<string | null>(null);
+
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasksLoading, setTasksLoading] = useState(false);
+  const [tasksError, setTasksError] = useState<string | null>(null);
 
   // Projects
   const fetchProjects = useCallback(async (filters?: { status?: ProjectStatus; ownerId?: string }) => {
@@ -116,6 +151,84 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setEpics((prev) => prev.filter((e) => e.id !== id));
   }, []);
 
+  // Tasks
+  const fetchTasks = useCallback(async (filters?: { status?: TaskStatus; epicId?: string; assigneeId?: string }) => {
+    setTasksLoading(true);
+    setTasksError(null);
+    try {
+      const response = await tasksApi.list({ limit: 100, ...filters });
+      setTasks(response.data);
+    } catch (error) {
+      if (error instanceof ApiErrorClass) {
+        setTasksError(error.message);
+      } else {
+        setTasksError('Failed to fetch tasks');
+      }
+    } finally {
+      setTasksLoading(false);
+    }
+  }, []);
+
+  const createTask = useCallback(async (data: CreateTaskRequest) => {
+    const task = await tasksApi.create(data);
+    setTasks((prev) => [...prev, task]);
+    return task;
+  }, []);
+
+  const updateTask = useCallback(async (id: string, data: UpdateTaskRequest) => {
+    const task = await tasksApi.update(id, data);
+    setTasks((prev) => prev.map((t) => (t.id === id ? task : t)));
+    return task;
+  }, []);
+
+  const deleteTask = useCallback(async (id: string) => {
+    await tasksApi.delete(id);
+    setTasks((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  // Comments
+  const fetchComments = useCallback(async (taskId: string) => {
+    return await commentsApi.list(taskId);
+  }, []);
+
+  const createComment = useCallback(async (taskId: string, data: { content: string }) => {
+    return await commentsApi.create(taskId, data);
+  }, []);
+
+  const updateComment = useCallback(async (taskId: string, commentId: string, data: { content: string }) => {
+    return await commentsApi.update(taskId, commentId, data);
+  }, []);
+
+  const deleteComment = useCallback(async (taskId: string, commentId: string) => {
+    await commentsApi.delete(taskId, commentId);
+  }, []);
+
+  // Task Links
+  const fetchTaskLinks = useCallback(async (taskId: string) => {
+    return await taskLinksApi.list(taskId);
+  }, []);
+
+  const createTaskLink = useCallback(async (taskId: string, data: { url: string; linkType: string; title?: string }) => {
+    return await taskLinksApi.create(taskId, data);
+  }, []);
+
+  const deleteTaskLink = useCallback(async (taskId: string, linkId: string) => {
+    await taskLinksApi.delete(taskId, linkId);
+  }, []);
+
+  // Dependencies
+  const fetchDependencies = useCallback(async (taskId: string) => {
+    return await dependenciesApi.list(taskId);
+  }, []);
+
+  const createDependency = useCallback(async (taskId: string, data: { dependsOnTaskId: string; type: string }) => {
+    return await dependenciesApi.create(taskId, data);
+  }, []);
+
+  const deleteDependency = useCallback(async (taskId: string, dependencyId: string) => {
+    await dependenciesApi.delete(taskId, dependencyId);
+  }, []);
+
   return (
     <AppContext.Provider
       value={{
@@ -133,6 +246,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
         createEpic,
         updateEpic,
         deleteEpic,
+        tasks,
+        tasksLoading,
+        tasksError,
+        fetchTasks,
+        createTask,
+        updateTask,
+        deleteTask,
+        fetchComments,
+        createComment,
+        updateComment,
+        deleteComment,
+        fetchTaskLinks,
+        createTaskLink,
+        deleteTaskLink,
+        fetchDependencies,
+        createDependency,
+        deleteDependency,
       }}
     >
       {children}

@@ -2,6 +2,9 @@ import {
   Project,
   Epic,
   Task,
+  Dependency,
+  TaskLink,
+  Comment,
   PaginatedResponse,
   CreateProjectRequest,
   UpdateProjectRequest,
@@ -87,6 +90,17 @@ const api = {
     });
     return handleResponse<T>(response);
   },
+
+  async put<T>(url: string, data: unknown): Promise<T> {
+    const response = await fetch(`${API_BASE_URL}${url}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    return handleResponse<T>(response);
+  },
 };
 
 // Projects API
@@ -155,6 +169,96 @@ export const tasksApi = {
   update: (id: string, data: UpdateTaskRequest) => api.patch<Task>(`/api/tasks/${id}`, data),
 
   delete: (id: string) => api.delete<void>(`/api/tasks/${id}`),
+};
+
+// Dependencies API
+export const dependenciesApi = {
+  list: (taskId: string) => api.get<Dependency[]>(`/api/tasks/${taskId}/dependencies`),
+
+  create: (taskId: string, data: { dependsOnTaskId: string; type: string }) =>
+    api.post<Dependency>(`/api/tasks/${taskId}/dependencies`, data),
+
+  delete: (taskId: string, dependencyId: string) =>
+    api.delete<void>(`/api/tasks/${taskId}/dependencies/${dependencyId}`),
+};
+
+// Task Links API
+export const taskLinksApi = {
+  list: (taskId: string) => api.get<TaskLink[]>(`/api/tasks/${taskId}/links`),
+
+  create: (taskId: string, data: { url: string; linkType: string; title?: string }) =>
+    api.post<TaskLink>(`/api/tasks/${taskId}/links`, data),
+
+  delete: (taskId: string, linkId: string) =>
+    api.delete<void>(`/api/tasks/${taskId}/links/${linkId}`),
+};
+
+// Comments API
+export const commentsApi = {
+  list: (taskId: string) => api.get<Comment[]>(`/api/tasks/${taskId}/comments`),
+
+  create: (taskId: string, data: { content: string }) =>
+    api.post<Comment>(`/api/tasks/${taskId}/comments`, data),
+
+  update: (taskId: string, commentId: string, data: { content: string }) =>
+    api.patch<Comment>(`/api/tasks/${taskId}/comments/${commentId}`, data),
+
+  delete: (taskId: string, commentId: string) =>
+    api.delete<void>(`/api/tasks/${taskId}/comments/${commentId}`),
+};
+
+// AI Decomposition API
+export const aiDecompositionApi = {
+  decomposeEpic: (epicId: string, data: { userId?: string; customPrompt?: string }) =>
+    api.post<{
+      data: Array<{
+        title: string;
+        description: string;
+        storyPoints: number;
+        priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+      }>;
+      meta: {
+        decompositionTime: number;
+        modelUsed: string;
+        epicId: string;
+        epicTitle: string;
+      };
+    }>(`/api/epics/${epicId}/ai-decompose`, data),
+};
+
+// User Settings API
+export const userSettingsApi = {
+  get: (userId: string) =>
+    api.get<{
+      data: {
+        id: string | null;
+        userId: string;
+        hasApiKey: boolean;
+        createdAt?: string;
+        updatedAt?: string;
+      };
+    }>(`/api/user-settings/${userId}`),
+
+  update: (userId: string, data: { anthropicApiKey: string }) =>
+    api.put<{
+      data: {
+        id: string;
+        userId: string;
+        hasApiKey: true;
+        updatedAt: string;
+      };
+    }>(`/api/user-settings/${userId}`, data),
+
+  deleteApiKey: (userId: string) =>
+    api.delete<void>(`/api/user-settings/${userId}/api-key`),
+
+  validateApiKey: (apiKey: string) =>
+    api.post<{
+      data: {
+        valid: boolean;
+        message: string;
+      };
+    }>(`/api/user-settings/validate-api-key`, { apiKey }),
 };
 
 export { ApiError as ApiErrorClass };

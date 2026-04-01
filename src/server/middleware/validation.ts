@@ -14,7 +14,12 @@ export const validate = (schema: ZodSchema) => {
           message: e.message,
         }));
 
-        throw new ApiError(400, 'Validation failed', true);
+        // Include detailed validation errors in development mode
+        const message = process.env.NODE_ENV === 'development'
+          ? `Validation failed: ${errorMessages.map((e) => `${e.path}: ${e.message}`).join(', ')}`
+          : 'Validation failed';
+
+        throw new ApiError(400, message, true);
       }
       next(error);
     }
@@ -28,7 +33,17 @@ export const validateQuery = (schema: ZodSchema) => {
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        throw new ApiError(400, 'Query validation failed', true);
+        const errorMessages = error.errors.map((e) => ({
+          path: e.path.join('.'),
+          message: e.message,
+        }));
+
+        // Include detailed validation errors in development mode
+        const message = process.env.NODE_ENV === 'development'
+          ? `Query validation failed: ${errorMessages.map((e) => `${e.path}: ${e.message}`).join(', ')}`
+          : 'Query validation failed';
+
+        throw new ApiError(400, message, true);
       }
       next(error);
     }

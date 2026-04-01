@@ -60,6 +60,17 @@ cd task-decomposition-tool
 npm install
 ```
 
+3. Set up environment variables:
+```bash
+cp .env.example .env
+# Edit .env and add your Anthropic API key for AI features
+```
+
+**Required Environment Variables:**
+- `DATABASE_URL` - PostgreSQL connection string
+- `ANTHROPIC_API_KEY` - Your Anthropic API key for AI task decomposition
+- `ANTHROPIC_MODEL` - (Optional) Claude model to use (default: claude-sonnet-4-6)
+
 3. Run the development server:
 ```bash
 npm run dev
@@ -150,13 +161,44 @@ The API will be available at `http://localhost:3001`
 - `DELETE /api/epics/:id` - Delete epic
 
 #### Tasks
-- `GET /api/tasks` - List all tasks (with pagination)
+- `GET /api/tasks` - List all tasks (with pagination, search, sort)
 - `GET /api/tasks/:id` - Get task by ID
 - `POST /api/tasks` - Create new task
 - `PATCH /api/tasks/:id` - Update task
 - `DELETE /api/tasks/:id` - Delete task
 - `GET /api/tasks/:id/dependencies` - Get task dependencies
 - `POST /api/tasks/:id/dependencies` - Create task dependency
+
+#### AI-Powered Task Decomposition ✨
+- `POST /api/tasks/:id/decompose` - Break down a task into subtasks using Claude AI
+- `GET /api/tasks/decompose/health` - Check AI service health status
+
+**Example Request:**
+```bash
+POST /api/tasks/{taskId}/decompose
+```
+
+**Example Response:**
+```json
+{
+  "data": [
+    {
+      "id": "task-id-1",
+      "title": "Design database schema",
+      "description": "Create normalized schema with proper indexes",
+      "estimatedHours": 4,
+      "priority": "HIGH",
+      "status": "TODO",
+      "epic": { "id": "epic-id", "title": "Build Authentication System" }
+    }
+  ],
+  "meta": {
+    "decompositionTime": 2.3,
+    "modelUsed": "claude-sonnet-4-6",
+    "parentTaskId": "parent-task-id"
+  }
+}
+```
 
 ### Database Schema
 
@@ -180,6 +222,18 @@ The API will be available at `http://localhost:3001`
 
 **Comments**: Task discussions
 - id, taskId, authorId, content
+
+## Documentation
+
+Detailed requirements documentation for Iteration 1 features:
+
+- **[User Personas](docs/personas.md)** - Core user types (Project Manager, Developer, Tech Lead, QA) with goals, pain points, and workflows
+- **[Functional Requirements](docs/functional-requirements.md)** - Detailed feature specifications (FR-1 through FR-18) covering task management, dependencies, comments, and AI decomposition
+- **[User Stories](docs/user-stories.md)** - 16 detailed user stories with acceptance criteria for implementation
+- **[Edge Cases](docs/edge-cases.md)** - Error handling and edge case scenarios (circular dependencies, concurrent edits, AI failures, etc.)
+- **[Non-Functional Requirements](docs/non-functional-requirements.md)** - Performance, scalability, usability, reliability, security, and maintainability requirements
+
+These documents guide the implementation of Iteration 1 and ensure alignment with business needs.
 
 ## Contributing
 

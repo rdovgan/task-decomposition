@@ -174,3 +174,63 @@ export interface ApiError {
   message: string;
   errors?: Record<string, string[]>;
 }
+
+// Task Decomposition Types
+
+export interface SubtaskSuggestion {
+  title: string;
+  description: string;
+  estimatedHours: number;
+  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  suggestedOrder: number;
+  dependencies?: number[];
+}
+
+export interface DecompositionResponse {
+  subtasks: SubtaskSuggestion[];
+  decompositionTime: number;
+  modelUsed: string;
+}
+
+export interface DecompositionRequest {
+  task: {
+    title: string;
+    description: string | null;
+  };
+  epic?: {
+    title: string;
+    description: string | null;
+  };
+  project?: {
+    name: string;
+    description: string | null;
+  };
+}
+
+export interface DecompositionResult {
+  data: Task[];
+  meta: {
+    decompositionTime: number;
+    modelUsed: string;
+    parentTaskId: string;
+  };
+}
+
+// AI Task Suggestion from decomposition
+export interface AITaskSuggestion {
+  title: string;
+  description: string;
+  storyPoints: number;
+  priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+// AI Decomposition Response
+export interface AIDecompositionResponse {
+  data: AITaskSuggestion[];
+  meta: {
+    decompositionTime: number;
+    modelUsed: string;
+    epicId: string;
+    epicTitle: string;
+  };
+}
