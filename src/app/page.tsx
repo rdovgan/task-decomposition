@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { FolderKanban, Layers, ArrowRight } from 'lucide-react';
+import { FolderKanban, Layers, CheckSquare, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Home() {
@@ -16,7 +16,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mt-8">
           <Link href="/projects" className="group">
             <div className="flex flex-col items-center gap-4 p-8 rounded-xl border bg-card hover:bg-accent transition-colors">
               <FolderKanban className="h-12 w-12 text-primary" />
@@ -42,11 +42,27 @@ export default function Home() {
               <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
             </div>
           </Link>
+
+          <Link href="/my-tasks" className="group">
+            <div className="flex flex-col items-center gap-4 p-8 rounded-xl border bg-card hover:bg-accent transition-colors">
+              <CheckSquare className="h-12 w-12 text-primary" />
+              <div className="space-y-2">
+                <h2 className="text-2xl font-semibold">My Tasks</h2>
+                <p className="text-sm text-muted-foreground">
+                  View and manage tasks assigned to you.
+                </p>
+              </div>
+              <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
+            </div>
+          </Link>
         </div>
 
         <div className="flex gap-4 mt-8">
           <Link href="/projects">
             <Button size="lg">Get Started</Button>
+          </Link>
+          <Link href="/my-tasks">
+            <Button variant="outline" size="lg">My Tasks</Button>
           </Link>
           <Link href="/epics">
             <Button variant="outline" size="lg">View Epics</Button>

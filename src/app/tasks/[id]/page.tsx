@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Edit, Trash2, Calendar, User, Clock, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Calendar, User, Clock, AlertCircle, Copy } from 'lucide-react';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { PriorityBadge } from '@/components/ui/priority-badge';
 import { Button } from '@/components/ui/button';
@@ -90,6 +90,38 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
       } else {
         router.push('/tasks');
       }
+    } catch (err) {
+      if (err instanceof ApiErrorClass) {
+        setError(err.message);
+      }
+    }
+  };
+
+  const handleDuplicate = async () => {
+    if (!task) return;
+
+    const duplicateTitle = prompt(
+      'Enter title for the duplicate task:',
+      `${task.title} (copy)`
+    );
+
+    if (!duplicateTitle) return;
+
+    try {
+      const duplicateTask = await tasksApi.create({
+        epicId: task.epicId,
+        title: duplicateTitle,
+        description: task.description || undefined,
+        assigneeId: task.assigneeId || undefined,
+        priority: task.priority,
+        storyPoints: task.storyPoints || undefined,
+        estimatedHours: task.estimatedHours || undefined,
+        startDate: task.startDate || undefined,
+        dueDate: task.dueDate || undefined,
+      });
+
+      // Navigate to the new task
+      router.push(`/tasks/${duplicateTask.id}`);
     } catch (err) {
       if (err instanceof ApiErrorClass) {
         setError(err.message);
@@ -189,6 +221,10 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
             )}
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={handleDuplicate}>
+              <Copy className="mr-2 h-4 w-4" />
+              Duplicate
+            </Button>
             <Button variant="outline" onClick={() => router.push(`/tasks/${task.id}/edit`)}>
               <Edit className="mr-2 h-4 w-4" />
               Edit
@@ -212,8 +248,17 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
                   <User className="h-4 w-4" />
                   <span>Assignee</span>
                 </div>
-                <div className="mt-1 font-medium">
-                  {task.assignee ? task.assignee.name : <span className="italic text-muted-foreground">Unassigned</span>}
+                <div className="mt-1 flex items-center gap-2">
+                  {task.assignee ? (
+                    <>
+                      <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground text-sm font-medium">
+                        {task.assignee.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="font-medium">{task.assignee.name}</span>
+                    </>
+                  ) : (
+                    <span className="italic text-muted-foreground">Unassigned</span>
+                  )}
                 </div>
               </div>
 
@@ -297,6 +342,32 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
                   <div className="mt-1 font-medium">{new Date(task.dueDate).toLocaleDateString()}</div>
                 </div>
               )}
+
+              {task.completedAt && (
+                <div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Calendar className="h-4 w-4" />
+                    <span>Completed</span>
+                  </div>
+                  <div className="mt-1 font-medium">{new Date(task.completedAt).toLocaleDateString()}</div>
+                </div>
+              )}
+
+              <div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Calendar className="h-4 w-4" />
+                  <span>Created</span>
+                </div>
+                <div className="mt-1 font-medium">{new Date(task.createdAt).toLocaleDateString()}</div>
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Calendar className="h-4 w-4" />
+                  <span>Updated</span>
+                </div>
+                <div className="mt-1 font-medium">{new Date(task.updatedAt).toLocaleDateString()}</div>
+              </div>
             </div>
           </div>
 

@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Task, Epic, User, CreateTaskRequest, TaskStatus, Priority, TaskFormData } from '@/types';
+import { Task, Epic, User, CreateTaskRequest, TaskStatus, Priority } from '@/types';
+import { TaskFormData } from '@/lib/validations/task';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { taskFormSchema } from '@/lib/validations/task';

@@ -5,9 +5,7 @@ export const taskFormSchema = z.object({
   description: z.string().max(5000, 'Description must be less than 5000 characters').optional(),
   epicId: z.string().min(1, 'Epic is required'),
   assigneeId: z.string().optional(),
-  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'], {
-    required_error: 'Priority is required',
-  }),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']),
   storyPoints: z.number().int().min(0).max(13).optional().nullable(),
   estimatedHours: z.number().min(0).max(1000).optional().nullable(),
   actualHours: z.number().min(0).max(1000).optional().nullable(),
