@@ -43,6 +43,7 @@
     "pg": "^8.20.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "reactflow": "^11.11.4",
     "shadcn": "^4.1.2",
     "tailwind-merge": "^3.5.0",
     "zod": "^4.3.6"
@@ -60,6 +61,7 @@
     "@types/node": "^20.19.37",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/supertest": "^7.2.0",
     "canvas": "^3.2.3",
     "concurrently": "^9.2.1",
     "cors": "^2.8.6",
