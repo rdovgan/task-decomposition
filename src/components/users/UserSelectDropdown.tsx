@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { User, Check, Search, User as UserIcon, Loader2 } from 'lucide-react';
+import { Check, Search, User as UserIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usersApi, tasksApi, ApiErrorClass } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
+import { User } from '@/types';
 
 interface UserSelectDropdownProps {
   taskId?: string;
