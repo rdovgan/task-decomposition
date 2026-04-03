@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as taskController from '../controllers/taskController';
 import { validate, validateQuery } from '../middleware/validation';
+import { validateTaskStatusTransition } from '../middleware/statusValidation';
 import {
   createTaskSchema,
   updateTaskSchema,
@@ -21,7 +22,7 @@ router.get('/decompose/health', taskController.decomposeHealthCheck);
 router.get('/', validateQuery(taskFilterSchema), taskController.getTasks);
 router.get('/:id', taskController.getTaskById);
 router.post('/', validate(createTaskSchema), taskController.createTask);
-router.patch('/:id', validate(updateTaskSchema), taskController.updateTask);
+router.patch('/:id', validate(updateTaskSchema), validateTaskStatusTransition, taskController.updateTask);
 router.delete('/:id', taskController.deleteTask);
 
 // Task dependencies
