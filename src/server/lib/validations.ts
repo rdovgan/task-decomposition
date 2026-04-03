@@ -78,8 +78,17 @@ export const updateCommentSchema = z.object({
 
 // Query parameter schemas
 export const paginationSchema = z.object({
-  page: z.string().optional().transform((val) => (val ? parseInt(val) : 1)),
-  limit: z.string().optional().transform((val) => (val ? parseInt(val) : 10)),
+  page: z.string().optional().transform((val) => {
+    const page = val ? parseInt(val) : 1;
+    if (page < 1) throw new Error('Page number must be positive');
+    return page;
+  }),
+  limit: z.string().optional().transform((val) => {
+    const limit = val ? parseInt(val) : 10;
+    if (limit < 1) throw new Error('Limit must be positive');
+    if (limit > 100) throw new Error('Limit cannot exceed 100');
+    return limit;
+  }),
   sort: z.string().optional(),
   order: z.enum(['asc', 'desc']).optional(),
 });

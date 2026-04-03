@@ -268,5 +268,20 @@ Now generate the JSON response:`;
   }
 }
 
-// Export singleton instance
-export const taskDecompositionService = new TaskDecompositionService();
+// Lazy initialization to avoid module load order issues with dotenv
+let _instance: TaskDecompositionService | null = null;
+
+function getInstance(): TaskDecompositionService {
+  if (!_instance) {
+    _instance = new TaskDecompositionService();
+  }
+  return _instance;
+}
+
+// Export proxy that lazily initializes on first access
+export const taskDecompositionService = new Proxy({} as TaskDecompositionService, {
+  get(target, prop) {
+    const instance = getInstance();
+    return instance[prop as keyof TaskDecompositionService];
+  }
+});

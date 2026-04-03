@@ -7,8 +7,8 @@ export const validate = (schema: ZodSchema) => {
     try {
       schema.parse(req.body);
       next();
-    } catch (error) {
-      if (error instanceof ZodError) {
+    } catch (error: any) {
+      if (error instanceof ZodError && error.errors) {
         const errorMessages = error.errors.map((e) => ({
           path: e.path.join('.'),
           message: e.message,
@@ -21,7 +21,9 @@ export const validate = (schema: ZodSchema) => {
 
         throw new ApiError(400, message, true);
       }
-      next(error);
+      // Handle other errors or errors without proper structure
+      const message = error?.message || 'Validation failed';
+      throw new ApiError(400, message, true);
     }
   };
 };
@@ -31,8 +33,8 @@ export const validateQuery = (schema: ZodSchema) => {
     try {
       schema.parse(req.query);
       next();
-    } catch (error) {
-      if (error instanceof ZodError) {
+    } catch (error: any) {
+      if (error instanceof ZodError && error.errors) {
         const errorMessages = error.errors.map((e) => ({
           path: e.path.join('.'),
           message: e.message,
@@ -45,7 +47,9 @@ export const validateQuery = (schema: ZodSchema) => {
 
         throw new ApiError(400, message, true);
       }
-      next(error);
+      // Handle other errors or errors without proper structure
+      const message = error?.message || 'Query validation failed';
+      throw new ApiError(400, message, true);
     }
   };
 };
