@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { Task, Epic, User } from '@/types';
-import { TaskFormModal } from './TaskFormModal';
+import { Task, Epic, User } from "@/types";
+import { TaskFormModal } from "./TaskFormModal";
 
 interface TaskCreateModalProps {
   open: boolean;

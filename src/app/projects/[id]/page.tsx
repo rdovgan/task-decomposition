@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Edit, Trash2, Plus } from 'lucide-react';
-import { useApp } from '@/contexts/AppContext';
-import { DataTable } from '@/components/ui/data-table';
-import { StatusBadge } from '@/components/ui/status-badge';
-import { PriorityBadge } from '@/components/ui/priority-badge';
-import { Button } from '@/components/ui/button';
-import { Project, Epic, EpicStatus, Priority } from '@/types';
-import { projectsApi, epicsApi, ApiErrorClass } from '@/lib/api-client';
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Edit, Trash2, Plus } from "lucide-react";
+import { useApp } from "@/contexts/AppContext";
+import { DataTable } from "@/components/ui/data-table";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { PriorityBadge } from "@/components/ui/priority-badge";
+import { Button } from "@/components/ui/button";
+import { Project, Epic, EpicStatus, Priority } from "@/types";
+import { projectsApi, epicsApi, ApiErrorClass } from "@/lib/api-client";
 
 export default function ProjectDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -36,7 +36,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
         if (err instanceof ApiErrorClass) {
           setError(err.message);
         } else {
-          setError('Failed to load project');
+          setError("Failed to load project");
         }
       } finally {
         setLoading(false);
@@ -47,13 +47,17 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
   }, [params.id]);
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this project? This will also delete all associated epics and tasks.')) {
+    if (
+      !confirm(
+        "Are you sure you want to delete this project? This will also delete all associated epics and tasks."
+      )
+    ) {
       return;
     }
 
     try {
       await projectsApi.delete(params.id);
-      router.push('/projects');
+      router.push("/projects");
     } catch (err) {
       if (err instanceof ApiErrorClass) {
         setError(err.message);
@@ -63,42 +67,40 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
 
   const epicColumns = [
     {
-      key: 'title',
-      title: 'Title',
+      key: "title",
+      title: "Title",
       sortable: true,
       render: (_: unknown, row: Record<string, unknown>) => {
         const epic = row as unknown as Epic;
         return (
-          <Link
-            href={`/epics/${epic.id}`}
-            className="font-medium text-primary hover:underline"
-          >
+          <Link href={`/epics/${epic.id}`} className="font-medium text-primary hover:underline">
             {epic.title}
           </Link>
         );
       },
     },
     {
-      key: 'description',
-      title: 'Description',
-      render: (value: unknown) => (value as string | null) || <span className="text-muted-foreground">No description</span>,
+      key: "description",
+      title: "Description",
+      render: (value: unknown) =>
+        (value as string | null) || <span className="text-muted-foreground">No description</span>,
     },
     {
-      key: 'status',
-      title: 'Status',
+      key: "status",
+      title: "Status",
       sortable: true,
       render: (value: unknown) => <StatusBadge status={value as EpicStatus} />,
     },
     {
-      key: 'priority',
-      title: 'Priority',
+      key: "priority",
+      title: "Priority",
       sortable: true,
       render: (value: unknown) => <PriorityBadge priority={value as Priority} />,
     },
     {
-      key: '_count.tasks',
-      title: 'Tasks',
-      render: (value: unknown) => (value as number)?.toString() || '0',
+      key: "_count.tasks",
+      title: "Tasks",
+      render: (value: unknown) => (value as number)?.toString() || "0",
     },
   ];
 
@@ -116,7 +118,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
     return (
       <div className="container mx-auto py-8 px-4">
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
-          {error || 'Project not found'}
+          {error || "Project not found"}
         </div>
       </div>
     );

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -11,12 +11,12 @@ import {
   useSensors,
   DragOverlay,
   closestCorners,
-} from '@dnd-kit/core';
-import { Task, TaskStatus } from '@/types';
-import { KanbanColumn } from './KanbanColumn';
-import { KanbanTaskCard } from './KanbanTaskCard';
+} from "@dnd-kit/core";
+import { Task, TaskStatus } from "@/types";
+import { KanbanColumn } from "./KanbanColumn";
+import { KanbanTaskCard } from "./KanbanTaskCard";
 
-const COLUMN_ORDER: TaskStatus[] = ['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE', 'BLOCKED'];
+const COLUMN_ORDER: TaskStatus[] = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE", "BLOCKED"];
 
 interface KanbanBoardProps {
   tasks: Task[];
@@ -101,20 +101,12 @@ export function KanbanBoard({ tasks, onStatusChange }: KanbanBoardProps) {
       onDragEnd={handleDragEnd}
     >
       <div className="flex gap-4 overflow-x-auto pb-4">
-        {COLUMN_ORDER.map((status) => (
-          <KanbanColumn
-            key={status}
-            status={status}
-            tasks={tasksByStatus[status] || []}
-          />
+        {COLUMN_ORDER.map(status => (
+          <KanbanColumn key={status} status={status} tasks={tasksByStatus[status] || []} />
         ))}
       </div>
 
-      <DragOverlay>
-        {activeTask && (
-          <KanbanTaskCard task={activeTask} isDragging />
-        )}
-      </DragOverlay>
+      <DragOverlay>{activeTask && <KanbanTaskCard task={activeTask} isDragging />}</DragOverlay>
     </DndContext>
   );
 }

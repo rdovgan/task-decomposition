@@ -1,18 +1,18 @@
 // Domain types matching the Prisma schema
 
-export type UserRole = 'ADMIN' | 'PROJECT_MANAGER' | 'DEVELOPER' | 'DESIGNER' | 'QA';
+export type UserRole = "ADMIN" | "PROJECT_MANAGER" | "DEVELOPER" | "DESIGNER" | "QA";
 
-export type ProjectStatus = 'ACTIVE' | 'ARCHIVED' | 'ON_HOLD';
+export type ProjectStatus = "ACTIVE" | "ARCHIVED" | "ON_HOLD";
 
-export type EpicStatus = 'BACKLOG' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE' | 'CANCELLED';
+export type EpicStatus = "BACKLOG" | "IN_PROGRESS" | "IN_REVIEW" | "DONE" | "CANCELLED";
 
-export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE' | 'BLOCKED' | 'CANCELLED';
+export type TaskStatus = "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE" | "BLOCKED" | "CANCELLED";
 
-export type Priority = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+export type Priority = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
 
-export type DependencyType = 'BLOCKS' | 'RELATED_TO' | 'DUPLICATES';
+export type DependencyType = "BLOCKS" | "RELATED_TO" | "DUPLICATES";
 
-export type LinkType = 'CONFLUENCE' | 'NOTION' | 'GITHUB' | 'JIRA' | 'FIGMA' | 'EXTERNAL';
+export type LinkType = "CONFLUENCE" | "NOTION" | "GITHUB" | "JIRA" | "FIGMA" | "EXTERNAL";
 
 export interface User {
   id: string;
@@ -181,7 +181,7 @@ export interface SubtaskSuggestion {
   title: string;
   description: string;
   estimatedHours: number;
-  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  priority: "HIGH" | "MEDIUM" | "LOW";
   suggestedOrder: number;
   dependencies?: number[];
 }
@@ -221,7 +221,7 @@ export interface AITaskSuggestion {
   title: string;
   description: string;
   storyPoints: number;
-  priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  priority: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
 }
 
 // AI Decomposition Response

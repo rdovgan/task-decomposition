@@ -1,5 +1,5 @@
-import Anthropic from '@anthropic-ai/sdk';
-import type { Task, Epic, Project } from '@/types';
+import Anthropic from "@anthropic-ai/sdk";
+import type { Task, Epic, Project } from "@/types";
 
 /**
  * Subtask suggestion from AI decomposition
@@ -8,7 +8,7 @@ export interface SubtaskSuggestion {
   title: string;
   description: string;
   estimatedHours: number;
-  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  priority: "HIGH" | "MEDIUM" | "LOW";
   suggestedOrder: number;
   dependencies?: number[]; // Array of suggestedOrder indices this task depends on
 }
@@ -54,7 +54,7 @@ class TaskDecompositionService {
     const apiKey = process.env.ANTHROPIC_API_KEY;
 
     if (!apiKey) {
-      throw new Error('ANTHROPIC_API_KEY environment variable is not set');
+      throw new Error("ANTHROPIC_API_KEY environment variable is not set");
     }
 
     this.client = new Anthropic({
@@ -62,7 +62,7 @@ class TaskDecompositionService {
       timeout: 30000, // 30 second timeout
     });
 
-    this.model = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6';
+    this.model = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6";
   }
 
   /**
@@ -79,7 +79,7 @@ class TaskDecompositionService {
         max_tokens: 4096,
         messages: [
           {
-            role: 'user',
+            role: "user",
             content: prompt,
           },
         ],
@@ -99,15 +99,15 @@ class TaskDecompositionService {
     } catch (error) {
       if (error instanceof Error) {
         // Handle specific Anthropic API errors
-        if (error.message.includes('rate')) {
-          throw new Error('Anthropic API rate limit exceeded. Please try again later.');
+        if (error.message.includes("rate")) {
+          throw new Error("Anthropic API rate limit exceeded. Please try again later.");
         }
-        if (error.message.includes('auth')) {
-          throw new Error('Anthropic API authentication failed. Check your API key.');
+        if (error.message.includes("auth")) {
+          throw new Error("Anthropic API authentication failed. Check your API key.");
         }
       }
       throw new Error(
-        `Failed to decompose task: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to decompose task: ${error instanceof Error ? error.message : "Unknown error"}`
       );
     }
   }
@@ -118,13 +118,13 @@ class TaskDecompositionService {
   private buildDecompositionPrompt(request: DecompositionRequest): string {
     const { task, epic, project } = request;
 
-    let context = '';
+    let context = "";
     if (project) {
       context += `Project: ${project.name}`;
       if (project.description) {
         context += `\n${project.description}`;
       }
-      context += '\n\n';
+      context += "\n\n";
     }
 
     if (epic) {
@@ -132,14 +132,14 @@ class TaskDecompositionService {
       if (epic.description) {
         context += `\n${epic.description}`;
       }
-      context += '\n\n';
+      context += "\n\n";
     }
 
     return `You are a senior project manager and technical lead. Your task is to break down the following task into 3-8 actionable subtasks.
 
 ${context}**Task to Decompose:**
 Title: ${task.title}
-${task.description ? `Description: ${task.description}` : ''}
+${task.description ? `Description: ${task.description}` : ""}
 
 **Requirements:**
 1. Break down the task into logical, sequential subtasks
@@ -188,10 +188,10 @@ Now generate the JSON response:`;
   /**
    * Extract text content from Claude response
    */
-  private extractTextContent(content: Anthropic.Message['content']): string {
-    const textBlock = content.find((block) => block.type === 'text');
-    if (!textBlock || textBlock.type !== 'text') {
-      throw new Error('No text content in Claude response');
+  private extractTextContent(content: Anthropic.Message["content"]): string {
+    const textBlock = content.find(block => block.type === "text");
+    if (!textBlock || textBlock.type !== "text") {
+      throw new Error("No text content in Claude response");
     }
     return textBlock.text;
   }
@@ -210,13 +210,13 @@ Now generate the JSON response:`;
       const parsed = JSON.parse(content.trim());
 
       if (!parsed.subtasks || !Array.isArray(parsed.subtasks)) {
-        throw new Error('Invalid response format: missing subtasks array');
+        throw new Error("Invalid response format: missing subtasks array");
       }
 
       // Validate subtask structure
       const subtasks: SubtaskSuggestion[] = parsed.subtasks.map((st: any, index: number) => ({
         title: st.title || `Subtask ${index + 1}`,
-        description: st.description || '',
+        description: st.description || "",
         estimatedHours: Number(st.estimatedHours) || 2,
         priority: this.validatePriority(st.priority),
         suggestedOrder: Number(st.suggestedOrder) || index + 1,
@@ -227,7 +227,7 @@ Now generate the JSON response:`;
       return subtasks.sort((a, b) => a.suggestedOrder - b.suggestedOrder);
     } catch (error) {
       throw new Error(
-        `Failed to parse Claude response: ${error instanceof Error ? error.message : 'Invalid JSON'}`
+        `Failed to parse Claude response: ${error instanceof Error ? error.message : "Invalid JSON"}`
       );
     }
   }
@@ -235,12 +235,12 @@ Now generate the JSON response:`;
   /**
    * Validate and normalize priority value
    */
-  private validatePriority(priority: string): 'HIGH' | 'MEDIUM' | 'LOW' {
+  private validatePriority(priority: string): "HIGH" | "MEDIUM" | "LOW" {
     const normalized = priority?.toUpperCase();
-    if (normalized === 'HIGH' || normalized === 'MEDIUM' || normalized === 'LOW') {
+    if (normalized === "HIGH" || normalized === "MEDIUM" || normalized === "LOW") {
       return normalized;
     }
-    return 'MEDIUM'; // Default
+    return "MEDIUM"; // Default
   }
 
   /**
@@ -252,16 +252,16 @@ Now generate the JSON response:`;
       await this.client.messages.create({
         model: this.model,
         max_tokens: 10,
-        messages: [{ role: 'user', content: 'test' }],
+        messages: [{ role: "user", content: "test" }],
       });
 
       return {
-        status: 'healthy',
+        status: "healthy",
         model: this.model,
       };
     } catch (error) {
       return {
-        status: 'unhealthy',
+        status: "unhealthy",
         model: this.model,
       };
     }
@@ -283,5 +283,5 @@ export const taskDecompositionService = new Proxy({} as TaskDecompositionService
   get(target, prop) {
     const instance = getInstance();
     return instance[prop as keyof TaskDecompositionService];
-  }
+  },
 });

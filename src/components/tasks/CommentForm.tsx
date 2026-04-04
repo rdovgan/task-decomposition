@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface CommentFormProps {
   onSubmit: (content: string) => Promise<void>;
@@ -9,22 +9,26 @@ interface CommentFormProps {
   placeholder?: string;
 }
 
-export function CommentForm({ onSubmit, submitting = false, placeholder = 'Add a comment...' }: CommentFormProps) {
-  const [content, setContent] = useState('');
+export function CommentForm({
+  onSubmit,
+  submitting = false,
+  placeholder = "Add a comment...",
+}: CommentFormProps) {
+  const [content, setContent] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) return;
 
     await onSubmit(content);
-    setContent('');
+    setContent("");
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <textarea
         value={content}
-        onChange={(e) => setContent(e.target.value)}
+        onChange={e => setContent(e.target.value)}
         placeholder={placeholder}
         rows={3}
         disabled={submitting}
@@ -32,7 +36,7 @@ export function CommentForm({ onSubmit, submitting = false, placeholder = 'Add a
       />
       <div className="flex justify-end">
         <Button type="submit" disabled={submitting || !content.trim()}>
-          {submitting ? 'Posting...' : 'Post Comment'}
+          {submitting ? "Posting..." : "Post Comment"}
         </Button>
       </div>
     </form>

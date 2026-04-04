@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { Comment } from '@/types';
+import { Comment } from "@/types";
 
 interface CommentListProps {
   comments: Comment[];
@@ -20,14 +20,14 @@ export function CommentList({ comments, onEdit, onDelete, currentUserId }: Comme
 
   return (
     <div className="space-y-4">
-      {comments.map((comment) => (
+      {comments.map(comment => (
         <div key={comment.id} className="rounded-lg border bg-card p-4">
           <div className="mb-2 flex items-start justify-between">
             <div>
-              <div className="font-semibold">{comment.author?.name || 'Unknown'}</div>
+              <div className="font-semibold">{comment.author?.name || "Unknown"}</div>
               <div className="text-xs text-muted-foreground">
                 {new Date(comment.createdAt).toLocaleString()}
-                {comment.updatedAt !== comment.createdAt && ' (edited)'}
+                {comment.updatedAt !== comment.createdAt && " (edited)"}
               </div>
             </div>
             {currentUserId && comment.authorId === currentUserId && (onEdit || onDelete) && (
@@ -35,7 +35,7 @@ export function CommentList({ comments, onEdit, onDelete, currentUserId }: Comme
                 {onEdit && (
                   <button
                     onClick={() => {
-                      const newContent = prompt('Edit comment:', comment.content);
+                      const newContent = prompt("Edit comment:", comment.content);
                       if (newContent) onEdit(comment.id, newContent);
                     }}
                     className="text-xs text-muted-foreground hover:text-foreground"
@@ -46,7 +46,7 @@ export function CommentList({ comments, onEdit, onDelete, currentUserId }: Comme
                 {onDelete && (
                   <button
                     onClick={() => {
-                      if (confirm('Are you sure you want to delete this comment?')) {
+                      if (confirm("Are you sure you want to delete this comment?")) {
                         onDelete(comment.id);
                       }
                     }}

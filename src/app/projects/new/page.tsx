@@ -1,40 +1,49 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { useApp } from '@/contexts/AppContext';
-import { Button } from '@/components/ui/button';
-import { CreateProjectRequest, ProjectStatus } from '@/types';
-import { projectsApi, ApiErrorClass } from '@/lib/api-client';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { useApp } from "@/contexts/AppContext";
+import { Button } from "@/components/ui/button";
+import { UserSelectDropdown } from "@/components/users/UserSelectDropdown";
+import { CreateProjectRequest, ProjectStatus } from "@/types";
+import { projectsApi, ApiErrorClass } from "@/lib/api-client";
 
 export default function NewProjectPage() {
   const router = useRouter();
   const { createProject, fetchProjects } = useApp();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedOwnerId, setSelectedOwnerId] = useState<string | null>(null);
   const [formData, setFormData] = useState<CreateProjectRequest>({
-    name: '',
-    description: '',
-    ownerId: '', // TODO: Get from auth context
-    status: 'ACTIVE',
+    name: "",
+    description: "",
+    ownerId: "",
+    status: "ACTIVE",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate owner is selected
+    if (!selectedOwnerId) {
+      setError("Please select a project owner");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      const project = await createProject(formData);
+      const project = await createProject({ ...formData, ownerId: selectedOwnerId });
       await fetchProjects();
       router.push(`/projects/${project.id}`);
     } catch (err) {
       if (err instanceof ApiErrorClass) {
         setError(err.message);
       } else {
-        setError('Failed to create project');
+        setError("Failed to create project");
       }
     } finally {
       setLoading(false);
@@ -72,7 +81,7 @@ export default function NewProjectPage() {
             id="name"
             required
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={e => setFormData({ ...formData, name: e.target.value })}
             className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             placeholder="My Awesome Project"
           />
@@ -86,10 +95,27 @@ export default function NewProjectPage() {
             id="description"
             rows={4}
             value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            onChange={e => setFormData({ ...formData, description: e.target.value })}
             className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             placeholder="A brief description of the project..."
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Project Owner <span className="text-destructive">*</span>
+          </label>
+          <UserSelectDropdown
+            selectedUserId={selectedOwnerId}
+            onUserChange={setSelectedOwnerId}
+            placeholder="Select owner"
+            showAvatar={true}
+          />
+          {!selectedOwnerId && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Select the user who will own this project
+            </p>
+          )}
         </div>
 
         <div>
@@ -99,7 +125,7 @@ export default function NewProjectPage() {
           <select
             id="status"
             value={formData.status}
-            onChange={(e) => setFormData({ ...formData, status: e.target.value as ProjectStatus })}
+            onChange={e => setFormData({ ...formData, status: e.target.value as ProjectStatus })}
             className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
             <option value="ACTIVE">Active</option>
@@ -110,7 +136,7 @@ export default function NewProjectPage() {
 
         <div className="flex gap-4">
           <Button type="submit" disabled={loading}>
-            {loading ? 'Creating...' : 'Create Project'}
+            {loading ? "Creating..." : "Create Project"}
           </Button>
           <Button type="button" variant="outline" onClick={() => router.back()}>
             Cancel

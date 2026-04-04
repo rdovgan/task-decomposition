@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { TaskForm } from '@/components/tasks/TaskForm';
-import { Task, Epic, User } from '@/types';
-import { tasksApi, epicsApi, ApiErrorClass } from '@/lib/api-client';
+import { useEffect, useState } from "react";
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { TaskForm } from "@/components/tasks/TaskForm";
+import { Task, Epic, User } from "@/types";
+import { tasksApi, epicsApi, ApiErrorClass } from "@/lib/api-client";
 
 export default function EditTaskPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -35,7 +35,7 @@ export default function EditTaskPage({ params }: { params: { id: string } }) {
       if (err instanceof ApiErrorClass) {
         setError(err.message);
       } else {
-        setError('Failed to load task');
+        setError("Failed to load task");
       }
     } finally {
       setLoading(false);
@@ -56,7 +56,7 @@ export default function EditTaskPage({ params }: { params: { id: string } }) {
     return (
       <div className="container mx-auto py-8 px-4">
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
-          {error || 'Task not found'}
+          {error || "Task not found"}
         </div>
       </div>
     );
@@ -74,9 +74,7 @@ export default function EditTaskPage({ params }: { params: { id: string } }) {
 
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Edit Task</h1>
-        <p className="mt-2 text-muted-foreground">
-          Update task information
-        </p>
+        <p className="mt-2 text-muted-foreground">Update task information</p>
       </div>
 
       <div className="max-w-2xl">

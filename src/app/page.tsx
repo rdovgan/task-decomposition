@@ -1,18 +1,16 @@
-import Link from 'next/link';
-import { FolderKanban, Layers, CheckSquare, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
+import { FolderKanban, Layers, CheckSquare, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
     <div className="flex flex-col flex-1 items-center justify-center min-h-screen bg-gradient-to-br from-background to-muted p-8">
       <main className="flex flex-col items-center gap-8 max-w-4xl w-full text-center">
         <div className="space-y-4">
-          <h1 className="text-5xl font-bold tracking-tight">
-            Task Decomposition Tool
-          </h1>
+          <h1 className="text-5xl font-bold tracking-tight">Task Decomposition Tool</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            An intelligent tool for breaking down complex tasks into manageable subtasks.
-            Organize your projects, epics, and tasks with ease.
+            An intelligent tool for breaking down complex tasks into manageable subtasks. Organize
+            your projects, epics, and tasks with ease.
           </p>
         </div>
 
@@ -62,10 +60,14 @@ export default function Home() {
             <Button size="lg">Get Started</Button>
           </Link>
           <Link href="/my-tasks">
-            <Button variant="outline" size="lg">My Tasks</Button>
+            <Button variant="outline" size="lg">
+              My Tasks
+            </Button>
           </Link>
           <Link href="/epics">
-            <Button variant="outline" size="lg">View Epics</Button>
+            <Button variant="outline" size="lg">
+              View Epics
+            </Button>
           </Link>
         </div>
       </main>

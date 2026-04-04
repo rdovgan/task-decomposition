@@ -1,24 +1,33 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useMemo } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Filter, Search, X, Calendar, Clock, LayoutDashboard, LayoutList } from 'lucide-react';
-import { StatusBadge } from '@/components/ui/status-badge';
-import { PriorityBadge } from '@/components/ui/priority-badge';
-import { Button } from '@/components/ui/button';
-import { Task, Epic, TaskStatus, Priority, User } from '@/types';
-import { tasksApi, epicsApi, usersApi, ApiErrorClass } from '@/lib/api-client';
-import { KanbanBoard } from '@/components/tasks/KanbanBoard';
+import { useEffect, useState, useMemo } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  Filter,
+  Search,
+  X,
+  Calendar,
+  Clock,
+  LayoutDashboard,
+  LayoutList,
+} from "lucide-react";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { PriorityBadge } from "@/components/ui/priority-badge";
+import { Button } from "@/components/ui/button";
+import { Task, Epic, TaskStatus, Priority, User } from "@/types";
+import { tasksApi, epicsApi, usersApi, ApiErrorClass } from "@/lib/api-client";
+import { KanbanBoard } from "@/components/tasks/KanbanBoard";
 
 // Storage keys
-const SORT_STORAGE_KEY = 'my-tasks-sort';
-const VIEW_STORAGE_KEY = 'my-tasks-view';
+const SORT_STORAGE_KEY = "my-tasks-sort";
+const VIEW_STORAGE_KEY = "my-tasks-view";
 
-type ViewMode = 'kanban' | 'list';
+type ViewMode = "kanban" | "list";
 
-type SortField = 'dueDate' | 'priority' | 'storyPoints' | 'createdAt';
-type SortDirection = 'asc' | 'desc';
+type SortField = "dueDate" | "priority" | "storyPoints" | "createdAt";
+type SortDirection = "asc" | "desc";
 
 interface FilterState {
   epicId: string;
@@ -27,7 +36,7 @@ interface FilterState {
   searchQuery: string;
 }
 
-const ACTIVE_STATUSES: TaskStatus[] = ['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'BLOCKED'];
+const ACTIVE_STATUSES: TaskStatus[] = ["TODO", "IN_PROGRESS", "IN_REVIEW", "BLOCKED"];
 
 export default function MyTasksPage() {
   const router = useRouter();
@@ -36,19 +45,19 @@ export default function MyTasksPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('kanban');
+  const [viewMode, setViewMode] = useState<ViewMode>("kanban");
 
   // Filter state
   const [filters, setFilters] = useState<FilterState>({
-    epicId: '',
-    priority: '',
+    epicId: "",
+    priority: "",
     statuses: [],
-    searchQuery: '',
+    searchQuery: "",
   });
 
   // Sort state
-  const [sortField, setSortField] = useState<SortField>('dueDate');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [sortField, setSortField] = useState<SortField>("dueDate");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
   useEffect(() => {
     loadInitialData();
@@ -78,7 +87,7 @@ export default function MyTasksPage() {
       if (err instanceof ApiErrorClass) {
         setError(err.message);
       } else {
-        setError('Failed to load tasks');
+        setError("Failed to load tasks");
       }
     } finally {
       setLoading(false);
@@ -94,7 +103,7 @@ export default function MyTasksPage() {
         setSortDirection(direction);
       }
     } catch (err) {
-      console.error('Failed to load sort preferences:', err);
+      console.error("Failed to load sort preferences:", err);
     }
   }
 
@@ -105,7 +114,7 @@ export default function MyTasksPage() {
         setViewMode(stored as ViewMode);
       }
     } catch (err) {
-      console.error('Failed to load view preferences:', err);
+      console.error("Failed to load view preferences:", err);
     }
   }
 
@@ -113,7 +122,7 @@ export default function MyTasksPage() {
     try {
       localStorage.setItem(VIEW_STORAGE_KEY, mode);
     } catch (err) {
-      console.error('Failed to save view preferences:', err);
+      console.error("Failed to save view preferences:", err);
     }
   }
 
@@ -121,14 +130,14 @@ export default function MyTasksPage() {
     try {
       localStorage.setItem(SORT_STORAGE_KEY, JSON.stringify({ field, direction }));
     } catch (err) {
-      console.error('Failed to save sort preferences:', err);
+      console.error("Failed to save sort preferences:", err);
     }
   }
 
   const handleSort = (field: SortField) => {
-    let newDirection: SortDirection = 'asc';
+    let newDirection: SortDirection = "asc";
     if (sortField === field) {
-      newDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      newDirection = sortDirection === "asc" ? "desc" : "asc";
     }
     setSortField(field);
     setSortDirection(newDirection);
@@ -143,21 +152,19 @@ export default function MyTasksPage() {
   const handleStatusChange = async (taskId: string, newStatus: TaskStatus) => {
     try {
       await tasksApi.update(taskId, { status: newStatus });
-      setTasks(tasks.map(task =>
-        task.id === taskId ? { ...task, status: newStatus } : task
-      ));
+      setTasks(tasks.map(task => (task.id === taskId ? { ...task, status: newStatus } : task)));
     } catch (err) {
-      console.error('Failed to update task status:', err);
-      setError('Failed to update task status');
+      console.error("Failed to update task status:", err);
+      setError("Failed to update task status");
     }
   };
 
   const clearFilters = () => {
     setFilters({
-      epicId: '',
-      priority: '',
+      epicId: "",
+      priority: "",
       statuses: [],
-      searchQuery: '',
+      searchQuery: "",
     });
   };
 
@@ -195,9 +202,10 @@ export default function MyTasksPage() {
     // Search by title or description
     if (filters.searchQuery) {
       const query = filters.searchQuery.toLowerCase();
-      filtered = filtered.filter(task =>
-        task.title.toLowerCase().includes(query) ||
-        (task.description && task.description.toLowerCase().includes(query))
+      filtered = filtered.filter(
+        task =>
+          task.title.toLowerCase().includes(query) ||
+          (task.description && task.description.toLowerCase().includes(query))
       );
     }
 
@@ -207,18 +215,18 @@ export default function MyTasksPage() {
       let bValue: any = b[sortField];
 
       // Handle null values
-      if (aValue == null) aValue = sortDirection === 'asc' ? '9999-12-31' : '';
-      if (bValue == null) bValue = sortDirection === 'asc' ? '9999-12-31' : '';
+      if (aValue == null) aValue = sortDirection === "asc" ? "9999-12-31" : "";
+      if (bValue == null) bValue = sortDirection === "asc" ? "9999-12-31" : "";
 
       // Priority custom sort
-      if (sortField === 'priority') {
+      if (sortField === "priority") {
         const priorityOrder = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
         aValue = priorityOrder[aValue as Priority] || 0;
         bValue = priorityOrder[bValue as Priority] || 0;
       }
 
-      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
       return 0;
     });
 
@@ -249,8 +257,8 @@ export default function MyTasksPage() {
   const getTimeRemaining = (task: Task) => {
     if (!task.estimatedHours || !task.actualHours) return null;
     const remaining = task.estimatedHours - task.actualHours;
-    if (remaining <= 0) return { text: 'Overdue', class: 'text-destructive' };
-    return { text: `${remaining}h remaining`, class: 'text-muted-foreground' };
+    if (remaining <= 0) return { text: "Overdue", class: "text-destructive" };
+    return { text: `${remaining}h remaining`, class: "text-muted-foreground" };
   };
 
   // Get active filter count
@@ -298,25 +306,23 @@ export default function MyTasksPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">My Tasks</h1>
-            <p className="mt-2 text-muted-foreground">
-              Manage and track your assigned tasks
-            </p>
+            <p className="mt-2 text-muted-foreground">Manage and track your assigned tasks</p>
           </div>
 
           {/* View Toggle */}
           <div className="flex gap-2">
             <Button
-              variant={viewMode === 'kanban' ? 'default' : 'outline'}
+              variant={viewMode === "kanban" ? "default" : "outline"}
               size="sm"
-              onClick={() => handleViewToggle('kanban')}
+              onClick={() => handleViewToggle("kanban")}
             >
               <LayoutDashboard className="h-4 w-4 mr-2" />
               Board
             </Button>
             <Button
-              variant={viewMode === 'list' ? 'default' : 'outline'}
+              variant={viewMode === "list" ? "default" : "outline"}
               size="sm"
-              onClick={() => handleViewToggle('list')}
+              onClick={() => handleViewToggle("list")}
             >
               <LayoutList className="h-4 w-4 mr-2" />
               List
@@ -332,9 +338,7 @@ export default function MyTasksPage() {
             <Filter className="h-4 w-4 text-muted-foreground" />
             <h2 className="font-semibold">Filters</h2>
             {activeFilterCount > 0 && (
-              <span className="text-sm text-muted-foreground">
-                ({activeFilterCount} active)
-              </span>
+              <span className="text-sm text-muted-foreground">({activeFilterCount} active)</span>
             )}
           </div>
           {activeFilterCount > 0 && (
@@ -352,7 +356,7 @@ export default function MyTasksPage() {
             <input
               type="text"
               value={filters.searchQuery}
-              onChange={(e) => setFilters(prev => ({ ...prev, searchQuery: e.target.value }))}
+              onChange={e => setFilters(prev => ({ ...prev, searchQuery: e.target.value }))}
               placeholder="Search tasks..."
               className="w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
@@ -361,11 +365,11 @@ export default function MyTasksPage() {
           {/* Epic Filter */}
           <select
             value={filters.epicId}
-            onChange={(e) => setFilters(prev => ({ ...prev, epicId: e.target.value }))}
+            onChange={e => setFilters(prev => ({ ...prev, epicId: e.target.value }))}
             className="rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="">All Epics</option>
-            {epics.map((epic) => (
+            {epics.map(epic => (
               <option key={epic.id} value={epic.id}>
                 {epic.title}
               </option>
@@ -375,7 +379,7 @@ export default function MyTasksPage() {
           {/* Priority Filter */}
           <select
             value={filters.priority}
-            onChange={(e) => setFilters(prev => ({ ...prev, priority: e.target.value }))}
+            onChange={e => setFilters(prev => ({ ...prev, priority: e.target.value }))}
             className="rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="">All Priorities</option>
@@ -387,17 +391,17 @@ export default function MyTasksPage() {
 
           {/* Status Filter */}
           <div className="flex flex-wrap gap-2">
-            {ACTIVE_STATUSES.map((status) => (
+            {ACTIVE_STATUSES.map(status => (
               <button
                 key={status}
                 onClick={() => toggleStatusFilter(status)}
                 className={`px-2 py-1 text-xs rounded-md border transition-colors ${
                   filters.statuses.includes(status)
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-background hover:bg-muted'
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background hover:bg-muted"
                 }`}
               >
-                {status.replace('_', ' ')}
+                {status.replace("_", " ")}
               </button>
             ))}
           </div>
@@ -409,20 +413,20 @@ export default function MyTasksPage() {
         <span className="text-sm text-muted-foreground">Sort by:</span>
         <div className="flex gap-2">
           {[
-            { field: 'dueDate' as SortField, label: 'Due Date' },
-            { field: 'priority' as SortField, label: 'Priority' },
-            { field: 'storyPoints' as SortField, label: 'Story Points' },
-            { field: 'createdAt' as SortField, label: 'Created' },
+            { field: "dueDate" as SortField, label: "Due Date" },
+            { field: "priority" as SortField, label: "Priority" },
+            { field: "storyPoints" as SortField, label: "Story Points" },
+            { field: "createdAt" as SortField, label: "Created" },
           ].map(({ field, label }) => (
             <Button
               key={field}
-              variant={sortField === field ? 'default' : 'outline'}
+              variant={sortField === field ? "default" : "outline"}
               size="sm"
               onClick={() => handleSort(field)}
             >
               {label}
               {sortField === field && (
-                <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
               )}
             </Button>
           ))}
@@ -430,7 +434,7 @@ export default function MyTasksPage() {
       </div>
 
       {/* View Content */}
-      {viewMode === 'kanban' ? (
+      {viewMode === "kanban" ? (
         <>
           {/* Kanban Board View */}
           {filteredTasks.length === 0 ? (
@@ -438,7 +442,7 @@ export default function MyTasksPage() {
               <p className="text-lg font-medium text-muted-foreground">No tasks found</p>
               <p className="mt-2 text-sm text-muted-foreground">
                 {activeFilterCount > 0
-                  ? 'Try adjusting your filters or search query'
+                  ? "Try adjusting your filters or search query"
                   : "You don't have any active tasks assigned to you"}
               </p>
             </div>
@@ -450,7 +454,7 @@ export default function MyTasksPage() {
         <>
           {/* List View - Original Implementation */}
           <div className="space-y-6">
-            {ACTIVE_STATUSES.map((status) => {
+            {ACTIVE_STATUSES.map(status => {
               const statusTasks = tasksByStatus[status];
               if (statusTasks.length === 0) return null;
 
@@ -464,7 +468,7 @@ export default function MyTasksPage() {
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {statusTasks.map((task) => {
+                    {statusTasks.map(task => {
                       const timeRemaining = getTimeRemaining(task);
 
                       return (
@@ -478,57 +482,55 @@ export default function MyTasksPage() {
                             <PriorityBadge priority={task.priority} />
                           </div>
 
-                      {task.epic && (
-                        <Link
-                          href={`/epics/${task.epic.id}`}
-                          className="text-sm text-primary hover:underline"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {task.epic.title}
+                          {task.epic && (
+                            <Link
+                              href={`/epics/${task.epic.id}`}
+                              className="text-sm text-primary hover:underline"
+                              onClick={e => e.stopPropagation()}
+                            >
+                              {task.epic.title}
+                            </Link>
+                          )}
+
+                          <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
+                            {task.storyPoints && <span>{task.storyPoints} pts</span>}
+
+                            {task.dueDate && (
+                              <span className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {new Date(task.dueDate).toLocaleDateString()}
+                              </span>
+                            )}
+
+                            {timeRemaining && (
+                              <span className={`flex items-center gap-1 ${timeRemaining.class}`}>
+                                <Clock className="h-3 w-3" />
+                                {timeRemaining.text}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Inline Status Change */}
+                          <div className="mt-3">
+                            <select
+                              value={task.status}
+                              onChange={e => {
+                                e.stopPropagation();
+                                handleStatusChange(task.id, e.target.value as TaskStatus);
+                              }}
+                              onClick={e => e.stopPropagation()}
+                              className="w-full rounded-md border border-input bg-background px-2 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            >
+                              <option value="TODO">To Do</option>
+                              <option value="IN_PROGRESS">In Progress</option>
+                              <option value="IN_REVIEW">In Review</option>
+                              <option value="DONE">Done</option>
+                              <option value="BLOCKED">Blocked</option>
+                              <option value="CANCELLED">Cancelled</option>
+                            </select>
+                          </div>
                         </Link>
-                      )}
-
-                      <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
-                        {task.storyPoints && (
-                          <span>{task.storyPoints} pts</span>
-                        )}
-
-                        {task.dueDate && (
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {new Date(task.dueDate).toLocaleDateString()}
-                          </span>
-                        )}
-
-                        {timeRemaining && (
-                          <span className={`flex items-center gap-1 ${timeRemaining.class}`}>
-                            <Clock className="h-3 w-3" />
-                            {timeRemaining.text}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Inline Status Change */}
-                      <div className="mt-3">
-                        <select
-                          value={task.status}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            handleStatusChange(task.id, e.target.value as TaskStatus);
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                          className="w-full rounded-md border border-input bg-background px-2 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        >
-                          <option value="TODO">To Do</option>
-                          <option value="IN_PROGRESS">In Progress</option>
-                          <option value="IN_REVIEW">In Review</option>
-                          <option value="DONE">Done</option>
-                          <option value="BLOCKED">Blocked</option>
-                          <option value="CANCELLED">Cancelled</option>
-                        </select>
-                      </div>
-                    </Link>
-                  );
+                      );
                     })}
                   </div>
                 </div>
@@ -541,7 +543,7 @@ export default function MyTasksPage() {
                 <p className="text-lg font-medium text-muted-foreground">No tasks found</p>
                 <p className="mt-2 text-sm text-muted-foreground">
                   {activeFilterCount > 0
-                    ? 'Try adjusting your filters or search query'
+                    ? "Try adjusting your filters or search query"
                     : "You don't have any active tasks assigned to you"}
                 </p>
               </div>

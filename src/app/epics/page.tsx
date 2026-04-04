@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Plus, Filter } from 'lucide-react';
-import { useApp } from '@/contexts/AppContext';
-import { DataTable } from '@/components/ui/data-table';
-import { StatusBadge } from '@/components/ui/status-badge';
-import { PriorityBadge } from '@/components/ui/priority-badge';
-import { Button } from '@/components/ui/button';
-import { Epic, EpicStatus, Priority } from '@/types';
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Plus, Filter } from "lucide-react";
+import { useApp } from "@/contexts/AppContext";
+import { DataTable } from "@/components/ui/data-table";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { PriorityBadge } from "@/components/ui/priority-badge";
+import { Button } from "@/components/ui/button";
+import { Epic, EpicStatus, Priority } from "@/types";
 
 export default function EpicsPage() {
   const router = useRouter();
   const { epics, epicsLoading, epicsError, fetchEpics } = useApp();
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  const [priorityFilter, setPriorityFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [priorityFilter, setPriorityFilter] = useState<string>("");
 
   useEffect(() => {
     fetchEpics();
@@ -34,22 +34,20 @@ export default function EpicsPage() {
 
   const columns = [
     {
-      key: 'title',
-      title: 'Title',
+      key: "title",
+      title: "Title",
       sortable: true,
       render: (_: unknown, row: Record<string, unknown>) => {
         const epic = row as unknown as Epic;
         return (
           <div>
-            <Link
-              href={`/epics/${epic.id}`}
-              className="font-medium text-primary hover:underline"
-            >
+            <Link href={`/epics/${epic.id}`} className="font-medium text-primary hover:underline">
               {epic.title}
             </Link>
             {epic.project && (
               <div className="text-xs text-muted-foreground">
-                Project: <Link href={`/projects/${epic.project.id}`} className="hover:underline">
+                Project:{" "}
+                <Link href={`/projects/${epic.project.id}`} className="hover:underline">
                   {epic.project.name}
                 </Link>
               </div>
@@ -59,30 +57,31 @@ export default function EpicsPage() {
       },
     },
     {
-      key: 'description',
-      title: 'Description',
-      render: (value: unknown) => (value as string | null) || <span className="text-muted-foreground">No description</span>,
+      key: "description",
+      title: "Description",
+      render: (value: unknown) =>
+        (value as string | null) || <span className="text-muted-foreground">No description</span>,
     },
     {
-      key: 'status',
-      title: 'Status',
+      key: "status",
+      title: "Status",
       sortable: true,
       render: (value: unknown) => <StatusBadge status={value as EpicStatus} />,
     },
     {
-      key: 'priority',
-      title: 'Priority',
+      key: "priority",
+      title: "Priority",
       sortable: true,
       render: (value: unknown) => <PriorityBadge priority={value as Priority} />,
     },
     {
-      key: '_count.tasks',
-      title: 'Tasks',
-      render: (value: unknown) => (value as number)?.toString() || '0',
+      key: "_count.tasks",
+      title: "Tasks",
+      render: (value: unknown) => (value as number)?.toString() || "0",
     },
     {
-      key: 'createdAt',
-      title: 'Created',
+      key: "createdAt",
+      title: "Created",
       sortable: true,
       render: (value: unknown) => new Date(value as string).toLocaleDateString(),
     },
@@ -95,7 +94,7 @@ export default function EpicsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Epics</h1>
           <p className="text-muted-foreground">Manage your epics and their tasks</p>
         </div>
-        <Button onClick={() => router.push('/epics/new')}>
+        <Button onClick={() => router.push("/epics/new")}>
           <Plus className="mr-2 h-4 w-4" />
           New Epic
         </Button>
@@ -111,7 +110,7 @@ export default function EpicsPage() {
             <span className="text-sm text-muted-foreground">Status:</span>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={e => setStatusFilter(e.target.value)}
               className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="">All</option>
@@ -125,7 +124,7 @@ export default function EpicsPage() {
             <span className="text-sm text-muted-foreground">Priority:</span>
             <select
               value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
+              onChange={e => setPriorityFilter(e.target.value)}
               className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="">All</option>

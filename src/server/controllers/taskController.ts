@@ -1,8 +1,8 @@
-import { Request, Response } from 'express';
-import prisma from '../lib/prisma';
-import { asyncHandler, ApiError } from '../middleware/errorHandler';
-import type { CreateTaskInput, UpdateTaskInput } from '../lib/validations';
-import { taskDecompositionService } from '../services/taskDecomposition';
+import { Request, Response } from "express";
+import prisma from "../lib/prisma";
+import { asyncHandler, ApiError } from "../middleware/errorHandler";
+import type { CreateTaskInput, UpdateTaskInput } from "../lib/validations";
+import { taskDecompositionService } from "../services/taskDecomposition";
 
 export const getTasks = asyncHandler(async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
@@ -13,8 +13,8 @@ export const getTasks = asyncHandler(async (req: Request, res: Response) => {
   const status = req.query.status as string;
   const priority = req.query.priority as string;
   const search = req.query.search as string;
-  const sortBy = (req.query.sortBy as string) || 'createdAt';
-  const order = (req.query.order as string) === 'asc' ? 'asc' : 'desc';
+  const sortBy = (req.query.sortBy as string) || "createdAt";
+  const order = (req.query.order as string) === "asc" ? "asc" : "desc";
 
   const where: any = {};
   if (epicId) where.epicId = epicId;
@@ -23,8 +23,8 @@ export const getTasks = asyncHandler(async (req: Request, res: Response) => {
   if (priority) where.priority = priority;
   if (search) {
     where.OR = [
-      { title: { contains: search, mode: 'insensitive' } },
-      { description: { contains: search, mode: 'insensitive' } },
+      { title: { contains: search, mode: "insensitive" } },
+      { description: { contains: search, mode: "insensitive" } },
     ];
   }
 
@@ -97,13 +97,13 @@ export const getTaskById = asyncHandler(async (req: Request, res: Response) => {
             select: { id: true, name: true, email: true },
           },
         },
-        orderBy: { createdAt: 'asc' },
+        orderBy: { createdAt: "asc" },
       },
     },
   });
 
   if (!task) {
-    throw new ApiError(404, 'Task not found');
+    throw new ApiError(404, "Task not found");
   }
 
   res.json({ data: task });
@@ -133,9 +133,9 @@ export const updateTask = asyncHandler(async (req: Request, res: Response) => {
 
   // If status is being changed to DONE, set completedAt
   const data: any = { ...input };
-  if (input.status === 'DONE' && !input.completedAt) {
+  if (input.status === "DONE" && !input.completedAt) {
     data.completedAt = new Date();
-  } else if (input.status && input.status !== 'DONE') {
+  } else if (input.status && input.status !== "DONE") {
     data.completedAt = null;
   }
 
@@ -172,7 +172,12 @@ export const getTaskDependencies = asyncHandler(async (req: Request, res: Respon
     where: { taskId: id },
     include: {
       dependsOn: {
-        select: { id: true, title: true, status: true, assignee: { select: { id: true, name: true } } },
+        select: {
+          id: true,
+          title: true,
+          status: true,
+          assignee: { select: { id: true, name: true } },
+        },
       },
     },
   });
@@ -180,10 +185,9 @@ export const getTaskDependencies = asyncHandler(async (req: Request, res: Respon
   res.json({ data: dependencies });
 });
 
-
 /**
  * Check for circular dependencies using Depth-First Search (DFS)
- * 
+ *
  * @param taskId - The task that will depend on dependsOnTaskId
  * @param dependsOnTaskId - The task that will be depended upon
  * @returns true if adding this dependency would create a cycle
@@ -197,24 +201,24 @@ const wouldCreateCircularDependency = async (
 
   while (stack.length > 0) {
     const current = stack.pop()!;
-    
+
     if (current === taskId) {
       // Found a path from dependsOnTaskId back to taskId, which would create a cycle
       return true;
     }
-    
+
     if (visited.has(current)) {
       continue;
     }
-    
+
     visited.add(current);
-    
+
     // Get all tasks that depend on the current task
     const dependents = await prisma.dependency.findMany({
       where: { dependsOnTaskId: current },
       select: { taskId: true },
     });
-    
+
     // Add dependents to the stack
     for (const dep of dependents) {
       if (!visited.has(dep.taskId)) {
@@ -222,7 +226,7 @@ const wouldCreateCircularDependency = async (
       }
     }
   }
-  
+
   return false;
 };
 
@@ -231,13 +235,13 @@ export const createDependency = asyncHandler(async (req: Request, res: Response)
 
   // Check for self-dependency
   if (taskId === dependsOnTaskId) {
-    throw new ApiError(400, 'Task cannot depend on itself');
+    throw new ApiError(400, "Task cannot depend on itself");
   }
 
   // Check for circular dependencies using DFS
   const hasCircularDependency = await wouldCreateCircularDependency(taskId, dependsOnTaskId);
   if (hasCircularDependency) {
-    throw new ApiError(400, 'Cannot create dependency: this would create a circular dependency');
+    throw new ApiError(400, "Cannot create dependency: this would create a circular dependency");
   }
 
   // Check if dependency already exists
@@ -251,14 +255,14 @@ export const createDependency = asyncHandler(async (req: Request, res: Response)
   });
 
   if (existing) {
-    throw new ApiError(400, 'Dependency already exists');
+    throw new ApiError(400, "Dependency already exists");
   }
 
   const dependency = await prisma.dependency.create({
     data: {
       taskId,
       dependsOnTaskId,
-      type: type || 'BLOCKS',
+      type: type || "BLOCKS",
     },
     include: {
       task: { select: { id: true, title: true } },
@@ -290,7 +294,7 @@ export const getComments = asyncHandler(async (req: Request, res: Response) => {
         select: { id: true, name: true, email: true },
       },
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: "desc" },
   });
 
   res.json({ data: comments });
@@ -326,7 +330,7 @@ export const updateComment = asyncHandler(async (req: Request, res: Response) =>
   });
 
   if (!existing) {
-    throw new ApiError(404, 'Comment not found');
+    throw new ApiError(404, "Comment not found");
   }
 
   const comment = await prisma.comment.update({
@@ -358,7 +362,7 @@ export const getLinks = asyncHandler(async (req: Request, res: Response) => {
 
   const links = await prisma.taskLink.findMany({
     where: { taskId: id },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: "desc" },
   });
 
   res.json({ data: links });
@@ -390,7 +394,7 @@ export const updateLink = asyncHandler(async (req: Request, res: Response) => {
   });
 
   if (!existing) {
-    throw new ApiError(404, 'Link not found');
+    throw new ApiError(404, "Link not found");
   }
 
   const link = await prisma.taskLink.update({
@@ -434,7 +438,7 @@ export const decomposeTask = asyncHandler(async (req: Request, res: Response) =>
   });
 
   if (!task) {
-    throw new ApiError(404, 'Task not found');
+    throw new ApiError(404, "Task not found");
   }
 
   // Check if task already has subtasks (dependencies in this context)
@@ -467,7 +471,7 @@ export const decomposeTask = asyncHandler(async (req: Request, res: Response) =>
 
   // Create subtasks in database
   const createdSubtasks = await Promise.all(
-    decomposition.subtasks.map(async (subtask) => {
+    decomposition.subtasks.map(async subtask => {
       return prisma.task.create({
         data: {
           epicId: task.epicId,
@@ -475,7 +479,7 @@ export const decomposeTask = asyncHandler(async (req: Request, res: Response) =>
           description: subtask.description,
           estimatedHours: subtask.estimatedHours,
           priority: subtask.priority as any,
-          status: 'TODO',
+          status: "TODO",
           assigneeId: task.assigneeId, // Inherit assignee from parent
         },
         include: {
@@ -498,8 +502,8 @@ export const decomposeTask = asyncHandler(async (req: Request, res: Response) =>
     if (subtask.dependencies && subtask.dependencies.length > 0) {
       for (const depOrder of subtask.dependencies) {
         // Find the task with this suggestedOrder
-        const dependsOnTask = createdSubtasks.find((st) => {
-          const stIndex = decomposition.subtasks.findIndex((s) => s.suggestedOrder === depOrder);
+        const dependsOnTask = createdSubtasks.find(st => {
+          const stIndex = decomposition.subtasks.findIndex(s => s.suggestedOrder === depOrder);
           return stIndex >= 0 && createdSubtasks[stIndex].id !== createdTask.id;
         });
 
@@ -508,7 +512,7 @@ export const decomposeTask = asyncHandler(async (req: Request, res: Response) =>
             data: {
               taskId: createdTask.id,
               dependsOnTaskId: dependsOnTask.id,
-              type: 'BLOCKS',
+              type: "BLOCKS",
             },
           });
         }

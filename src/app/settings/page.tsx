@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Key, Loader2, CheckCircle2, AlertCircle, Eye, EyeOff, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { userSettingsApi, ApiErrorClass } from '@/lib/api-client';
+import { useState, useEffect } from "react";
+import { Key, Loader2, CheckCircle2, AlertCircle, Eye, EyeOff, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { userSettingsApi, ApiErrorClass } from "@/lib/api-client";
 
 // For demo purposes, use a hardcoded user ID
 // In production, this would come from authentication
-const DEMO_USER_ID = 'demo-user-id';
+const DEMO_USER_ID = "demo-user-id";
 
 export default function SettingsPage() {
-  const [apiKey, setApiKey] = useState('');
+  const [apiKey, setApiKey] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
   const [hasStoredKey, setHasStoredKey] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -41,7 +41,7 @@ export default function SettingsPage() {
 
   const handleValidateApiKey = async () => {
     if (!apiKey.trim()) {
-      setError('Please enter an API key');
+      setError("Please enter an API key");
       return;
     }
 
@@ -55,13 +55,13 @@ export default function SettingsPage() {
         setSuccess(true);
         setTimeout(() => setSuccess(false), 3000);
       } else {
-        setError(response.data.message || 'Invalid API key');
+        setError(response.data.message || "Invalid API key");
       }
     } catch (err) {
       if (err instanceof ApiErrorClass) {
         setError(err.message);
       } else {
-        setError('Failed to validate API key');
+        setError("Failed to validate API key");
       }
     } finally {
       setValidating(false);
@@ -70,7 +70,7 @@ export default function SettingsPage() {
 
   const handleSaveApiKey = async () => {
     if (!apiKey.trim()) {
-      setError('Please enter an API key');
+      setError("Please enter an API key");
       return;
     }
 
@@ -82,13 +82,13 @@ export default function SettingsPage() {
       await userSettingsApi.update(DEMO_USER_ID, { anthropicApiKey: apiKey.trim() });
       setHasStoredKey(true);
       setSuccess(true);
-      setApiKey('');
+      setApiKey("");
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       if (err instanceof ApiErrorClass) {
         setError(err.message);
       } else {
-        setError('Failed to save API key');
+        setError("Failed to save API key");
       }
     } finally {
       setSaving(false);
@@ -96,7 +96,7 @@ export default function SettingsPage() {
   };
 
   const handleDeleteApiKey = async () => {
-    if (!confirm('Are you sure you want to remove your stored API key?')) {
+    if (!confirm("Are you sure you want to remove your stored API key?")) {
       return;
     }
 
@@ -112,7 +112,7 @@ export default function SettingsPage() {
       if (err instanceof ApiErrorClass) {
         setError(err.message);
       } else {
-        setError('Failed to delete API key');
+        setError("Failed to delete API key");
       }
     } finally {
       setSaving(false);
@@ -133,9 +133,7 @@ export default function SettingsPage() {
     <div className="container mx-auto max-w-3xl py-8 px-4">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="mt-2 text-muted-foreground">
-          Manage your application settings and API keys
-        </p>
+        <p className="mt-2 text-muted-foreground">Manage your application settings and API keys</p>
       </div>
 
       <div className="space-y-6">
@@ -155,12 +153,7 @@ export default function SettingsPage() {
               </div>
             </div>
             {hasStoredKey && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleDeleteApiKey}
-                disabled={saving}
-              >
+              <Button variant="ghost" size="icon" onClick={handleDeleteApiKey} disabled={saving}>
                 <Trash2 className="h-4 w-4" />
               </Button>
             )}
@@ -186,9 +179,9 @@ export default function SettingsPage() {
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <input
-                    type={showApiKey ? 'text' : 'password'}
+                    type={showApiKey ? "text" : "password"}
                     value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
+                    onChange={e => setApiKey(e.target.value)}
                     placeholder="sk-ant-api03-..."
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm pr-10 ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
@@ -197,11 +190,7 @@ export default function SettingsPage() {
                     onClick={() => setShowApiKey(!showApiKey)}
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {showApiKey ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
+                    {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
                 <Button
@@ -215,20 +204,17 @@ export default function SettingsPage() {
                       Validating...
                     </>
                   ) : (
-                    'Validate'
+                    "Validate"
                   )}
                 </Button>
-                <Button
-                  onClick={handleSaveApiKey}
-                  disabled={saving || !apiKey.trim()}
-                >
+                <Button onClick={handleSaveApiKey} disabled={saving || !apiKey.trim()}>
                   {saving ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Saving...
                     </>
                   ) : (
-                    'Save'
+                    "Save"
                   )}
                 </Button>
               </div>
@@ -257,7 +243,7 @@ export default function SettingsPage() {
             {/* Help Text */}
             <div className="rounded-lg border border-blue-500/50 bg-blue-500/10 p-3">
               <p className="text-sm text-blue-700 dark:text-blue-400">
-                <span className="font-semibold">Get your API key:</span>{' '}
+                <span className="font-semibold">Get your API key:</span>{" "}
                 <a
                   href="https://console.anthropic.com/"
                   target="_blank"
@@ -266,7 +252,7 @@ export default function SettingsPage() {
                 >
                   Anthropic Console
                 </a>
-                . Your API key starts with{' '}
+                . Your API key starts with{" "}
                 <code className="rounded bg-background px-1 py-0.5 text-xs">sk-ant-api03-</code>
               </p>
             </div>

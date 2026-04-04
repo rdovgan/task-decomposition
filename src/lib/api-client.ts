@@ -13,25 +13,29 @@ import {
   UpdateEpicRequest,
   CreateTaskRequest,
   UpdateTaskRequest,
-  ApiError as ApiErrorType
-} from '@/types';
+  ApiError as ApiErrorType,
+} from "@/types";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 class ApiError extends Error {
-  constructor(public message: string, public status: number, public errors?: Record<string, string[]>) {
+  constructor(
+    public message: string,
+    public status: number,
+    public errors?: Record<string, string[]>
+  ) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
   }
 }
 
 async function handleResponse<T>(response: Response): Promise<T> {
-  const contentType = response.headers.get('content-type');
+  const contentType = response.headers.get("content-type");
 
   if (!response.ok) {
-    let errorData: ApiErrorType = { message: 'An error occurred' };
+    let errorData: ApiErrorType = { message: "An error occurred" };
 
-    if (contentType?.includes('application/json')) {
+    if (contentType?.includes("application/json")) {
       errorData = await response.json();
     }
 
@@ -42,7 +46,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
     );
   }
 
-  if (contentType?.includes('application/json')) {
+  if (contentType?.includes("application/json")) {
     return response.json();
   }
 
@@ -52,9 +56,9 @@ async function handleResponse<T>(response: Response): Promise<T> {
 const api = {
   async get<T>(url: string): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${url}`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
     return handleResponse<T>(response);
@@ -62,9 +66,9 @@ const api = {
 
   async post<T>(url: string, data: unknown): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${url}`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     });
@@ -73,9 +77,9 @@ const api = {
 
   async patch<T>(url: string, data: unknown): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${url}`, {
-      method: 'PATCH',
+      method: "PATCH",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     });
@@ -84,9 +88,9 @@ const api = {
 
   async delete<T>(url: string): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${url}`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
     return handleResponse<T>(response);
@@ -94,9 +98,9 @@ const api = {
 
   async put<T>(url: string, data: unknown): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${url}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     });
@@ -108,41 +112,48 @@ const api = {
 export const projectsApi = {
   list: (params?: { page?: number; limit?: number; status?: string; ownerId?: string }) => {
     const searchParams = new URLSearchParams();
-    if (params?.page) searchParams.set('page', params.page.toString());
-    if (params?.limit) searchParams.set('limit', params.limit.toString());
-    if (params?.status) searchParams.set('status', params.status);
-    if (params?.ownerId) searchParams.set('ownerId', params.ownerId);
+    if (params?.page) searchParams.set("page", params.page.toString());
+    if (params?.limit) searchParams.set("limit", params.limit.toString());
+    if (params?.status) searchParams.set("status", params.status);
+    if (params?.ownerId) searchParams.set("ownerId", params.ownerId);
 
     const query = searchParams.toString();
-    return api.get<PaginatedResponse<Project>>(`/api/projects${query ? `?${query}` : ''}`);
+    return api.get<PaginatedResponse<Project>>(`/api/projects${query ? `?${query}` : ""}`);
   },
 
   get: (id: string) => api.get<Project>(`/api/projects/${id}`),
 
-  create: (data: CreateProjectRequest) => api.post<Project>('/api/projects', data),
+  create: (data: CreateProjectRequest) => api.post<Project>("/api/projects", data),
 
-  update: (id: string, data: UpdateProjectRequest) => api.patch<Project>(`/api/projects/${id}`, data),
+  update: (id: string, data: UpdateProjectRequest) =>
+    api.patch<Project>(`/api/projects/${id}`, data),
 
   delete: (id: string) => api.delete<void>(`/api/projects/${id}`),
 };
 
 // Epics API
 export const epicsApi = {
-  list: (params?: { page?: number; limit?: number; status?: string; priority?: string; projectId?: string }) => {
+  list: (params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    priority?: string;
+    projectId?: string;
+  }) => {
     const searchParams = new URLSearchParams();
-    if (params?.page) searchParams.set('page', params.page.toString());
-    if (params?.limit) searchParams.set('limit', params.limit.toString());
-    if (params?.status) searchParams.set('status', params.status);
-    if (params?.priority) searchParams.set('priority', params.priority);
-    if (params?.projectId) searchParams.set('projectId', params.projectId);
+    if (params?.page) searchParams.set("page", params.page.toString());
+    if (params?.limit) searchParams.set("limit", params.limit.toString());
+    if (params?.status) searchParams.set("status", params.status);
+    if (params?.priority) searchParams.set("priority", params.priority);
+    if (params?.projectId) searchParams.set("projectId", params.projectId);
 
     const query = searchParams.toString();
-    return api.get<PaginatedResponse<Epic>>(`/api/epics${query ? `?${query}` : ''}`);
+    return api.get<PaginatedResponse<Epic>>(`/api/epics${query ? `?${query}` : ""}`);
   },
 
   get: (id: string) => api.get<Epic>(`/api/epics/${id}`),
 
-  create: (data: CreateEpicRequest) => api.post<Epic>('/api/epics', data),
+  create: (data: CreateEpicRequest) => api.post<Epic>("/api/epics", data),
 
   update: (id: string, data: UpdateEpicRequest) => api.patch<Epic>(`/api/epics/${id}`, data),
 
@@ -151,21 +162,27 @@ export const epicsApi = {
 
 // Tasks API
 export const tasksApi = {
-  list: (params?: { page?: number; limit?: number; status?: string; epicId?: string; assigneeId?: string }) => {
+  list: (params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    epicId?: string;
+    assigneeId?: string;
+  }) => {
     const searchParams = new URLSearchParams();
-    if (params?.page) searchParams.set('page', params.page.toString());
-    if (params?.limit) searchParams.set('limit', params.limit.toString());
-    if (params?.status) searchParams.set('status', params.status);
-    if (params?.epicId) searchParams.set('epicId', params.epicId);
-    if (params?.assigneeId) searchParams.set('assigneeId', params.assigneeId);
+    if (params?.page) searchParams.set("page", params.page.toString());
+    if (params?.limit) searchParams.set("limit", params.limit.toString());
+    if (params?.status) searchParams.set("status", params.status);
+    if (params?.epicId) searchParams.set("epicId", params.epicId);
+    if (params?.assigneeId) searchParams.set("assigneeId", params.assigneeId);
 
     const query = searchParams.toString();
-    return api.get<PaginatedResponse<Task>>(`/api/tasks${query ? `?${query}` : ''}`);
+    return api.get<PaginatedResponse<Task>>(`/api/tasks${query ? `?${query}` : ""}`);
   },
 
   get: (id: string) => api.get<Task>(`/api/tasks/${id}`),
 
-  create: (data: CreateTaskRequest) => api.post<Task>('/api/tasks', data),
+  create: (data: CreateTaskRequest) => api.post<Task>("/api/tasks", data),
 
   update: (id: string, data: UpdateTaskRequest) => api.patch<Task>(`/api/tasks/${id}`, data),
 
@@ -216,7 +233,7 @@ export const aiDecompositionApi = {
         title: string;
         description: string;
         storyPoints: number;
-        priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+        priority: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
       }>;
       meta: {
         decompositionTime: number;
@@ -257,8 +274,7 @@ export const userSettingsApi = {
       };
     }>(`/api/user-settings/${userId}`, data),
 
-  deleteApiKey: (userId: string) =>
-    api.delete<void>(`/api/user-settings/${userId}/api-key`),
+  deleteApiKey: (userId: string) => api.delete<void>(`/api/user-settings/${userId}/api-key`),
 
   validateApiKey: (apiKey: string) =>
     api.post<{

@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { Task, Epic, User, CreateTaskRequest, TaskStatus, Priority } from '@/types';
-import { TaskFormData } from '@/lib/validations/task';
-import { Button } from '@/components/ui/button';
-import { Dialog } from '@/components/ui/dialog';
-import { taskFormSchema } from '@/lib/validations/task';
-import { useApp } from '@/contexts/AppContext';
-import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { Task, Epic, User, CreateTaskRequest, TaskStatus, Priority } from "@/types";
+import { TaskFormData } from "@/lib/validations/task";
+import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
+import { taskFormSchema } from "@/lib/validations/task";
+import { useApp } from "@/contexts/AppContext";
+import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 
 interface TaskFormModalProps {
   open: boolean;
@@ -17,7 +17,7 @@ interface TaskFormModalProps {
   epicId?: string;
   epic?: Epic;
   users?: User[];
-  mode: 'create' | 'edit';
+  mode: "create" | "edit";
 }
 
 export function TaskFormModal({
@@ -38,17 +38,17 @@ export function TaskFormModal({
   const formRef = useRef<HTMLFormElement>(null);
 
   const [formData, setFormData] = useState({
-    title: task?.title || '',
-    description: task?.description || '',
-    epicId: task?.epicId || epicId || '',
-    assigneeId: task?.assigneeId || '',
-    priority: task?.priority || 'MEDIUM',
-    storyPoints: task?.storyPoints?.toString() || '',
-    estimatedHours: task?.estimatedHours?.toString() || '',
-    actualHours: task?.actualHours?.toString() || '',
-    status: task?.status || 'TODO',
-    startDate: task?.startDate ? task.startDate.split('T')[0] : '',
-    dueDate: task?.dueDate ? task.dueDate.split('T')[0] : '',
+    title: task?.title || "",
+    description: task?.description || "",
+    epicId: task?.epicId || epicId || "",
+    assigneeId: task?.assigneeId || "",
+    priority: task?.priority || "MEDIUM",
+    storyPoints: task?.storyPoints?.toString() || "",
+    estimatedHours: task?.estimatedHours?.toString() || "",
+    actualHours: task?.actualHours?.toString() || "",
+    status: task?.status || "TODO",
+    startDate: task?.startDate ? task.startDate.split("T")[0] : "",
+    dueDate: task?.dueDate ? task.dueDate.split("T")[0] : "",
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof TaskFormData, string>>>({});
@@ -57,17 +57,17 @@ export function TaskFormModal({
     if (open && !task) {
       // Reset form when opening for create mode
       setFormData({
-        title: '',
-        description: '',
-        epicId: epicId || '',
-        assigneeId: '',
-        priority: 'MEDIUM',
-        storyPoints: '',
-        estimatedHours: '',
-        actualHours: '',
-        status: 'TODO',
-        startDate: '',
-        dueDate: '',
+        title: "",
+        description: "",
+        epicId: epicId || "",
+        assigneeId: "",
+        priority: "MEDIUM",
+        storyPoints: "",
+        estimatedHours: "",
+        actualHours: "",
+        status: "TODO",
+        startDate: "",
+        dueDate: "",
       });
       setErrors({});
       setError(null);
@@ -104,10 +104,10 @@ export function TaskFormModal({
       setErrors({});
       return true;
     } catch (err) {
-      if (err instanceof Error && 'issues' in err) {
+      if (err instanceof Error && "issues" in err) {
         const zodError = err as { issues: Array<{ path: string[]; message: string }> };
         const newErrors: Partial<Record<keyof TaskFormData, string>> = {};
-        zodError.issues.forEach((issue) => {
+        zodError.issues.forEach(issue => {
           const field = issue.path[0] as keyof TaskFormData;
           newErrors[field] = issue.message;
         });
@@ -140,7 +140,7 @@ export function TaskFormModal({
         dueDate: formData.dueDate || undefined,
       };
 
-      if (mode === 'edit' && task) {
+      if (mode === "edit" && task) {
         await updateTask(task.id, {
           ...data,
           status: formData.status as TaskStatus,
@@ -173,13 +173,17 @@ export function TaskFormModal({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
       handleSubmit(e);
     }
   };
 
-  const modalTitle = mode === 'create' ? 'Create New Task' : 'Edit Task';
-  const submitButtonText = submitting ? 'Saving...' : mode === 'create' ? 'Create Task' : 'Update Task';
+  const modalTitle = mode === "create" ? "Create New Task" : "Edit Task";
+  const submitButtonText = submitting
+    ? "Saving..."
+    : mode === "create"
+      ? "Create Task"
+      : "Update Task";
 
   return (
     <Dialog open={open} onClose={onClose} title={modalTitle} size="lg">
@@ -188,7 +192,7 @@ export function TaskFormModal({
           <CheckCircle2 className="h-16 w-16 text-green-500 mb-4" />
           <h3 className="text-xl font-semibold mb-2">Success!</h3>
           <p className="text-muted-foreground">
-            Task {mode === 'create' ? 'created' : 'updated'} successfully
+            Task {mode === "create" ? "created" : "updated"} successfully
           </p>
         </div>
       ) : (
@@ -214,11 +218,11 @@ export function TaskFormModal({
               id="title"
               required
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={e => setFormData({ ...formData, title: e.target.value })}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               placeholder="Enter task title"
               aria-invalid={!!errors.title}
-              aria-describedby={errors.title ? 'title-error' : undefined}
+              aria-describedby={errors.title ? "title-error" : undefined}
             />
             {errors.title && (
               <p id="title-error" className="mt-1 text-xs text-destructive">
@@ -236,11 +240,11 @@ export function TaskFormModal({
               id="description"
               rows={4}
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={e => setFormData({ ...formData, description: e.target.value })}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               placeholder="Enter task description (supports Markdown)"
               aria-invalid={!!errors.description}
-              aria-describedby={errors.description ? 'description-error' : undefined}
+              aria-describedby={errors.description ? "description-error" : undefined}
             />
             {errors.description && (
               <p id="description-error" className="mt-1 text-xs text-destructive">
@@ -258,14 +262,14 @@ export function TaskFormModal({
               id="epicId"
               required
               value={formData.epicId}
-              onChange={(e) => setFormData({ ...formData, epicId: e.target.value })}
+              onChange={e => setFormData({ ...formData, epicId: e.target.value })}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               disabled={!!epicId || !!epic}
               aria-invalid={!!errors.epicId}
-              aria-describedby={errors.epicId ? 'epicId-error' : undefined}
+              aria-describedby={errors.epicId ? "epicId-error" : undefined}
             >
               <option value="">Select an epic</option>
-              {epics.map((ep) => (
+              {epics.map(ep => (
                 <option key={ep.id} value={ep.id}>
                   {ep.title}
                 </option>
@@ -286,11 +290,11 @@ export function TaskFormModal({
             <select
               id="assigneeId"
               value={formData.assigneeId}
-              onChange={(e) => setFormData({ ...formData, assigneeId: e.target.value })}
+              onChange={e => setFormData({ ...formData, assigneeId: e.target.value })}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="">Unassigned</option>
-              {users.map((user) => (
+              {users.map(user => (
                 <option key={user.id} value={user.id}>
                   {user.name} ({user.email})
                 </option>
@@ -299,7 +303,7 @@ export function TaskFormModal({
           </div>
 
           {/* Status (only for edit mode) */}
-          {mode === 'edit' && (
+          {mode === "edit" && (
             <div>
               <label htmlFor="status" className="block text-sm font-medium mb-1">
                 Status
@@ -307,7 +311,7 @@ export function TaskFormModal({
               <select
                 id="status"
                 value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value as TaskStatus })}
+                onChange={e => setFormData({ ...formData, status: e.target.value as TaskStatus })}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <option value="TODO">To Do</option>
@@ -328,10 +332,10 @@ export function TaskFormModal({
             <select
               id="priority"
               value={formData.priority}
-              onChange={(e) => setFormData({ ...formData, priority: e.target.value as Priority })}
+              onChange={e => setFormData({ ...formData, priority: e.target.value as Priority })}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-invalid={!!errors.priority}
-              aria-describedby={errors.priority ? 'priority-error' : undefined}
+              aria-describedby={errors.priority ? "priority-error" : undefined}
             >
               <option value="LOW">Low</option>
               <option value="MEDIUM">Medium</option>
@@ -357,11 +361,11 @@ export function TaskFormModal({
                 min="0"
                 max="13"
                 value={formData.storyPoints}
-                onChange={(e) => setFormData({ ...formData, storyPoints: e.target.value })}
+                onChange={e => setFormData({ ...formData, storyPoints: e.target.value })}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 placeholder="1-13"
                 aria-invalid={!!errors.storyPoints}
-                aria-describedby={errors.storyPoints ? 'storyPoints-error' : undefined}
+                aria-describedby={errors.storyPoints ? "storyPoints-error" : undefined}
               />
               {errors.storyPoints && (
                 <p id="storyPoints-error" className="mt-1 text-xs text-destructive">
@@ -380,11 +384,11 @@ export function TaskFormModal({
                 min="0"
                 step="0.5"
                 value={formData.estimatedHours}
-                onChange={(e) => setFormData({ ...formData, estimatedHours: e.target.value })}
+                onChange={e => setFormData({ ...formData, estimatedHours: e.target.value })}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 placeholder="0"
                 aria-invalid={!!errors.estimatedHours}
-                aria-describedby={errors.estimatedHours ? 'estimatedHours-error' : undefined}
+                aria-describedby={errors.estimatedHours ? "estimatedHours-error" : undefined}
               />
               {errors.estimatedHours && (
                 <p id="estimatedHours-error" className="mt-1 text-xs text-destructive">
@@ -395,7 +399,7 @@ export function TaskFormModal({
           </div>
 
           {/* Actual Hours (only for edit mode) */}
-          {mode === 'edit' && (
+          {mode === "edit" && (
             <div>
               <label htmlFor="actualHours" className="block text-sm font-medium mb-1">
                 Actual Hours
@@ -406,11 +410,11 @@ export function TaskFormModal({
                 min="0"
                 step="0.5"
                 value={formData.actualHours}
-                onChange={(e) => setFormData({ ...formData, actualHours: e.target.value })}
+                onChange={e => setFormData({ ...formData, actualHours: e.target.value })}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 placeholder="0"
                 aria-invalid={!!errors.actualHours}
-                aria-describedby={errors.actualHours ? 'actualHours-error' : undefined}
+                aria-describedby={errors.actualHours ? "actualHours-error" : undefined}
               />
               {errors.actualHours && (
                 <p id="actualHours-error" className="mt-1 text-xs text-destructive">
@@ -430,7 +434,7 @@ export function TaskFormModal({
                 type="date"
                 id="startDate"
                 value={formData.startDate}
-                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                onChange={e => setFormData({ ...formData, startDate: e.target.value })}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
             </div>
@@ -443,14 +447,14 @@ export function TaskFormModal({
                 type="date"
                 id="dueDate"
                 value={formData.dueDate}
-                onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                onChange={e => setFormData({ ...formData, dueDate: e.target.value })}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
             </div>
           </div>
 
           {/* Last Updated (only for edit mode) */}
-          {mode === 'edit' && task && (
+          {mode === "edit" && task && (
             <div className="text-sm text-muted-foreground">
               Last updated: {new Date(task.updatedAt).toLocaleString()}
             </div>
@@ -466,11 +470,7 @@ export function TaskFormModal({
             >
               Cancel
             </Button>
-            <Button
-              type="button"
-              onClick={handleSubmit}
-              disabled={submitting || success}
-            >
+            <Button type="button" onClick={handleSubmit} disabled={submitting || success}>
               {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {submitButtonText}
             </Button>

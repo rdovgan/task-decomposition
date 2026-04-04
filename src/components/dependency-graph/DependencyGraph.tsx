@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from "react";
 import ReactFlow, {
   Node,
   Edge,
@@ -13,10 +13,10 @@ import ReactFlow, {
   Connection,
   NodeTypes,
   Position,
-} from 'reactflow';
-import 'reactflow/dist/style.css';
-import { Task, Dependency, TaskStatus } from '@/types';
-import { StatusBadge } from '@/components/ui/status-badge';
+} from "reactflow";
+import "reactflow/dist/style.css";
+import { Task, Dependency, TaskStatus } from "@/types";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 interface DependencyGraphProps {
   tasks: Task[];
@@ -31,12 +31,14 @@ interface TaskNodeData {
 // Custom Task Node component
 function TaskNode({ data }: { data: TaskNodeData }) {
   const [isHovered, setIsHovered] = useState(false);
-  const isBlocked = data.task.status === 'BLOCKED';
-  const isUnblocked = !isBlocked && data.task.status !== 'DONE' && data.task.status !== 'CANCELLED';
+  const isBlocked = data.task.status === "BLOCKED";
+  const isUnblocked = !isBlocked && data.task.status !== "DONE" && data.task.status !== "CANCELLED";
 
-  const nodeColor = isBlocked ? 'bg-red-100 border-red-400' :
-                   isUnblocked ? 'bg-green-100 border-green-400' :
-                   'bg-gray-100 border-gray-400';
+  const nodeColor = isBlocked
+    ? "bg-red-100 border-red-400"
+    : isUnblocked
+      ? "bg-green-100 border-green-400"
+      : "bg-gray-100 border-gray-400";
 
   return (
     <div
@@ -53,9 +55,10 @@ function TaskNode({ data }: { data: TaskNodeData }) {
         <div className="absolute top-full left-0 mt-2 p-2 bg-white border border-gray-300 rounded shadow-lg z-10 min-w-[200px]">
           <div className="text-xs font-semibold mb-1">Blocks {data.dependents.length} task(s):</div>
           {data.dependents.map(depId => {
-            const dependentTask = data.task.epic?._count?.tasks ?
-              // @ts-ignore - we'll get this from the tasks prop
-              data.tasks?.find((t: Task) => t.id === depId) : null;
+            const dependentTask = data.task.epic?._count?.tasks
+              ? // @ts-ignore - we'll get this from the tasks prop
+                data.tasks?.find((t: Task) => t.id === depId)
+              : null;
             return dependentTask ? (
               <div key={depId} className="text-xs text-gray-700 truncate">
                 • {dependentTask.title}
@@ -100,7 +103,7 @@ export function DependencyGraph({ tasks, dependencies }: DependencyGraphProps) {
 
       return {
         id: task.id,
-        type: 'taskNode',
+        type: "taskNode",
         position: { x: col * 300, y: row * 150 },
         data: {
           task,
@@ -116,8 +119,8 @@ export function DependencyGraph({ tasks, dependencies }: DependencyGraphProps) {
       source: dep.dependsOnTaskId,
       target: dep.taskId,
       animated: true,
-      type: 'smoothstep',
-      style: { stroke: '#94a3b8' },
+      type: "smoothstep",
+      style: { stroke: "#94a3b8" },
     }));
 
     return { nodes, edges };
@@ -127,7 +130,7 @@ export function DependencyGraph({ tasks, dependencies }: DependencyGraphProps) {
   const [edges, setEdges, onEdgesChange] = useEdgesState(graphData.edges);
 
   const onConnect = useCallback(
-    (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
+    (params: Edge | Connection) => setEdges(eds => addEdge(params, eds)),
     [setEdges]
   );
 
@@ -155,14 +158,15 @@ export function DependencyGraph({ tasks, dependencies }: DependencyGraphProps) {
         <Background />
         <Controls />
         <MiniMap
-          nodeColor={(node) => {
+          nodeColor={node => {
             const data = node.data as TaskNodeData;
-            const isBlocked = data.task.status === 'BLOCKED';
-            const isUnblocked = !isBlocked && data.task.status !== 'DONE' && data.task.status !== 'CANCELLED';
+            const isBlocked = data.task.status === "BLOCKED";
+            const isUnblocked =
+              !isBlocked && data.task.status !== "DONE" && data.task.status !== "CANCELLED";
 
-            if (isBlocked) return '#f87171';
-            if (isUnblocked) return '#4ade80';
-            return '#d1d5db';
+            if (isBlocked) return "#f87171";
+            if (isUnblocked) return "#4ade80";
+            return "#d1d5db";
           }}
           className="!bg-gray-100"
         />

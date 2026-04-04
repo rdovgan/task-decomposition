@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { UpdateEpicRequest, EpicStatus, Priority, Epic } from '@/types';
-import { epicsApi, ApiErrorClass } from '@/lib/api-client';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { UpdateEpicRequest, EpicStatus, Priority, Epic } from "@/types";
+import { epicsApi, ApiErrorClass } from "@/lib/api-client";
 
 export default function EditEpicPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -15,10 +15,10 @@ export default function EditEpicPage({ params }: { params: { id: string } }) {
   const [error, setError] = useState<string | null>(null);
   const [epic, setEpic] = useState<Epic | null>(null);
   const [formData, setFormData] = useState<UpdateEpicRequest>({
-    title: '',
-    description: '',
-    status: 'BACKLOG',
-    priority: 'MEDIUM',
+    title: "",
+    description: "",
+    status: "BACKLOG",
+    priority: "MEDIUM",
   });
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export default function EditEpicPage({ params }: { params: { id: string } }) {
         setEpic(data);
         setFormData({
           title: data.title,
-          description: data.description || '',
+          description: data.description || "",
           status: data.status,
           priority: data.priority,
         });
@@ -38,7 +38,7 @@ export default function EditEpicPage({ params }: { params: { id: string } }) {
         if (err instanceof ApiErrorClass) {
           setError(err.message);
         } else {
-          setError('Failed to load epic');
+          setError("Failed to load epic");
         }
       } finally {
         setFetching(false);
@@ -60,7 +60,7 @@ export default function EditEpicPage({ params }: { params: { id: string } }) {
       if (err instanceof ApiErrorClass) {
         setError(err.message);
       } else {
-        setError('Failed to update epic');
+        setError("Failed to update epic");
       }
     } finally {
       setLoading(false);
@@ -81,7 +81,7 @@ export default function EditEpicPage({ params }: { params: { id: string } }) {
     return (
       <div className="container mx-auto py-8 px-4">
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
-          {error || 'Epic not found'}
+          {error || "Epic not found"}
         </div>
       </div>
     );
@@ -118,7 +118,7 @@ export default function EditEpicPage({ params }: { params: { id: string } }) {
             id="title"
             required
             value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            onChange={e => setFormData({ ...formData, title: e.target.value })}
             className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
@@ -131,7 +131,7 @@ export default function EditEpicPage({ params }: { params: { id: string } }) {
             id="description"
             rows={4}
             value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            onChange={e => setFormData({ ...formData, description: e.target.value })}
             className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
@@ -144,7 +144,7 @@ export default function EditEpicPage({ params }: { params: { id: string } }) {
             <select
               id="status"
               value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value as EpicStatus })}
+              onChange={e => setFormData({ ...formData, status: e.target.value as EpicStatus })}
               className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="BACKLOG">Backlog</option>
@@ -162,7 +162,7 @@ export default function EditEpicPage({ params }: { params: { id: string } }) {
             <select
               id="priority"
               value={formData.priority}
-              onChange={(e) => setFormData({ ...formData, priority: e.target.value as Priority })}
+              onChange={e => setFormData({ ...formData, priority: e.target.value as Priority })}
               className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="CRITICAL">Critical</option>
@@ -175,7 +175,7 @@ export default function EditEpicPage({ params }: { params: { id: string } }) {
 
         <div className="flex gap-4">
           <Button type="submit" disabled={loading}>
-            {loading ? 'Saving...' : 'Save Changes'}
+            {loading ? "Saving..." : "Save Changes"}
           </Button>
           <Button type="button" variant="outline" onClick={() => router.back()}>
             Cancel

@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Plus, Search } from 'lucide-react';
-import { useApp } from '@/contexts/AppContext';
-import { DataTable } from '@/components/ui/data-table';
-import { StatusBadge } from '@/components/ui/status-badge';
-import { PriorityBadge } from '@/components/ui/priority-badge';
-import { Button } from '@/components/ui/button';
-import { Task, TaskStatus, Priority } from '@/types';
-import { tasksApi, ApiErrorClass } from '@/lib/api-client';
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Plus, Search } from "lucide-react";
+import { useApp } from "@/contexts/AppContext";
+import { DataTable } from "@/components/ui/data-table";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { PriorityBadge } from "@/components/ui/priority-badge";
+import { Button } from "@/components/ui/button";
+import { Task, TaskStatus, Priority } from "@/types";
+import { tasksApi, ApiErrorClass } from "@/lib/api-client";
 
 export default function TasksPage() {
   const router = useRouter();
@@ -18,9 +18,9 @@ export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [priorityFilter, setPriorityFilter] = useState<string>("all");
 
   useEffect(() => {
     loadTasks();
@@ -36,7 +36,7 @@ export default function TasksPage() {
       if (err instanceof ApiErrorClass) {
         setError(err.message);
       } else {
-        setError('Failed to load tasks');
+        setError("Failed to load tasks");
       }
     } finally {
       setLoading(false);
@@ -44,13 +44,13 @@ export default function TasksPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this task?')) {
+    if (!confirm("Are you sure you want to delete this task?")) {
       return;
     }
 
     try {
       await deleteTask(id);
-      setTasks((prev) => prev.filter((t) => t.id !== id));
+      setTasks(prev => prev.filter(t => t.id !== id));
     } catch (err) {
       if (err instanceof ApiErrorClass) {
         setError(err.message);
@@ -58,38 +58,35 @@ export default function TasksPage() {
     }
   };
 
-  const filteredTasks = tasks.filter((task) => {
+  const filteredTasks = tasks.filter(task => {
     const matchesSearch =
-      searchQuery === '' ||
+      searchQuery === "" ||
       task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (task.description && task.description.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
-    const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
+    const matchesStatus = statusFilter === "all" || task.status === statusFilter;
+    const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter;
 
     return matchesSearch && matchesStatus && matchesPriority;
   });
 
   const taskColumns = [
     {
-      key: 'title',
-      title: 'Title',
+      key: "title",
+      title: "Title",
       sortable: true,
       render: (_: unknown, row: Record<string, unknown>) => {
         const task = row as unknown as Task;
         return (
-          <Link
-            href={`/tasks/${task.id}`}
-            className="font-medium text-primary hover:underline"
-          >
+          <Link href={`/tasks/${task.id}`} className="font-medium text-primary hover:underline">
             {task.title}
           </Link>
         );
       },
     },
     {
-      key: 'epic',
-      title: 'Epic',
+      key: "epic",
+      title: "Epic",
       render: (_: unknown, row: Record<string, unknown>) => {
         const task = row as unknown as Task;
         return task.epic ? (
@@ -105,8 +102,8 @@ export default function TasksPage() {
       },
     },
     {
-      key: 'assignee',
-      title: 'Assignee',
+      key: "assignee",
+      title: "Assignee",
       render: (_: unknown, row: Record<string, unknown>) => {
         const task = row as unknown as Task;
         return task.assignee ? (
@@ -117,34 +114,30 @@ export default function TasksPage() {
       },
     },
     {
-      key: 'status',
-      title: 'Status',
+      key: "status",
+      title: "Status",
       sortable: true,
       render: (value: unknown) => <StatusBadge status={value as TaskStatus} />,
     },
     {
-      key: 'priority',
-      title: 'Priority',
+      key: "priority",
+      title: "Priority",
       sortable: true,
       render: (value: unknown) => <PriorityBadge priority={value as Priority} />,
     },
     {
-      key: 'storyPoints',
-      title: 'Points',
-      render: (value: unknown) => (value as number | null)?.toString() || '-',
+      key: "storyPoints",
+      title: "Points",
+      render: (value: unknown) => (value as number | null)?.toString() || "-",
     },
     {
-      key: 'actions',
-      title: 'Actions',
+      key: "actions",
+      title: "Actions",
       render: (_: unknown, row: Record<string, unknown>) => {
         const task = row as unknown as Task;
         return (
           <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push(`/tasks/${task.id}/edit`)}
-            >
+            <Button variant="ghost" size="sm" onClick={() => router.push(`/tasks/${task.id}/edit`)}>
               Edit
             </Button>
             <Button
@@ -171,7 +164,7 @@ export default function TasksPage() {
               View and manage all tasks across the project
             </p>
           </div>
-          <Button onClick={() => router.push('/tasks/new')}>
+          <Button onClick={() => router.push("/tasks/new")}>
             <Plus className="mr-2 h-4 w-4" />
             New Task
           </Button>
@@ -186,7 +179,7 @@ export default function TasksPage() {
               type="text"
               placeholder="Search tasks..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               className="w-full rounded-md border border-input bg-background pl-10 pr-4 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
@@ -195,7 +188,7 @@ export default function TasksPage() {
         <div className="flex gap-4">
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={e => setStatusFilter(e.target.value)}
             className="rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="all">All Statuses</option>
@@ -209,7 +202,7 @@ export default function TasksPage() {
 
           <select
             value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
+            onChange={e => setPriorityFilter(e.target.value)}
             className="rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="all">All Priorities</option>

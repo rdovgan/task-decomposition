@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Task, Epic, User, CreateTaskRequest, TaskStatus, Priority } from '@/types';
-import { Button } from '@/components/ui/button';
-import { useApp } from '@/contexts/AppContext';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Task, Epic, User, CreateTaskRequest, TaskStatus, Priority } from "@/types";
+import { Button } from "@/components/ui/button";
+import { useApp } from "@/contexts/AppContext";
 
 interface TaskFormProps {
   task?: Task;
@@ -21,17 +21,17 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    title: task?.title || '',
-    description: task?.description || '',
-    epicId: task?.epicId || epicId || '',
-    assigneeId: task?.assigneeId || '',
-    priority: task?.priority || 'MEDIUM',
+    title: task?.title || "",
+    description: task?.description || "",
+    epicId: task?.epicId || epicId || "",
+    assigneeId: task?.assigneeId || "",
+    priority: task?.priority || "MEDIUM",
     storyPoints: task?.storyPoints || null,
     estimatedHours: task?.estimatedHours || null,
     actualHours: task?.actualHours || null,
-    status: task?.status || 'TODO',
-    startDate: task?.startDate ? task.startDate.split('T')[0] : '',
-    dueDate: task?.dueDate ? task.dueDate.split('T')[0] : '',
+    status: task?.status || "TODO",
+    startDate: task?.startDate ? task.startDate.split("T")[0] : "",
+    dueDate: task?.dueDate ? task.dueDate.split("T")[0] : "",
   });
 
   useEffect(() => {
@@ -73,10 +73,10 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
       } else if (formData.epicId) {
         router.push(`/epics/${formData.epicId}`);
       } else {
-        router.push('/tasks');
+        router.push("/tasks");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save task');
+      setError(err instanceof Error ? err.message : "Failed to save task");
     } finally {
       setSubmitting(false);
     }
@@ -99,7 +99,7 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
           id="title"
           required
           value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+          onChange={e => setFormData({ ...formData, title: e.target.value })}
           className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           placeholder="Enter task title"
         />
@@ -113,7 +113,7 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
           id="description"
           rows={4}
           value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          onChange={e => setFormData({ ...formData, description: e.target.value })}
           className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           placeholder="Enter task description"
         />
@@ -127,12 +127,12 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
           id="epicId"
           required
           value={formData.epicId}
-          onChange={(e) => setFormData({ ...formData, epicId: e.target.value })}
+          onChange={e => setFormData({ ...formData, epicId: e.target.value })}
           className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           disabled={!!epicId}
         >
           <option value="">Select an epic</option>
-          {epics.map((ep) => (
+          {epics.map(ep => (
             <option key={ep.id} value={ep.id}>
               {ep.title}
             </option>
@@ -147,11 +147,11 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
         <select
           id="assigneeId"
           value={formData.assigneeId}
-          onChange={(e) => setFormData({ ...formData, assigneeId: e.target.value })}
+          onChange={e => setFormData({ ...formData, assigneeId: e.target.value })}
           className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <option value="">Unassigned</option>
-          {users.map((user) => (
+          {users.map(user => (
             <option key={user.id} value={user.id}>
               {user.name}
             </option>
@@ -167,7 +167,7 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
           <select
             id="status"
             value={formData.status}
-            onChange={(e) => setFormData({ ...formData, status: e.target.value as TaskStatus })}
+            onChange={e => setFormData({ ...formData, status: e.target.value as TaskStatus })}
             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="TODO">To Do</option>
@@ -187,7 +187,7 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
         <select
           id="priority"
           value={formData.priority}
-          onChange={(e) => setFormData({ ...formData, priority: e.target.value as Priority })}
+          onChange={e => setFormData({ ...formData, priority: e.target.value as Priority })}
           className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <option value="LOW">Low</option>
@@ -206,8 +206,13 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
             type="number"
             id="storyPoints"
             min="0"
-            value={formData.storyPoints || ''}
-            onChange={(e) => setFormData({ ...formData, storyPoints: e.target.value ? parseInt(e.target.value) : null })}
+            value={formData.storyPoints || ""}
+            onChange={e =>
+              setFormData({
+                ...formData,
+                storyPoints: e.target.value ? parseInt(e.target.value) : null,
+              })
+            }
             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             placeholder="0"
           />
@@ -222,8 +227,13 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
             id="estimatedHours"
             min="0"
             step="0.5"
-            value={formData.estimatedHours || ''}
-            onChange={(e) => setFormData({ ...formData, estimatedHours: e.target.value ? parseFloat(e.target.value) : null })}
+            value={formData.estimatedHours || ""}
+            onChange={e =>
+              setFormData({
+                ...formData,
+                estimatedHours: e.target.value ? parseFloat(e.target.value) : null,
+              })
+            }
             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             placeholder="0"
           />
@@ -240,8 +250,13 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
             id="actualHours"
             min="0"
             step="0.5"
-            value={formData.actualHours || ''}
-            onChange={(e) => setFormData({ ...formData, actualHours: e.target.value ? parseFloat(e.target.value) : null })}
+            value={formData.actualHours || ""}
+            onChange={e =>
+              setFormData({
+                ...formData,
+                actualHours: e.target.value ? parseFloat(e.target.value) : null,
+              })
+            }
             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             placeholder="0"
           />
@@ -257,7 +272,7 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
             type="date"
             id="startDate"
             value={formData.startDate}
-            onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+            onChange={e => setFormData({ ...formData, startDate: e.target.value })}
             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
         </div>
@@ -270,23 +285,18 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
             type="date"
             id="dueDate"
             value={formData.dueDate}
-            onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+            onChange={e => setFormData({ ...formData, dueDate: e.target.value })}
             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
         </div>
       </div>
 
       <div className="flex justify-end gap-3">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.back()}
-          disabled={submitting}
-        >
+        <Button type="button" variant="outline" onClick={() => router.back()} disabled={submitting}>
           Cancel
         </Button>
         <Button type="submit" disabled={submitting}>
-          {submitting ? 'Saving...' : task ? 'Update Task' : 'Create Task'}
+          {submitting ? "Saving..." : task ? "Update Task" : "Create Task"}
         </Button>
       </div>
     </form>

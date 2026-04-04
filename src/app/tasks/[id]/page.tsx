@@ -1,18 +1,24 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Edit, Trash2, Calendar, User, Clock, AlertCircle, Copy } from 'lucide-react';
-import { StatusBadge } from '@/components/ui/status-badge';
-import { PriorityBadge } from '@/components/ui/priority-badge';
-import { Button } from '@/components/ui/button';
-import { CommentList } from '@/components/tasks/CommentList';
-import { CommentForm } from '@/components/tasks/CommentForm';
-import { TaskLinkList } from '@/components/tasks/TaskLinkList';
-import { DependencyManager } from '@/components/tasks/DependencyManager';
-import { Task, Comment, TaskLink, Dependency } from '@/types';
-import { tasksApi, commentsApi, taskLinksApi, dependenciesApi, ApiErrorClass } from '@/lib/api-client';
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Edit, Trash2, Calendar, User, Clock, AlertCircle, Copy } from "lucide-react";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { PriorityBadge } from "@/components/ui/priority-badge";
+import { Button } from "@/components/ui/button";
+import { CommentList } from "@/components/tasks/CommentList";
+import { CommentForm } from "@/components/tasks/CommentForm";
+import { TaskLinkList } from "@/components/tasks/TaskLinkList";
+import { DependencyManager } from "@/components/tasks/DependencyManager";
+import { Task, Comment, TaskLink, Dependency } from "@/types";
+import {
+  tasksApi,
+  commentsApi,
+  taskLinksApi,
+  dependenciesApi,
+  ApiErrorClass,
+} from "@/lib/api-client";
 
 export default function TaskDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -41,7 +47,7 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
       if (err instanceof ApiErrorClass) {
         setError(err.message);
       } else {
-        setError('Failed to load task');
+        setError("Failed to load task");
       }
     } finally {
       setLoading(false);
@@ -54,7 +60,7 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
       const commentsData = await commentsApi.list(params.id);
       setComments(commentsData);
     } catch (err) {
-      console.error('Failed to load comments:', err);
+      console.error("Failed to load comments:", err);
     } finally {
       setCommentsLoading(false);
     }
@@ -65,7 +71,7 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
       const linksData = await taskLinksApi.list(params.id);
       setLinks(linksData);
     } catch (err) {
-      console.error('Failed to load links:', err);
+      console.error("Failed to load links:", err);
     }
   }
 
@@ -74,12 +80,12 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
       const dependenciesData = await dependenciesApi.list(params.id);
       setDependencies(dependenciesData);
     } catch (err) {
-      console.error('Failed to load dependencies:', err);
+      console.error("Failed to load dependencies:", err);
     }
   }
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this task?')) {
+    if (!confirm("Are you sure you want to delete this task?")) {
       return;
     }
 
@@ -88,7 +94,7 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
       if (task?.epicId) {
         router.push(`/epics/${task.epicId}`);
       } else {
-        router.push('/tasks');
+        router.push("/tasks");
       }
     } catch (err) {
       if (err instanceof ApiErrorClass) {
@@ -100,10 +106,7 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
   const handleDuplicate = async () => {
     if (!task) return;
 
-    const duplicateTitle = prompt(
-      'Enter title for the duplicate task:',
-      `${task.title} (copy)`
-    );
+    const duplicateTitle = prompt("Enter title for the duplicate task:", `${task.title} (copy)`);
 
     if (!duplicateTitle) return;
 
@@ -163,7 +166,7 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
     return (
       <div className="container mx-auto py-8 px-4">
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
-          {error || 'Task not found'}
+          {error || "Task not found"}
         </div>
       </div>
     );
@@ -171,30 +174,27 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
 
   const dependencyColumns = [
     {
-      key: 'type',
-      title: 'Type',
+      key: "type",
+      title: "Type",
       render: (value: unknown) => {
         const type = value as string;
         const typeColors: Record<string, string> = {
-          BLOCKS: 'bg-destructive/10 text-destructive',
-          RELATED_TO: 'bg-primary/10 text-primary',
-          DUPLICATES: 'bg-muted text-muted-foreground',
+          BLOCKS: "bg-destructive/10 text-destructive",
+          RELATED_TO: "bg-primary/10 text-primary",
+          DUPLICATES: "bg-muted text-muted-foreground",
         };
         return (
-          <span className={`rounded-full px-2 py-1 text-xs font-medium ${typeColors[type] || ''}`}>
-            {type.replace('_', ' ')}
+          <span className={`rounded-full px-2 py-1 text-xs font-medium ${typeColors[type] || ""}`}>
+            {type.replace("_", " ")}
           </span>
         );
       },
     },
     {
-      key: 'dependsOnTaskId',
-      title: 'Depends On',
+      key: "dependsOnTaskId",
+      title: "Depends On",
       render: (value: unknown) => (
-        <Link
-          href={`/tasks/${value}`}
-          className="text-primary hover:underline"
-        >
+        <Link href={`/tasks/${value}`} className="text-primary hover:underline">
           Task {String(value).slice(0, 8)}
         </Link>
       ),
@@ -205,11 +205,11 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8">
         <Link
-          href={task.epicId ? `/epics/${task.epicId}` : '/tasks'}
+          href={task.epicId ? `/epics/${task.epicId}` : "/tasks"}
           className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          {task.epicId ? 'Back to Epic' : 'Back to Tasks'}
+          {task.epicId ? "Back to Epic" : "Back to Tasks"}
         </Link>
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -329,7 +329,9 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
                     <Calendar className="h-4 w-4" />
                     <span>Start Date</span>
                   </div>
-                  <div className="mt-1 font-medium">{new Date(task.startDate).toLocaleDateString()}</div>
+                  <div className="mt-1 font-medium">
+                    {new Date(task.startDate).toLocaleDateString()}
+                  </div>
                 </div>
               )}
 
@@ -339,7 +341,9 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
                     <Calendar className="h-4 w-4" />
                     <span>Due Date</span>
                   </div>
-                  <div className="mt-1 font-medium">{new Date(task.dueDate).toLocaleDateString()}</div>
+                  <div className="mt-1 font-medium">
+                    {new Date(task.dueDate).toLocaleDateString()}
+                  </div>
                 </div>
               )}
 
@@ -349,7 +353,9 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
                     <Calendar className="h-4 w-4" />
                     <span>Completed</span>
                   </div>
-                  <div className="mt-1 font-medium">{new Date(task.completedAt).toLocaleDateString()}</div>
+                  <div className="mt-1 font-medium">
+                    {new Date(task.completedAt).toLocaleDateString()}
+                  </div>
                 </div>
               )}
 
@@ -358,7 +364,9 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
                   <Calendar className="h-4 w-4" />
                   <span>Created</span>
                 </div>
-                <div className="mt-1 font-medium">{new Date(task.createdAt).toLocaleDateString()}</div>
+                <div className="mt-1 font-medium">
+                  {new Date(task.createdAt).toLocaleDateString()}
+                </div>
               </div>
 
               <div>
@@ -366,7 +374,9 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
                   <Calendar className="h-4 w-4" />
                   <span>Updated</span>
                 </div>
-                <div className="mt-1 font-medium">{new Date(task.updatedAt).toLocaleDateString()}</div>
+                <div className="mt-1 font-medium">
+                  {new Date(task.updatedAt).toLocaleDateString()}
+                </div>
               </div>
             </div>
           </div>
@@ -383,11 +393,7 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
           {/* Links Section */}
           <div className="rounded-lg border bg-card p-6">
             <h2 className="mb-4 text-xl font-semibold">External Links</h2>
-            <TaskLinkList
-              links={links}
-              onDelete={handleDeleteLink}
-              onCreate={handleAddLink}
-            />
+            <TaskLinkList links={links} onDelete={handleDeleteLink} onCreate={handleAddLink} />
           </div>
 
           {/* Comments Section */}
@@ -398,10 +404,7 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
               {commentsLoading ? (
                 <div className="text-center text-muted-foreground">Loading comments...</div>
               ) : (
-                <CommentList
-                  comments={comments}
-                  onDelete={handleDeleteComment}
-                />
+                <CommentList comments={comments} onDelete={handleDeleteComment} />
               )}
             </div>
           </div>

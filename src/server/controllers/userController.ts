@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
-import { prisma } from '../lib/prisma';
+import { Request, Response } from "express";
+import { prisma } from "../lib/prisma";
 
 /**
  * Get all users
@@ -17,7 +17,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
         updatedAt: true,
       },
       orderBy: {
-        name: 'asc',
+        name: "asc",
       },
     });
 
@@ -25,10 +25,10 @@ export const getAllUsers = async (req: Request, res: Response) => {
       data: users,
     });
   } catch (error) {
-    console.error('Error fetching users:', error);
+    console.error("Error fetching users:", error);
     return res.status(500).json({
-      message: 'Failed to fetch users',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      message: "Failed to fetch users",
+      error: error instanceof Error ? error.message : "Unknown error",
     });
   }
 };
@@ -55,7 +55,7 @@ export const getUserById = async (req: Request, res: Response) => {
 
     if (!user) {
       return res.status(404).json({
-        message: 'User not found',
+        message: "User not found",
       });
     }
 
@@ -63,10 +63,10 @@ export const getUserById = async (req: Request, res: Response) => {
       data: user,
     });
   } catch (error) {
-    console.error('Error fetching user:', error);
+    console.error("Error fetching user:", error);
     return res.status(500).json({
-      message: 'Failed to fetch user',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      message: "Failed to fetch user",
+      error: error instanceof Error ? error.message : "Unknown error",
     });
   }
 };

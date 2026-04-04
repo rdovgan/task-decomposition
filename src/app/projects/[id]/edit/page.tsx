@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { UpdateProjectRequest, ProjectStatus, Project } from '@/types';
-import { projectsApi, ApiErrorClass } from '@/lib/api-client';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { UpdateProjectRequest, ProjectStatus, Project } from "@/types";
+import { projectsApi, ApiErrorClass } from "@/lib/api-client";
 
 export default function EditProjectPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -15,9 +15,9 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
   const [error, setError] = useState<string | null>(null);
   const [project, setProject] = useState<Project | null>(null);
   const [formData, setFormData] = useState<UpdateProjectRequest>({
-    name: '',
-    description: '',
-    status: 'ACTIVE',
+    name: "",
+    description: "",
+    status: "ACTIVE",
   });
 
   useEffect(() => {
@@ -29,14 +29,14 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
         setProject(data);
         setFormData({
           name: data.name,
-          description: data.description || '',
+          description: data.description || "",
           status: data.status,
         });
       } catch (err) {
         if (err instanceof ApiErrorClass) {
           setError(err.message);
         } else {
-          setError('Failed to load project');
+          setError("Failed to load project");
         }
       } finally {
         setFetching(false);
@@ -58,7 +58,7 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
       if (err instanceof ApiErrorClass) {
         setError(err.message);
       } else {
-        setError('Failed to update project');
+        setError("Failed to update project");
       }
     } finally {
       setLoading(false);
@@ -79,7 +79,7 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
     return (
       <div className="container mx-auto py-8 px-4">
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
-          {error || 'Project not found'}
+          {error || "Project not found"}
         </div>
       </div>
     );
@@ -116,7 +116,7 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
             id="name"
             required
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={e => setFormData({ ...formData, name: e.target.value })}
             className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
@@ -129,7 +129,7 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
             id="description"
             rows={4}
             value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            onChange={e => setFormData({ ...formData, description: e.target.value })}
             className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
@@ -141,7 +141,7 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
           <select
             id="status"
             value={formData.status}
-            onChange={(e) => setFormData({ ...formData, status: e.target.value as ProjectStatus })}
+            onChange={e => setFormData({ ...formData, status: e.target.value as ProjectStatus })}
             className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
             <option value="ACTIVE">Active</option>
@@ -152,7 +152,7 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
 
         <div className="flex gap-4">
           <Button type="submit" disabled={loading}>
-            {loading ? 'Saving...' : 'Save Changes'}
+            {loading ? "Saving..." : "Save Changes"}
           </Button>
           <Button type="button" variant="outline" onClick={() => router.back()}>
             Cancel

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Task } from '@/types';
-import { StatusBadge } from '@/components/ui/status-badge';
-import { PriorityBadge } from '@/components/ui/priority-badge';
+import Link from "next/link";
+import { Task } from "@/types";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { PriorityBadge } from "@/components/ui/priority-badge";
 
 interface TaskCardProps {
   task: Task;
@@ -15,16 +15,11 @@ export function TaskCard({ task, showEpic = false }: TaskCardProps) {
     <div className="rounded-lg border bg-card p-4 shadow-sm transition-colors hover:bg-muted/50">
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <Link
-            href={`/tasks/${task.id}`}
-            className="font-semibold text-primary hover:underline"
-          >
+          <Link href={`/tasks/${task.id}`} className="font-semibold text-primary hover:underline">
             {task.title}
           </Link>
           {task.description && (
-            <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-              {task.description}
-            </p>
+            <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{task.description}</p>
           )}
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <StatusBadge status={task.status} />
@@ -47,16 +42,10 @@ export function TaskCard({ task, showEpic = false }: TaskCardProps) {
       </div>
       <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
         <div>
-          {task.assignee && (
-            <span>Assigned to {task.assignee.name}</span>
-          )}
-          {!task.assignee && (
-            <span className="italic">Unassigned</span>
-          )}
+          {task.assignee && <span>Assigned to {task.assignee.name}</span>}
+          {!task.assignee && <span className="italic">Unassigned</span>}
         </div>
-        {task.dueDate && (
-          <div>Due {new Date(task.dueDate).toLocaleDateString()}</div>
-        )}
+        {task.dueDate && <div>Due {new Date(task.dueDate).toLocaleDateString()}</div>}
       </div>
     </div>
   );

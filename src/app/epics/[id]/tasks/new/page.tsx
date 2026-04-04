@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { TaskForm } from '@/components/tasks/TaskForm';
-import { Epic, User } from '@/types';
-import { epicsApi, ApiErrorClass } from '@/lib/api-client';
+import { useEffect, useState } from "react";
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { TaskForm } from "@/components/tasks/TaskForm";
+import { Epic, User } from "@/types";
+import { epicsApi, ApiErrorClass } from "@/lib/api-client";
 
 export default function NewEpicTaskPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -30,7 +30,7 @@ export default function NewEpicTaskPage({ params }: { params: { id: string } }) 
       if (err instanceof ApiErrorClass) {
         setError(err.message);
       } else {
-        setError('Failed to load epic');
+        setError("Failed to load epic");
       }
     } finally {
       setLoading(false);
@@ -51,7 +51,7 @@ export default function NewEpicTaskPage({ params }: { params: { id: string } }) 
     return (
       <div className="container mx-auto py-8 px-4">
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
-          {error || 'Epic not found'}
+          {error || "Epic not found"}
         </div>
       </div>
     );

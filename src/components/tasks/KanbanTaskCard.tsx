@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import Link from 'next/link';
-import { Task } from '@/types';
-import { PriorityBadge } from '@/components/ui/priority-badge';
-import { Calendar, Clock } from 'lucide-react';
+import React from "react";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import Link from "next/link";
+import { Task } from "@/types";
+import { PriorityBadge } from "@/components/ui/priority-badge";
+import { Calendar, Clock } from "lucide-react";
 
 interface KanbanTaskCardProps {
   task: Task;
@@ -47,9 +47,10 @@ export function KanbanTaskCard({ task, isDragging = false }: KanbanTaskCardProps
       {...listeners}
       className={`
         bg-card rounded-lg p-3 border transition-all cursor-grab
-        ${dragging
-          ? 'shadow-xl rotate-2 scale-105 opacity-50 cursor-grabbing'
-          : 'hover:shadow-lg hover:-translate-y-0.5'
+        ${
+          dragging
+            ? "shadow-xl rotate-2 scale-105 opacity-50 cursor-grabbing"
+            : "hover:shadow-lg hover:-translate-y-0.5"
         }
       `}
     >
@@ -63,7 +64,7 @@ export function KanbanTaskCard({ task, isDragging = false }: KanbanTaskCardProps
             className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium"
             title={task.assignee.name}
           >
-            {task.assignee.name?.charAt(0).toUpperCase() || '?'}
+            {task.assignee.name?.charAt(0).toUpperCase() || "?"}
           </div>
         )}
       </div>
@@ -71,7 +72,7 @@ export function KanbanTaskCard({ task, isDragging = false }: KanbanTaskCardProps
       {/* Task Title */}
       <Link
         href={`/tasks/${task.id}`}
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
         className={`
           block text-sm font-semibold mb-2 line-clamp-2
           hover:text-primary hover:underline
@@ -117,16 +118,14 @@ export function KanbanTaskCard({ task, isDragging = false }: KanbanTaskCardProps
 
         {/* Due Date */}
         {task.dueDate && (
-          <span
-            className={`flex items-center gap-1 ${
-              isOverdue ? 'text-destructive' : ''
-            }`}
-          >
+          <span className={`flex items-center gap-1 ${isOverdue ? "text-destructive" : ""}`}>
             <Calendar className="h-3 w-3" />
-            <span>{new Date(task.dueDate).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-            })}</span>
+            <span>
+              {new Date(task.dueDate).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
           </span>
         )}
       </div>

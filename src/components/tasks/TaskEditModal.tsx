@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { Task, User } from '@/types';
-import { TaskFormModal } from './TaskFormModal';
+import { Task, User } from "@/types";
+import { TaskFormModal } from "./TaskFormModal";
 
 interface TaskEditModalProps {
   open: boolean;
@@ -11,13 +11,5 @@ interface TaskEditModalProps {
 }
 
 export function TaskEditModal({ open, onClose, task, users = [] }: TaskEditModalProps) {
-  return (
-    <TaskFormModal
-      open={open}
-      onClose={onClose}
-      task={task}
-      users={users}
-      mode="edit"
-    />
-  );
+  return <TaskFormModal open={open} onClose={onClose} task={task} users={users} mode="edit" />;
 }

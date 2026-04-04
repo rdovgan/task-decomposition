@@ -1,6 +1,6 @@
-import crypto from 'crypto';
+import crypto from "crypto";
 
-const ALGORITHM = 'aes-256-gcm';
+const ALGORITHM = "aes-256-gcm";
 const KEY_LENGTH = 32;
 const IV_LENGTH = 16;
 const SALT_LENGTH = 64;
@@ -17,12 +17,12 @@ function getEncryptionKey(): Buffer {
 
   if (!key) {
     // For development, generate a key (not secure for production!)
-    console.warn('⚠️  No ENCRYPTION_KEY set. Using generated key. DO NOT use in production!');
+    console.warn("⚠️  No ENCRYPTION_KEY set. Using generated key. DO NOT use in production!");
     return crypto.randomBytes(KEY_LENGTH);
   }
 
   // Derive a 32-byte key from the environment variable
-  return crypto.scryptSync(key, 'salt', KEY_LENGTH);
+  return crypto.scryptSync(key, "salt", KEY_LENGTH);
 }
 
 /**
@@ -35,18 +35,18 @@ export function encrypt(text: string): string {
 
   const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
 
-  const encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]);
+  const encrypted = Buffer.concat([cipher.update(text, "utf8"), cipher.final()]);
   const tag = cipher.getAuthTag();
 
   // Combine: salt + iv + tag + encrypted
-  return Buffer.concat([salt, iv, tag, encrypted]).toString('base64');
+  return Buffer.concat([salt, iv, tag, encrypted]).toString("base64");
 }
 
 /**
  * Decrypt sensitive data
  */
 export function decrypt(encryptedData: string): string {
-  const buffer = Buffer.from(encryptedData, 'base64');
+  const buffer = Buffer.from(encryptedData, "base64");
 
   const salt = buffer.subarray(0, SALT_LENGTH);
   const iv = buffer.subarray(SALT_LENGTH, TAG_POSITION);
@@ -60,7 +60,7 @@ export function decrypt(encryptedData: string): string {
 
   const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
 
-  return decrypted.toString('utf8');
+  return decrypted.toString("utf8");
 }
 
 /**
@@ -68,7 +68,7 @@ export function decrypt(encryptedData: string): string {
  */
 export function isEncrypted(value: string): boolean {
   try {
-    const buffer = Buffer.from(value, 'base64');
+    const buffer = Buffer.from(value, "base64");
     return buffer.length >= SALT_LENGTH + IV_LENGTH + TAG_LENGTH;
   } catch {
     return false;

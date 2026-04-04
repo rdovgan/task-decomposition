@@ -1,6 +1,6 @@
-import { type Request, type Response, type NextFunction } from 'express';
-import { ApiError } from './errorHandler';
-import { TaskStatus } from '../../types';
+import { type Request, type Response, type NextFunction } from "express";
+import { ApiError } from "./errorHandler";
+import { TaskStatus } from "../../types";
 
 /**
  * Valid status transitions for tasks
@@ -13,10 +13,10 @@ import { TaskStatus } from '../../types';
  * CANCELLED → (no transitions, terminal state)
  */
 const VALID_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
-  TODO: ['IN_PROGRESS', 'CANCELLED'],
-  IN_PROGRESS: ['IN_REVIEW', 'BLOCKED', 'CANCELLED'],
-  IN_REVIEW: ['DONE', 'IN_PROGRESS'],
-  BLOCKED: ['IN_PROGRESS', 'CANCELLED'],
+  TODO: ["IN_PROGRESS", "CANCELLED"],
+  IN_PROGRESS: ["IN_REVIEW", "BLOCKED", "CANCELLED"],
+  IN_REVIEW: ["DONE", "IN_PROGRESS"],
+  BLOCKED: ["IN_PROGRESS", "CANCELLED"],
   DONE: [], // Terminal state
   CANCELLED: [], // Terminal state
 };
@@ -54,12 +54,12 @@ export const getTransitionErrorMessage = (
   newStatus: TaskStatus
 ): string => {
   const statusNames: Record<TaskStatus, string> = {
-    TODO: 'To Do',
-    IN_PROGRESS: 'In Progress',
-    IN_REVIEW: 'In Review',
-    BLOCKED: 'Blocked',
-    DONE: 'Done',
-    CANCELLED: 'Cancelled',
+    TODO: "To Do",
+    IN_PROGRESS: "In Progress",
+    IN_REVIEW: "In Review",
+    BLOCKED: "Blocked",
+    DONE: "Done",
+    CANCELLED: "Cancelled",
   };
 
   const allowedTransitions = VALID_TRANSITIONS[currentStatus];
@@ -68,7 +68,7 @@ export const getTransitionErrorMessage = (
     return `Cannot change status from "${statusNames[currentStatus]}" to "${statusNames[newStatus]}". "${statusNames[currentStatus]}" is a terminal state and cannot be changed.`;
   }
 
-  const allowedNames = allowedTransitions.map((s) => statusNames[s]).join(', ');
+  const allowedNames = allowedTransitions.map(s => statusNames[s]).join(", ");
   return `Invalid status transition from "${statusNames[currentStatus]}" to "${statusNames[newStatus]}". Valid transitions are: ${allowedNames}.`;
 };
 
@@ -98,7 +98,7 @@ export const validateTaskStatusTransition = async (
     }
 
     // Import prisma here to avoid initialization issues
-    const prisma = (await import('../lib/prisma')).default;
+    const prisma = (await import("../lib/prisma")).default;
 
     // Fetch the current task to get its existing status
     const task = await prisma.task.findUnique({
@@ -107,7 +107,7 @@ export const validateTaskStatusTransition = async (
     });
 
     if (!task) {
-      throw new ApiError(404, 'Task not found');
+      throw new ApiError(404, "Task not found");
     }
 
     // Validate the status transition
@@ -129,6 +129,6 @@ export const validateTaskStatusTransition = async (
       throw error;
     }
     // Handle unexpected errors
-    throw new ApiError(500, 'Failed to validate status transition');
+    throw new ApiError(500, "Failed to validate status transition");
   }
 };

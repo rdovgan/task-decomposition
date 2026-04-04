@@ -1,7 +1,7 @@
-import { Request, Response } from 'express';
-import prisma from '../lib/prisma';
-import { asyncHandler, ApiError } from '../middleware/errorHandler';
-import type { CreateProjectInput, UpdateProjectInput } from '../lib/validations';
+import { Request, Response } from "express";
+import prisma from "../lib/prisma";
+import { asyncHandler, ApiError } from "../middleware/errorHandler";
+import type { CreateProjectInput, UpdateProjectInput } from "../lib/validations";
 
 export const getProjects = asyncHandler(async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
@@ -27,7 +27,7 @@ export const getProjects = asyncHandler(async (req: Request, res: Response) => {
           select: { epics: true },
         },
       },
-      orderBy: { updatedAt: 'desc' },
+      orderBy: { updatedAt: "desc" },
     }),
     prisma.project.count({ where }),
   ]);
@@ -58,13 +58,13 @@ export const getProjectById = asyncHandler(async (req: Request, res: Response) =
             select: { tasks: true },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       },
     },
   });
 
   if (!project) {
-    throw new ApiError(404, 'Project not found');
+    throw new ApiError(404, "Project not found");
   }
 
   res.json({ data: project });

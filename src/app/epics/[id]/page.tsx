@@ -1,18 +1,34 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Edit, Trash2, Plus, Sparkles } from 'lucide-react';
-import { DataTable } from '@/components/ui/data-table';
-import { StatusBadge } from '@/components/ui/status-badge';
-import { PriorityBadge } from '@/components/ui/priority-badge';
-import { Button } from '@/components/ui/button';
-import { AIDecompositionDialog } from '@/components/ai/AIDecompositionDialog';
-import { TaskCreateModal } from '@/components/tasks/TaskCreateModal';
-import { DependencyGraph } from '@/components/dependency-graph';
-import { Epic, Task, EpicStatus, TaskStatus, Priority, AITaskSuggestion, User, Dependency } from '@/types';
-import { epicsApi, tasksApi, aiDecompositionApi, usersApi, dependenciesApi, ApiErrorClass } from '@/lib/api-client';
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Edit, Trash2, Plus, Sparkles } from "lucide-react";
+import { DataTable } from "@/components/ui/data-table";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { PriorityBadge } from "@/components/ui/priority-badge";
+import { Button } from "@/components/ui/button";
+import { AIDecompositionDialog } from "@/components/ai/AIDecompositionDialog";
+import { TaskCreateModal } from "@/components/tasks/TaskCreateModal";
+import { DependencyGraph } from "@/components/dependency-graph";
+import {
+  Epic,
+  Task,
+  EpicStatus,
+  TaskStatus,
+  Priority,
+  AITaskSuggestion,
+  User,
+  Dependency,
+} from "@/types";
+import {
+  epicsApi,
+  tasksApi,
+  aiDecompositionApi,
+  usersApi,
+  dependenciesApi,
+  ApiErrorClass,
+} from "@/lib/api-client";
 
 export default function EpicDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -30,19 +46,24 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
 
   // Selection state for bulk actions
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
-  const [bulkStatus, setBulkStatus] = useState<TaskStatus | ''>('');
+  const [bulkStatus, setBulkStatus] = useState<TaskStatus | "">("");
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
 
   // Sorting state
-  const [sortKey, setSortKey] = useState<string>('title');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sortKey, setSortKey] = useState<string>("title");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   // AI Decomposition state
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiSuggestions, setAiSuggestions] = useState<AITaskSuggestion[] | null>(null);
-  const [aiMeta, setAiMeta] = useState<{ decompositionTime: number; modelUsed: string; epicId: string; epicTitle: string } | null>(null);
+  const [aiMeta, setAiMeta] = useState<{
+    decompositionTime: number;
+    modelUsed: string;
+    epicId: string;
+    epicTitle: string;
+  } | null>(null);
 
   useEffect(() => {
     async function loadEpic() {
@@ -61,7 +82,7 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
         // Fetch dependencies for all tasks
         const allDependencies: Dependency[] = [];
         await Promise.all(
-          tasksData.data.map(async (task) => {
+          tasksData.data.map(async task => {
             try {
               const taskDependencies = await dependenciesApi.list(task.id);
               allDependencies.push(...taskDependencies);
@@ -75,7 +96,7 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
         if (err instanceof ApiErrorClass) {
           setError(err.message);
         } else {
-          setError('Failed to load epic');
+          setError("Failed to load epic");
         }
       } finally {
         setLoading(false);
@@ -86,13 +107,17 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
   }, [params.id]);
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this epic? This will also delete all associated tasks.')) {
+    if (
+      !confirm(
+        "Are you sure you want to delete this epic? This will also delete all associated tasks."
+      )
+    ) {
       return;
     }
 
     try {
       await epicsApi.delete(params.id);
-      router.push('/epics');
+      router.push("/epics");
     } catch (err) {
       if (err instanceof ApiErrorClass) {
         setError(err.message);
@@ -106,7 +131,7 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
 
     try {
       const response = await aiDecompositionApi.decomposeEpic(params.id, {
-        userId: 'demo-user-id', // In production, get from auth
+        userId: "demo-user-id", // In production, get from auth
         customPrompt,
       });
 
@@ -116,7 +141,7 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
       if (err instanceof ApiErrorClass) {
         setAiError(err.message);
       } else {
-        setAiError('Failed to generate task suggestions');
+        setAiError("Failed to generate task suggestions");
       }
     } finally {
       setAiLoading(false);
@@ -129,16 +154,16 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
       const tasksData = await tasksApi.list({ epicId: params.id, limit: 100 });
       setTasks(tasksData.data);
     } catch (err) {
-      console.error('Failed to refresh tasks:', err);
+      console.error("Failed to refresh tasks:", err);
     }
   };
 
   const handleSort = (key: string) => {
     if (sortKey === key) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       setSortKey(key);
-      setSortDirection('asc');
+      setSortDirection("asc");
     }
   };
 
@@ -148,18 +173,18 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
     let bValue: any = b[sortKey as keyof Task];
 
     // Handle nested properties
-    if (sortKey === 'assignee') {
-      aValue = a.assignee?.name || '';
-      bValue = b.assignee?.name || '';
+    if (sortKey === "assignee") {
+      aValue = a.assignee?.name || "";
+      bValue = b.assignee?.name || "";
     }
 
     // Handle null/undefined values
-    if (aValue == null) aValue = '';
-    if (bValue == null) bValue = '';
+    if (aValue == null) aValue = "";
+    if (bValue == null) bValue = "";
 
     // Compare values
-    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
-    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+    if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+    if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
     return 0;
   });
 
@@ -167,12 +192,10 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
     try {
       await tasksApi.update(taskId, { status: newStatus });
       // Update local state
-      setTasks(tasks.map(task =>
-        task.id === taskId ? { ...task, status: newStatus } : task
-      ));
+      setTasks(tasks.map(task => (task.id === taskId ? { ...task, status: newStatus } : task)));
     } catch (err) {
-      console.error('Failed to update task status:', err);
-      setError('Failed to update task status');
+      console.error("Failed to update task status:", err);
+      setError("Failed to update task status");
     }
   };
 
@@ -185,9 +208,7 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
     try {
       // Update all selected tasks
       await Promise.all(
-        Array.from(selectedTaskIds).map(taskId =>
-          tasksApi.update(taskId, { status: bulkStatus })
-        )
+        Array.from(selectedTaskIds).map(taskId => tasksApi.update(taskId, { status: bulkStatus }))
       );
 
       // Refresh task list
@@ -196,10 +217,10 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
 
       // Clear selection
       setSelectedTaskIds(new Set());
-      setBulkStatus('');
+      setBulkStatus("");
     } catch (err) {
-      console.error('Failed to update tasks:', err);
-      setError('Failed to update tasks');
+      console.error("Failed to update tasks:", err);
+      setError("Failed to update tasks");
     } finally {
       setBulkActionLoading(false);
     }
@@ -217,11 +238,7 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
 
     try {
       // Delete all selected tasks
-      await Promise.all(
-        Array.from(selectedTaskIds).map(taskId =>
-          tasksApi.delete(taskId)
-        )
-      );
+      await Promise.all(Array.from(selectedTaskIds).map(taskId => tasksApi.delete(taskId)));
 
       // Refresh task list
       const tasksData = await tasksApi.list({ epicId: params.id, limit: 100 });
@@ -230,8 +247,8 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
       // Clear selection
       setSelectedTaskIds(new Set());
     } catch (err) {
-      console.error('Failed to delete tasks:', err);
-      setError('Failed to delete tasks');
+      console.error("Failed to delete tasks:", err);
+      setError("Failed to delete tasks");
     } finally {
       setBulkActionLoading(false);
     }
@@ -239,8 +256,8 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
 
   const taskColumns = [
     {
-      key: 'title',
-      title: 'Title',
+      key: "title",
+      title: "Title",
       sortable: true,
       render: (_: unknown, row: Record<string, unknown>) => {
         const task = row as unknown as Task;
@@ -255,16 +272,16 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
       },
     },
     {
-      key: 'status',
-      title: 'Status',
+      key: "status",
+      title: "Status",
       sortable: true,
       render: (value: unknown, row: Record<string, unknown>) => {
         const task = row as unknown as Task;
         return (
           <select
             value={task.status}
-            onChange={(e) => handleStatusChange(task.id, e.target.value as TaskStatus)}
-            onClick={(e) => e.stopPropagation()}
+            onChange={e => handleStatusChange(task.id, e.target.value as TaskStatus)}
+            onClick={e => e.stopPropagation()}
             className="h-8 rounded-md border border-input bg-background px-2 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="TODO">To Do</option>
@@ -278,23 +295,23 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
       },
     },
     {
-      key: 'priority',
-      title: 'Priority',
+      key: "priority",
+      title: "Priority",
       sortable: true,
       render: (value: unknown) => <PriorityBadge priority={value as Priority} />,
     },
     {
-      key: 'assignee',
-      title: 'Assignee',
+      key: "assignee",
+      title: "Assignee",
       render: (_: unknown, row: Record<string, unknown>) => {
         const task = row as unknown as Task;
         return task.assignee?.name || <span className="text-muted-foreground">Unassigned</span>;
       },
     },
     {
-      key: 'storyPoints',
-      title: 'Points',
-      render: (value: unknown) => (value as number)?.toString() || '-',
+      key: "storyPoints",
+      title: "Points",
+      render: (value: unknown) => (value as number)?.toString() || "-",
     },
   ];
 
@@ -312,7 +329,7 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
     return (
       <div className="container mx-auto py-8 px-4">
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
-          {error || 'Epic not found'}
+          {error || "Epic not found"}
         </div>
       </div>
     );
@@ -339,9 +356,7 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
               </Link>
             )}
             <h1 className="text-3xl font-bold tracking-tight">{epic.title}</h1>
-            {epic.description && (
-              <p className="mt-2 text-muted-foreground">{epic.description}</p>
-            )}
+            {epic.description && <p className="mt-2 text-muted-foreground">{epic.description}</p>}
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.push(`/epics/${epic.id}/edit`)}>
@@ -378,16 +393,16 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-semibold">Dependency Graph</h2>
-          <Button
-            variant="outline"
-            onClick={() => setShowDependencyGraph(!showDependencyGraph)}
-          >
-            {showDependencyGraph ? 'Hide' : 'Show'} Graph
+          <Button variant="outline" onClick={() => setShowDependencyGraph(!showDependencyGraph)}>
+            {showDependencyGraph ? "Hide" : "Show"} Graph
           </Button>
         </div>
 
         {showDependencyGraph && (
-          <div className="border border-gray-200 rounded-lg overflow-hidden" style={{ height: '500px' }}>
+          <div
+            className="border border-gray-200 rounded-lg overflow-hidden"
+            style={{ height: "500px" }}
+          >
             <DependencyGraph tasks={tasks} dependencies={dependencies} />
           </div>
         )}
@@ -397,11 +412,7 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-semibold">Tasks</h2>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setAiDialogOpen(true)}
-              className="gap-2"
-            >
+            <Button variant="outline" onClick={() => setAiDialogOpen(true)} className="gap-2">
               <Sparkles className="h-4 w-4" />
               AI Assist
             </Button>
@@ -417,12 +428,12 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
           <div className="mb-4 p-4 bg-muted rounded-lg border">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="text-sm font-medium">
-                {selectedTaskIds.size} task{selectedTaskIds.size !== 1 ? 's' : ''} selected
+                {selectedTaskIds.size} task{selectedTaskIds.size !== 1 ? "s" : ""} selected
               </div>
               <div className="flex items-center gap-3">
                 <select
                   value={bulkStatus}
-                  onChange={(e) => setBulkStatus(e.target.value as TaskStatus | '')}
+                  onChange={e => setBulkStatus(e.target.value as TaskStatus | "")}
                   className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   disabled={bulkActionLoading}
                 >
@@ -439,7 +450,7 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
                   onClick={handleBulkStatusUpdate}
                   disabled={!bulkStatus || bulkActionLoading}
                 >
-                  {bulkActionLoading ? 'Updating...' : 'Update'}
+                  {bulkActionLoading ? "Updating..." : "Update"}
                 </Button>
                 <Button
                   size="sm"
@@ -469,7 +480,7 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
         data={sortedTasks as unknown as Record<string, unknown>[]}
         loading={tasksLoading}
         emptyMessage="No tasks found. Create your first task to get started."
-        onRowClick={(row) => {
+        onRowClick={row => {
           const task = row as unknown as Task;
           router.push(`/tasks/${task.id}`);
         }}
@@ -478,8 +489,8 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
         sortDirection={sortDirection}
         selectable
         selectedRows={selectedTaskIds}
-        onSelectionChange={(selectedIds) => setSelectedTaskIds(new Set(selectedIds) as Set<string>)}
-        getRowId={(row) => (row as unknown as Task).id}
+        onSelectionChange={selectedIds => setSelectedTaskIds(new Set(selectedIds) as Set<string>)}
+        getRowId={row => (row as unknown as Task).id}
       />
 
       {/* AI Decomposition Dialog */}

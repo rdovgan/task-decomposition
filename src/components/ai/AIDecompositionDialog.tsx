@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Loader2, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
-import { Dialog } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { PriorityBadge } from '@/components/ui/priority-badge';
-import { AITaskSuggestion, AIDecompositionResponse } from '@/types';
-import { tasksApi, ApiErrorClass } from '@/lib/api-client';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { Loader2, Sparkles, CheckCircle2, AlertCircle } from "lucide-react";
+import { Dialog } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { PriorityBadge } from "@/components/ui/priority-badge";
+import { AITaskSuggestion, AIDecompositionResponse } from "@/types";
+import { tasksApi, ApiErrorClass } from "@/lib/api-client";
+import { useRouter } from "next/navigation";
 
 interface AIDecompositionDialogProps {
   open: boolean;
@@ -17,7 +17,7 @@ interface AIDecompositionDialogProps {
   suggestions: AITaskSuggestion[] | null;
   loading: boolean;
   error: string | null;
-  meta: AIDecompositionResponse['meta'] | null;
+  meta: AIDecompositionResponse["meta"] | null;
   onGenerate: (customPrompt?: string) => void;
 }
 
@@ -33,7 +33,7 @@ export function AIDecompositionDialog({
   onGenerate,
 }: AIDecompositionDialogProps) {
   const router = useRouter();
-  const [customPrompt, setCustomPrompt] = useState('');
+  const [customPrompt, setCustomPrompt] = useState("");
   const [showCustomPrompt, setShowCustomPrompt] = useState(false);
   const [editedSuggestions, setEditedSuggestions] = useState<AITaskSuggestion[]>([]);
   const [creating, setCreating] = useState(false);
@@ -56,7 +56,7 @@ export function AIDecompositionDialog({
 
     try {
       // Create all tasks
-      const createPromises = editedSuggestions.map((suggestion) =>
+      const createPromises = editedSuggestions.map(suggestion =>
         tasksApi.create({
           epicId,
           title: suggestion.title,
@@ -75,14 +75,18 @@ export function AIDecompositionDialog({
       if (err instanceof ApiErrorClass) {
         setCreateError(err.message);
       } else {
-        setCreateError('Failed to create tasks');
+        setCreateError("Failed to create tasks");
       }
     } finally {
       setCreating(false);
     }
   };
 
-  const handleEditSuggestion = (index: number, field: keyof AITaskSuggestion, value: string | number) => {
+  const handleEditSuggestion = (
+    index: number,
+    field: keyof AITaskSuggestion,
+    value: string | number
+  ) => {
     const updated = [...editedSuggestions];
     updated[index] = { ...updated[index], [field]: value };
     setEditedSuggestions(updated);
@@ -108,7 +112,7 @@ export function AIDecompositionDialog({
         !loading && !error && editedSuggestions.length > 0 ? (
           <div className="flex w-full items-center justify-between">
             <div className="text-sm text-muted-foreground">
-              {editedSuggestions.length} task{editedSuggestions.length !== 1 ? 's' : ''} suggested
+              {editedSuggestions.length} task{editedSuggestions.length !== 1 ? "s" : ""} suggested
             </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={onClose}>
@@ -121,7 +125,7 @@ export function AIDecompositionDialog({
                     Creating...
                   </>
                 ) : (
-                  `Create ${editedSuggestions.length} Task${editedSuggestions.length !== 1 ? 's' : ''}`
+                  `Create ${editedSuggestions.length} Task${editedSuggestions.length !== 1 ? "s" : ""}`
                 )}
               </Button>
             </div>
@@ -147,13 +151,13 @@ export function AIDecompositionDialog({
                 className="h-auto p-0"
                 onClick={() => setShowCustomPrompt(!showCustomPrompt)}
               >
-                {showCustomPrompt ? 'Hide' : 'Show'}
+                {showCustomPrompt ? "Hide" : "Show"}
               </Button>
             </div>
             {showCustomPrompt && (
               <textarea
                 value={customPrompt}
-                onChange={(e) => setCustomPrompt(e.target.value)}
+                onChange={e => setCustomPrompt(e.target.value)}
                 placeholder="Provide additional context or requirements for the task decomposition..."
                 className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               />
@@ -168,9 +172,7 @@ export function AIDecompositionDialog({
             <p className="mt-4 text-muted-foreground">
               Generating task suggestions with Claude AI...
             </p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              This may take 10-30 seconds
-            </p>
+            <p className="mt-2 text-sm text-muted-foreground">This may take 10-30 seconds</p>
           </div>
         )}
 
@@ -213,24 +215,21 @@ export function AIDecompositionDialog({
             </div>
 
             {editedSuggestions.map((suggestion, index) => (
-              <div
-                key={index}
-                className="rounded-lg border bg-card p-4 shadow-sm"
-              >
+              <div key={index} className="rounded-lg border bg-card p-4 shadow-sm">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 space-y-3">
                     {/* Title */}
                     <input
                       type="text"
                       value={suggestion.title}
-                      onChange={(e) => handleEditSuggestion(index, 'title', e.target.value)}
+                      onChange={e => handleEditSuggestion(index, "title", e.target.value)}
                       className="w-full rounded border border-input bg-background px-3 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     />
 
                     {/* Description */}
                     <textarea
                       value={suggestion.description}
-                      onChange={(e) => handleEditSuggestion(index, 'description', e.target.value)}
+                      onChange={e => handleEditSuggestion(index, "description", e.target.value)}
                       rows={3}
                       className="w-full rounded border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     />
@@ -241,7 +240,9 @@ export function AIDecompositionDialog({
                         <label className="text-xs text-muted-foreground">Points:</label>
                         <select
                           value={suggestion.storyPoints}
-                          onChange={(e) => handleEditSuggestion(index, 'storyPoints', parseInt(e.target.value))}
+                          onChange={e =>
+                            handleEditSuggestion(index, "storyPoints", parseInt(e.target.value))
+                          }
                           className="rounded border border-input bg-background px-2 py-1 text-xs"
                         >
                           <option value={1}>1</option>
@@ -257,7 +258,7 @@ export function AIDecompositionDialog({
                         <label className="text-xs text-muted-foreground">Priority:</label>
                         <select
                           value={suggestion.priority}
-                          onChange={(e) => handleEditSuggestion(index, 'priority', e.target.value)}
+                          onChange={e => handleEditSuggestion(index, "priority", e.target.value)}
                           className="rounded border border-input bg-background px-2 py-1 text-xs"
                         >
                           <option value="CRITICAL">Critical</option>

@@ -1,6 +1,6 @@
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 
 // PrismaClient singleton to avoid multiple instances in development
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
@@ -18,10 +18,10 @@ function getPrismaClient(): PrismaClient {
 
     _prisma = new PrismaClient({
       adapter,
-      log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+      log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
     });
 
-    if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = _prisma;
+    if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = _prisma;
   }
   return _prisma;
 }
@@ -31,7 +31,7 @@ export const prisma = new Proxy({} as PrismaClient, {
   get(target, prop) {
     const client = getPrismaClient();
     return client[prop as keyof PrismaClient];
-  }
+  },
 });
 
 export default prisma;

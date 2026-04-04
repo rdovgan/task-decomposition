@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { TaskLink, LinkType } from '@/types';
-import { Button } from '@/components/ui/button';
-import { ExternalLink, Plus, Trash2 } from 'lucide-react';
+import { useState } from "react";
+import { TaskLink, LinkType } from "@/types";
+import { Button } from "@/components/ui/button";
+import { ExternalLink, Plus, Trash2 } from "lucide-react";
 
 interface TaskLinkListProps {
   links: TaskLink[];
@@ -13,7 +13,7 @@ interface TaskLinkListProps {
 
 export function TaskLinkList({ links, onDelete, onCreate }: TaskLinkListProps) {
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newLink, setNewLink] = useState({ url: '', linkType: 'EXTERNAL' as LinkType, title: '' });
+  const [newLink, setNewLink] = useState({ url: "", linkType: "EXTERNAL" as LinkType, title: "" });
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,7 +23,7 @@ export function TaskLinkList({ links, onDelete, onCreate }: TaskLinkListProps) {
     setSubmitting(true);
     try {
       await onCreate?.(newLink);
-      setNewLink({ url: '', linkType: 'EXTERNAL', title: '' });
+      setNewLink({ url: "", linkType: "EXTERNAL", title: "" });
       setShowAddForm(false);
     } finally {
       setSubmitting(false);
@@ -31,12 +31,12 @@ export function TaskLinkList({ links, onDelete, onCreate }: TaskLinkListProps) {
   };
 
   const linkTypeLabels: Record<LinkType, string> = {
-    CONFLUENCE: 'Confluence',
-    NOTION: 'Notion',
-    GITHUB: 'GitHub',
-    JIRA: 'Jira',
-    FIGMA: 'Figma',
-    EXTERNAL: 'External',
+    CONFLUENCE: "Confluence",
+    NOTION: "Notion",
+    GITHUB: "GitHub",
+    JIRA: "Jira",
+    FIGMA: "Figma",
+    EXTERNAL: "External",
   };
 
   if (links.length === 0 && !showAddForm) {
@@ -56,8 +56,11 @@ export function TaskLinkList({ links, onDelete, onCreate }: TaskLinkListProps) {
   return (
     <div className="space-y-3">
       <div className="space-y-2">
-        {links.map((link) => (
-          <div key={link.id} className="flex items-center justify-between rounded-lg border bg-card p-3">
+        {links.map(link => (
+          <div
+            key={link.id}
+            className="flex items-center justify-between rounded-lg border bg-card p-3"
+          >
             <div className="flex items-center gap-3">
               <ExternalLink className="h-4 w-4 text-muted-foreground" />
               <div>
@@ -70,7 +73,9 @@ export function TaskLinkList({ links, onDelete, onCreate }: TaskLinkListProps) {
                   {link.title || link.url}
                 </a>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="rounded-full bg-muted px-2 py-0.5">{linkTypeLabels[link.linkType]}</span>
+                  <span className="rounded-full bg-muted px-2 py-0.5">
+                    {linkTypeLabels[link.linkType]}
+                  </span>
                   <span>{link.url}</span>
                 </div>
               </div>
@@ -101,7 +106,7 @@ export function TaskLinkList({ links, onDelete, onCreate }: TaskLinkListProps) {
               id="url"
               required
               value={newLink.url}
-              onChange={(e) => setNewLink({ ...newLink, url: e.target.value })}
+              onChange={e => setNewLink({ ...newLink, url: e.target.value })}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               placeholder="https://..."
             />
@@ -115,7 +120,7 @@ export function TaskLinkList({ links, onDelete, onCreate }: TaskLinkListProps) {
               type="text"
               id="title"
               value={newLink.title}
-              onChange={(e) => setNewLink({ ...newLink, title: e.target.value })}
+              onChange={e => setNewLink({ ...newLink, title: e.target.value })}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               placeholder="Link title (optional)"
             />
@@ -128,7 +133,7 @@ export function TaskLinkList({ links, onDelete, onCreate }: TaskLinkListProps) {
             <select
               id="linkType"
               value={newLink.linkType}
-              onChange={(e) => setNewLink({ ...newLink, linkType: e.target.value as LinkType })}
+              onChange={e => setNewLink({ ...newLink, linkType: e.target.value as LinkType })}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {Object.entries(linkTypeLabels).map(([value, label]) => (
@@ -141,14 +146,14 @@ export function TaskLinkList({ links, onDelete, onCreate }: TaskLinkListProps) {
 
           <div className="flex gap-2">
             <Button type="submit" disabled={submitting}>
-              {submitting ? 'Adding...' : 'Add Link'}
+              {submitting ? "Adding..." : "Add Link"}
             </Button>
             <Button
               type="button"
               variant="outline"
               onClick={() => {
                 setShowAddForm(false);
-                setNewLink({ url: '', linkType: 'EXTERNAL', title: '' });
+                setNewLink({ url: "", linkType: "EXTERNAL", title: "" });
               }}
               disabled={submitting}
             >

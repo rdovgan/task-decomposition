@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { cn } from '@/lib/utils';
-import { ChevronUp, ChevronDown, Check } from 'lucide-react';
+import React from "react";
+import { cn } from "@/lib/utils";
+import { ChevronUp, ChevronDown, Check } from "lucide-react";
 
 export interface Column<T> {
   key: string;
@@ -17,7 +17,7 @@ interface DataTableProps<T> {
   data: T[];
   loading?: boolean;
   sortKey?: string;
-  sortDirection?: 'asc' | 'desc';
+  sortDirection?: "asc" | "desc";
   onSort?: (key: string) => void;
   onRowClick?: (row: T) => void;
   emptyMessage?: string;
@@ -37,7 +37,7 @@ export function DataTable<T extends Record<string, unknown>>({
   sortDirection,
   onSort,
   onRowClick,
-  emptyMessage = 'No data available',
+  emptyMessage = "No data available",
   className,
   selectable = false,
   selectedRows = new Set(),
@@ -48,7 +48,7 @@ export function DataTable<T extends Record<string, unknown>>({
     if (!column.sortable || !onSort) return;
 
     if (sortKey === column.key) {
-      onSort(sortDirection === 'asc' ? `${column.key}:desc` : column.key);
+      onSort(sortDirection === "asc" ? `${column.key}:desc` : column.key);
     } else {
       onSort(column.key);
     }
@@ -82,7 +82,7 @@ export function DataTable<T extends Record<string, unknown>>({
 
   const getSortIcon = (column: Column<T>) => {
     if (sortKey !== column.key) return null;
-    return sortDirection === 'asc' ? (
+    return sortDirection === "asc" ? (
       <ChevronUp className="ml-1 h-4 w-4" />
     ) : (
       <ChevronDown className="ml-1 h-4 w-4" />
@@ -106,7 +106,7 @@ export function DataTable<T extends Record<string, unknown>>({
   }
 
   return (
-    <div className={cn('w-full overflow-auto', className)}>
+    <div className={cn("w-full overflow-auto", className)}>
       <table className="w-full caption-bottom text-sm">
         <thead className="[&_tr]:border-b">
           <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
@@ -115,23 +115,23 @@ export function DataTable<T extends Record<string, unknown>>({
                 <input
                   type="checkbox"
                   checked={isAllSelected}
-                  ref={(input) => {
+                  ref={input => {
                     if (input) {
                       input.indeterminate = isSomeSelected;
                     }
                   }}
-                  onChange={(e) => handleSelectAll(e.target.checked)}
+                  onChange={e => handleSelectAll(e.target.checked)}
                   className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring cursor-pointer"
                   aria-label="Select all rows"
                 />
               </th>
             )}
-            {columns.map((column) => (
+            {columns.map(column => (
               <th
                 key={column.key}
                 className={cn(
-                  'h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0',
-                  column.sortable && 'cursor-pointer hover:text-foreground',
+                  "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
+                  column.sortable && "cursor-pointer hover:text-foreground",
                   column.className
                 )}
                 onClick={() => handleSort(column)}
@@ -157,7 +157,7 @@ export function DataTable<T extends Record<string, unknown>>({
                   onRowClick && "cursor-pointer",
                   isSelected && "bg-muted/50"
                 )}
-                onClick={(e) => {
+                onClick={e => {
                   // Don't trigger row click if clicking on checkbox or interactive elements
                   if ((e.target as HTMLElement).closest('input[type="checkbox"]')) {
                     return;
@@ -170,7 +170,7 @@ export function DataTable<T extends Record<string, unknown>>({
                     <input
                       type="checkbox"
                       checked={isSelected}
-                      onChange={(e) => {
+                      onChange={e => {
                         e.stopPropagation();
                         handleSelectRow(rowId, e.target.checked);
                       }}
@@ -179,12 +179,17 @@ export function DataTable<T extends Record<string, unknown>>({
                     />
                   </td>
                 )}
-                {columns.map((column) => (
+                {columns.map(column => (
                   <td
                     key={column.key}
-                    className={cn('p-4 align-middle [&:has([role=checkbox])]:pr-0', column.className)}
+                    className={cn(
+                      "p-4 align-middle [&:has([role=checkbox])]:pr-0",
+                      column.className
+                    )}
                   >
-                    {column.render ? column.render(row[column.key], row) : (row[column.key] as React.ReactNode)}
+                    {column.render
+                      ? column.render(row[column.key], row)
+                      : (row[column.key] as React.ReactNode)}
                   </td>
                 ))}
               </tr>

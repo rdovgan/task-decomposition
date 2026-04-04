@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Dialog } from '@/components/ui/dialog';
-import { Dependency, Task } from '@/types';
-import { dependenciesApi, tasksApi, ApiErrorClass } from '@/lib/api-client';
+import { useState } from "react";
+import { Plus, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
+import { Dependency, Task } from "@/types";
+import { dependenciesApi, tasksApi, ApiErrorClass } from "@/lib/api-client";
 
 interface DependencyManagerProps {
   taskId: string;
@@ -13,7 +13,11 @@ interface DependencyManagerProps {
   onDependenciesChange: () => void;
 }
 
-export function DependencyManager({ taskId, dependencies, onDependenciesChange }: DependencyManagerProps) {
+export function DependencyManager({
+  taskId,
+  dependencies,
+  onDependenciesChange,
+}: DependencyManagerProps) {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
@@ -27,7 +31,7 @@ export function DependencyManager({ taskId, dependencies, onDependenciesChange }
       const response = await tasksApi.list({ limit: 100 });
       // Filter out the current task and already linked tasks
       const filtered = response.data.filter(
-        (t) => t.id !== taskId && !dependencies.some((d) => d.dependsOnTaskId === t.id)
+        t => t.id !== taskId && !dependencies.some(d => d.dependsOnTaskId === t.id)
       );
       setAvailableTasks(filtered);
     } catch (err) {
@@ -48,14 +52,14 @@ export function DependencyManager({ taskId, dependencies, onDependenciesChange }
     setAdding(true);
     setError(null);
     try {
-      await dependenciesApi.create(taskId, { dependsOnTaskId, type: 'BLOCKS' });
+      await dependenciesApi.create(taskId, { dependsOnTaskId, type: "BLOCKS" });
       setShowAddDialog(false);
       onDependenciesChange();
     } catch (err) {
       if (err instanceof ApiErrorClass) {
         setError(err.message);
       } else {
-        setError('Failed to add dependency');
+        setError("Failed to add dependency");
       }
     } finally {
       setAdding(false);
@@ -63,7 +67,7 @@ export function DependencyManager({ taskId, dependencies, onDependenciesChange }
   };
 
   const handleDeleteDependency = async (dependencyId: string) => {
-    if (!confirm('Are you sure you want to remove this dependency?')) {
+    if (!confirm("Are you sure you want to remove this dependency?")) {
       return;
     }
 
@@ -99,7 +103,7 @@ export function DependencyManager({ taskId, dependencies, onDependenciesChange }
         </div>
       ) : (
         <div className="space-y-2">
-          {dependencies.map((dep) => (
+          {dependencies.map(dep => (
             <div
               key={dep.id}
               className="flex items-center justify-between rounded-lg border bg-card p-4"
@@ -109,7 +113,7 @@ export function DependencyManager({ taskId, dependencies, onDependenciesChange }
                   BLOCKS
                 </span>
                 <span className="text-sm">
-                  This task blocks{' '}
+                  This task blocks{" "}
                   <code className="rounded bg-muted px-2 py-1 text-xs">
                     Task {dep.dependsOnTaskId.slice(0, 8)}
                   </code>
@@ -128,7 +132,12 @@ export function DependencyManager({ taskId, dependencies, onDependenciesChange }
         </div>
       )}
 
-      <Dialog open={showAddDialog} onClose={() => setShowAddDialog(false)} title="Add Dependency" size="md">
+      <Dialog
+        open={showAddDialog}
+        onClose={() => setShowAddDialog(false)}
+        title="Add Dependency"
+        size="md"
+      >
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -148,7 +157,7 @@ export function DependencyManager({ taskId, dependencies, onDependenciesChange }
                 <p className="text-sm text-muted-foreground">
                   Select a task that this task blocks:
                 </p>
-                {availableTasks.map((task) => (
+                {availableTasks.map(task => (
                   <div
                     key={task.id}
                     className="flex items-center justify-between rounded-lg border bg-card p-4 hover:bg-muted/50"
@@ -156,7 +165,9 @@ export function DependencyManager({ taskId, dependencies, onDependenciesChange }
                     <div>
                       <p className="font-medium">{task.title}</p>
                       {task.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-1">{task.description}</p>
+                        <p className="text-sm text-muted-foreground line-clamp-1">
+                          {task.description}
+                        </p>
                       )}
                     </div>
                     <Button
