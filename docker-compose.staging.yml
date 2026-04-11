@@ -1,0 +1,93 @@
+version: "3.8"
+
+services:
+  # Next.js development server (frontend)
+  app:
+    build:
+      context: .
+      target: dev
+    container_name: task-decomp-frontend-staging
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=staging
+      - DATABASE_URL=postgresql://taskdecomp:taskdecomp@postgres:5432/task_decomposition_staging?schema=public
+      - NEXT_PUBLIC_API_URL=http://localhost:3001/api
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - task-decomp-staging-network
+
+  # Express API server (backend)
+  server:
+    build:
+      context: .
+      target: dev
+    container_name: task-decomp-server-staging
+    ports:
+      - "3001:3001"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=staging
+      - DATABASE_URL=postgresql://taskdecomp:taskdecomp@postgres:5432/task_decomposition_staging?schema=public
+      - PORT=3001
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    depends_on:
+      - postgres
+    command: npm run dev:server
+    restart: unless-stopped
+    networks:
+      - task-decomp-staging-network
+
+  # PostgreSQL database
+  postgres:
+    image: postgres:16-alpine
+    container_name: task-decomp-db-staging
+    environment:
+      POSTGRES_USER: taskdecomp
+      POSTGRES_PASSWORD: taskdecomp
+      POSTGRES_DB: task_decomposition_staging
+    ports:
+      - "5433:5432"  # Different port to avoid conflict
+    volumes:
+      - postgres_staging_data:/var/lib/postgresql/data
+    networks:
+      - task-decomp-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taskdecomp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis (for future caching/sessions)
+  redis:
+    image: redis:7-alpine
+    container_name: task-decomp-redis-staging
+    ports:
+      - "6380:6379"  # Different port to avoid conflict
+    volumes:
+      - redis_staging_data:/data
+    networks:
+      - task-decomp-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_staging_data:
+  redis_staging_data:
+
+networks:
+  task-decomp-staging-network:
+    driver: bridge

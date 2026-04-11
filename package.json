@@ -19,8 +19,10 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
+    "db:migrate:reset": "prisma migrate reset",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "npm run db:migrate:reset && npm run db:seed",
     "test": "npx jest",
     "test:watch": "npx jest --watch",
     "test:coverage": "npx jest --coverage",
@@ -28,7 +30,12 @@
     "test:server:watch": "npx jest --config jest.server.config.js --watch",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:all": "npm run test && npm run test:e2e"
+    "test:all": "npm run test && npm run test:e2e",
+    "env:dev": "./scripts/switch-env.sh development",
+    "env:staging": "./scripts/switch-env.sh staging",
+    "env:prod": "./scripts/switch-env.sh production",
+    "env:test": "./scripts/switch-env.sh test",
+    "env:current": "echo \"Current environment: ${NODE_ENV:-development}\""
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.81.0",

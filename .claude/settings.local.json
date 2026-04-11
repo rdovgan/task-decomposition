@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod +x:*)",
+      "Bash(npm run:*)",
+      "Bash(./scripts/switch-env.sh development:*)"
+    ]
+  }
+}

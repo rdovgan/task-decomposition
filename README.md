@@ -46,6 +46,7 @@ task-decomposition-tool/
 ### Prerequisites
 - Node.js 18+ and npm
 - Docker (for containerized development)
+- PostgreSQL (local or via Docker)
 
 ### Installation
 
@@ -61,6 +62,13 @@ npm install
 ```
 
 3. Set up environment variables:
+
+**Option A: Quick setup (Development)**
+```bash
+npm run env:dev
+```
+
+**Option B: Manual setup**
 ```bash
 cp .env.example .env
 # Edit .env and add your Anthropic API key for AI features
@@ -71,12 +79,42 @@ cp .env.example .env
 - `ANTHROPIC_API_KEY` - Your Anthropic API key for AI task decomposition
 - `ANTHROPIC_MODEL` - (Optional) Claude model to use (default: claude-sonnet-4-6)
 
-3. Run the development server:
+4. Set up the database:
 ```bash
-npm run dev
+npm run db:generate
+npm run db:push
+npm run db:seed  # Optional: populate with sample data
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+5. Run the development server:
+```bash
+npm run dev:all
+```
+
+6. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+### Environment Management
+
+The project supports multiple environments with isolated databases:
+
+```bash
+# Switch environments
+npm run env:dev       # Development (default)
+npm run env:staging   # Staging environment
+npm run env:prod      # Production environment
+npm run env:test      # Test environment
+
+# Check current environment
+npm run env:current
+```
+
+**Environment-specific databases:**
+- Development: `task_decomposition_dev` (port 5432)
+- Staging: `task_decomposition_staging` (port 5433)
+- Production: `task_decomposition_prod` (port 5434)
+- Test: `task_decomposition_test` (port 5432)
+
+📖 **See [Environment Management Guide](docs/environment-management.md) for detailed instructions.**
 
 ### Docker Setup (Coming Soon)
 
