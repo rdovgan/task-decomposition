@@ -4,14 +4,15 @@ import prisma from "../lib/prisma";
 import { asyncHandler, ApiError } from "../middleware/errorHandler";
 import type { CreateEpicInput, UpdateEpicInput } from "../lib/validations";
 import { decrypt } from "../lib/encryption";
+import { str } from "../lib/express";
 
 export const getEpics = asyncHandler(async (req: Request, res: Response) => {
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 10;
+  const page = parseInt(str(req.query.page) || "1") || 1;
+  const limit = parseInt(str(req.query.limit) || "10") || 10;
   const skip = (page - 1) * limit;
-  const projectId = req.query.projectId as string;
-  const status = req.query.status as string;
-  const priority = req.query.priority as string;
+  const projectId = str(req.query.projectId);
+  const status = str(req.query.status);
+  const priority = str(req.query.priority);
 
   const where: any = {};
   if (projectId) where.projectId = projectId;
@@ -48,7 +49,7 @@ export const getEpics = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getEpicById = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = str(req.params.id)!;
 
   const epic = await prisma.epic.findUnique({
     where: { id },
@@ -93,7 +94,7 @@ export const createEpic = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const updateEpic = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = str(req.params.id)!;
   const input: UpdateEpicInput = req.body;
 
   const epic = await prisma.epic.update({
@@ -110,7 +111,7 @@ export const updateEpic = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const deleteEpic = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = str(req.params.id)!;
 
   await prisma.epic.delete({
     where: { id },
@@ -123,7 +124,7 @@ export const deleteEpic = asyncHandler(async (req: Request, res: Response) => {
  * AI Task Decomposition - Decompose an epic into suggested tasks
  */
 export const aiDecomposeEpic = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = str(req.params.id)!;
   const { userId, customPrompt } = req.body;
 
   // Get the epic with project and context
@@ -174,7 +175,7 @@ export const aiDecomposeEpic = asyncHandler(async (req: Request, res: Response) 
   const model = process.env.ZAI_MODEL || "glm-5-turbo";
 
   // Build the decomposition prompt
-  const prompt = buildDecompositionPrompt(epic, epic.project, customPrompt);
+  const prompt = buildDecompositionPrompt(epic, (epic as any).project, customPrompt);
 
   try {
     const startTime = Date.now();

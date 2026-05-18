@@ -3,18 +3,19 @@ import prisma from "../lib/prisma";
 import { asyncHandler, ApiError } from "../middleware/errorHandler";
 import type { CreateTaskInput, UpdateTaskInput } from "../lib/validations";
 import { taskDecompositionService } from "../services/taskDecomposition";
+import { str } from "../lib/express";
 
 export const getTasks = asyncHandler(async (req: Request, res: Response) => {
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 10;
+  const page = parseInt(str(req.query.page) || "1") || 1;
+  const limit = parseInt(str(req.query.limit) || "10") || 10;
   const skip = (page - 1) * limit;
-  const epicId = req.query.epicId as string;
-  const assigneeId = req.query.assigneeId as string;
-  const status = req.query.status as string;
-  const priority = req.query.priority as string;
-  const search = req.query.search as string;
-  const sortBy = (req.query.sortBy as string) || "createdAt";
-  const order = (req.query.order as string) === "asc" ? "asc" : "desc";
+  const epicId = str(req.query.epicId);
+  const assigneeId = str(req.query.assigneeId);
+  const status = str(req.query.status);
+  const priority = str(req.query.priority);
+  const search = str(req.query.search);
+  const sortBy = str(req.query.sortBy) || "createdAt";
+  const order = str(req.query.order) === "asc" ? "asc" : "desc";
 
   const where: any = {};
   if (epicId) where.epicId = epicId;
@@ -65,7 +66,7 @@ export const getTasks = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getTaskById = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = str(req.params.id)!;
 
   const task = await prisma.task.findUnique({
     where: { id },
@@ -128,14 +129,14 @@ export const createTask = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const updateTask = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = str(req.params.id)!;
   const input: UpdateTaskInput = req.body;
 
   // If status is being changed to DONE, set completedAt
   const data: any = { ...input };
-  if (input.status === "DONE" && !input.completedAt) {
+  if (input.status === "DONE") {
     data.completedAt = new Date();
-  } else if (input.status && input.status !== "DONE") {
+  } else if (input.status) {
     data.completedAt = null;
   }
 
@@ -156,7 +157,7 @@ export const updateTask = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const deleteTask = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = str(req.params.id)!;
 
   await prisma.task.delete({
     where: { id },
@@ -166,7 +167,7 @@ export const deleteTask = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getTaskDependencies = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = str(req.params.id)!;
 
   const dependencies = await prisma.dependency.findMany({
     where: { taskId: id },
@@ -274,7 +275,7 @@ export const createDependency = asyncHandler(async (req: Request, res: Response)
 });
 
 export const deleteDependency = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = str(req.params.id)!;
 
   await prisma.dependency.delete({
     where: { id },
@@ -285,7 +286,7 @@ export const deleteDependency = asyncHandler(async (req: Request, res: Response)
 
 // Comments
 export const getComments = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = str(req.params.id)!;
 
   const comments = await prisma.comment.findMany({
     where: { taskId: id },
@@ -301,7 +302,7 @@ export const getComments = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const createComment = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = str(req.params.id)!;
   const { content, authorId } = req.body;
 
   const comment = await prisma.comment.create({
@@ -321,7 +322,7 @@ export const createComment = asyncHandler(async (req: Request, res: Response) =>
 });
 
 export const updateComment = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = str(req.params.id)!;
   const { content } = req.body;
 
   // Verify the comment exists
@@ -347,7 +348,7 @@ export const updateComment = asyncHandler(async (req: Request, res: Response) =>
 });
 
 export const deleteComment = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = str(req.params.id)!;
 
   await prisma.comment.delete({
     where: { id },
@@ -358,7 +359,7 @@ export const deleteComment = asyncHandler(async (req: Request, res: Response) =>
 
 // Task Links
 export const getLinks = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = str(req.params.id)!;
 
   const links = await prisma.taskLink.findMany({
     where: { taskId: id },
@@ -369,7 +370,7 @@ export const getLinks = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const createLink = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = str(req.params.id)!;
   const { url, linkType, title } = req.body;
 
   const link = await prisma.taskLink.create({
@@ -385,7 +386,7 @@ export const createLink = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const updateLink = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = str(req.params.id)!;
   const { url, linkType, title } = req.body;
 
   // Verify the link exists
@@ -406,7 +407,7 @@ export const updateLink = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const deleteLink = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = str(req.params.id)!;
 
   await prisma.taskLink.delete({
     where: { id },
@@ -421,7 +422,7 @@ export const deleteLink = asyncHandler(async (req: Request, res: Response) => {
  * Uses Claude API to break down a high-level task into actionable subtasks
  */
 export const decomposeTask = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = str(req.params.id)!;
 
   // Fetch the parent task with context
   const task = await prisma.task.findUnique({
@@ -451,18 +452,19 @@ export const decomposeTask = asyncHandler(async (req: Request, res: Response) =>
   });
 
   // Prepare decomposition request
+  const taskAny = task as any;
   const decompositionRequest = {
     task: {
       title: task.title,
       description: task.description,
     },
     epic: {
-      title: task.epic.title,
-      description: task.epic.description,
+      title: taskAny.epic.title,
+      description: taskAny.epic.description,
     },
     project: {
-      name: task.epic.project.name,
-      description: task.epic.project.description,
+      name: taskAny.epic.project.name,
+      description: taskAny.epic.project.description,
     },
   };
 

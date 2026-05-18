@@ -1,5 +1,4 @@
 import OpenAI from "openai";
-import type { Task, Epic, Project } from "@/types";
 
 /**
  * Subtask suggestion from AI decomposition

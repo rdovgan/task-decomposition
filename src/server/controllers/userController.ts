@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
+import { str } from "../lib/express";
 
 /**
  * Get all users
@@ -39,7 +40,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
  */
 export const getUserById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = str(req.params.id)!;
 
     const user = await prisma.user.findUnique({
       where: { id },

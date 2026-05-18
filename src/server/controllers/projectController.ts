@@ -2,13 +2,14 @@ import { Request, Response } from "express";
 import prisma from "../lib/prisma";
 import { asyncHandler, ApiError } from "../middleware/errorHandler";
 import type { CreateProjectInput, UpdateProjectInput } from "../lib/validations";
+import { str } from "../lib/express";
 
 export const getProjects = asyncHandler(async (req: Request, res: Response) => {
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 10;
+  const page = parseInt(str(req.query.page) || "1") || 1;
+  const limit = parseInt(str(req.query.limit) || "10") || 10;
   const skip = (page - 1) * limit;
-  const status = req.query.status as string;
-  const ownerId = req.query.ownerId as string;
+  const status = str(req.query.status);
+  const ownerId = str(req.query.ownerId);
 
   const where: any = {};
   if (status) where.status = status;
@@ -44,7 +45,7 @@ export const getProjects = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getProjectById = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = str(req.params.id)!;
 
   const project = await prisma.project.findUnique({
     where: { id },
@@ -86,7 +87,7 @@ export const createProject = asyncHandler(async (req: Request, res: Response) =>
 });
 
 export const updateProject = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = str(req.params.id)!;
   const input: UpdateProjectInput = req.body;
 
   const project = await prisma.project.update({
@@ -103,7 +104,7 @@ export const updateProject = asyncHandler(async (req: Request, res: Response) =>
 });
 
 export const deleteProject = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = str(req.params.id)!;
 
   await prisma.project.delete({
     where: { id },

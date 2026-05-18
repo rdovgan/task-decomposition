@@ -1,6 +1,7 @@
 import { type Request, type Response, type NextFunction } from "express";
 import { ApiError } from "./errorHandler";
-import { TaskStatus } from "../../types";
+import { TaskStatus } from "@prisma/client";
+import { str } from "../lib/express";
 
 /**
  * Valid status transitions for tasks
@@ -89,7 +90,7 @@ export const validateTaskStatusTransition = async (
   next: NextFunction
 ) => {
   try {
-    const { id } = req.params;
+    const id = str(req.params.id)!;
     const { status } = req.body;
 
     // If no status change is requested, skip validation
