@@ -1,9 +1,10 @@
 node_modules
 npm-debug.log
+yarn-error.log
 .next
 .git
+.github
 .gitignore
-README.md
 .env*.local
 .vercel
 *.log
@@ -11,3 +12,9 @@ README.md
 coverage
 dist
 build
+docs
+designs
+e2e
+*.md
+!README.md
+.claude

@@ -1,72 +1,31 @@
-version: "3.8"
-
 services:
-  # Next.js production server (frontend)
-  app:
-    build:
-      context: .
-      target: production
-    container_name: task-decomp-frontend-prod
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL}
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-    depends_on:
-      - postgres
-    restart: always
-    networks:
-      - task-decomp-prod-network
-
-  # Express API server (backend)
-  server:
-    build:
-      context: .
-      target: production
-    container_name: task-decomp-server-prod
-    ports:
-      - "3001:3001"
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL}
-      - PORT=3001
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - JWT_SECRET=${JWT_SECRET}
-    depends_on:
-      - postgres
-    command: node dist/server/index.js
-    restart: always
-    networks:
-      - task-decomp-prod-network
-
-  # PostgreSQL database
+  # ─── PostgreSQL ───────────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
     container_name: task-decomp-db-prod
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-taskdecomp}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
       POSTGRES_DB: ${POSTGRES_DB:-task_decomposition_prod}
     ports:
-      - "5434:5432"  # Different port to avoid conflict
+      - "5434:5432"
     volumes:
       - postgres_prod_data:/var/lib/postgresql/data
     networks:
       - task-decomp-prod-network
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-taskdecomp}"]
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-taskdecomp} -d ${POSTGRES_DB:-task_decomposition_prod}"]
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
-  # Redis (for caching/sessions)
+  # ─── Redis ────────────────────────────────────────────────────────
   redis:
     image: redis:7-alpine
     container_name: task-decomp-redis-prod
     ports:
-      - "6381:6379"  # Different port to avoid conflict
+      - "6381:6379"
     volumes:
       - redis_prod_data:/data
     networks:
@@ -77,6 +36,52 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # ─── Express API server (production build) ───────────────────────
+  server:
+    build:
+      context: .
+      target: backend
+    container_name: task-decomp-server-prod
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
+      PORT: 3001
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-4-6}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-https://yourdomain.com}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+    networks:
+      - task-decomp-prod-network
+
+  # ─── Next.js frontend (production build) ─────────────────────────
+  app:
+    build:
+      context: .
+      target: frontend
+    container_name: task-decomp-frontend-prod
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001/api}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      server:
+        condition: service_started
+    restart: always
+    networks:
+      - task-decomp-prod-network
 
 volumes:
   postgres_prod_data:

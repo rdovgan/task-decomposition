@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import type { Task, Epic, Project } from "@/types";
 
 /**
@@ -43,30 +43,39 @@ export interface DecompositionRequest {
 /**
  * AI-powered Task Decomposition Service
  *
- * Uses Claude API to intelligently break down high-level tasks
- * into manageable subtasks with time estimates and dependencies.
+ * Uses Z.AI Coding Plan API (OpenAI-compatible) to intelligently break down
+ * high-level tasks into manageable subtasks with time estimates and dependencies.
+ *
+ * Configuration via environment variables:
+ * - ZAI_API_KEY: Your Z.AI API key
+ * - ZAI_BASE_URL: Base URL (default: https://api.z.ai/api/coding/paas/v4)
+ * - ZAI_MODEL: Model name (default: glm-5-turbo)
  */
 class TaskDecompositionService {
-  private client: Anthropic;
+  private client: OpenAI;
   private model: string;
 
   constructor() {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const apiKey = process.env.ZAI_API_KEY;
 
     if (!apiKey) {
-      throw new Error("ANTHROPIC_API_KEY environment variable is not set");
+      throw new Error("ZAI_API_KEY environment variable is not set");
     }
 
-    this.client = new Anthropic({
+    const baseURL = process.env.ZAI_BASE_URL || "https://api.z.ai/api/coding/paas/v4";
+    const timeout = process.env.API_TIMEOUT_MS ? parseInt(process.env.API_TIMEOUT_MS, 10) : 30000;
+
+    this.client = new OpenAI({
       apiKey,
-      timeout: 30000, // 30 second timeout
+      baseURL,
+      timeout,
     });
 
-    this.model = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6";
+    this.model = process.env.ZAI_MODEL || "glm-5-turbo";
   }
 
   /**
-   * Decompose a task into subtasks using Claude API
+   * Decompose a task into subtasks using Z.AI API
    */
   async decompose(request: DecompositionRequest): Promise<DecompositionResponse> {
     const startTime = Date.now();
@@ -74,21 +83,30 @@ class TaskDecompositionService {
     try {
       const prompt = this.buildDecompositionPrompt(request);
 
-      const response = await this.client.messages.create({
+      const response = await this.client.chat.completions.create({
         model: this.model,
-        max_tokens: 4096,
         messages: [
+          {
+            role: "system",
+            content:
+              "You are a senior project manager and technical lead. Your task is to break down tasks into actionable subtasks. Always respond with valid JSON only.",
+          },
           {
             role: "user",
             content: prompt,
           },
         ],
+        temperature: 0.7,
       });
 
       const decompositionTime = (Date.now() - startTime) / 1000;
 
-      // Parse Claude's response
-      const content = this.extractTextContent(response.content);
+      // Parse AI response
+      const content = response.choices[0]?.message?.content;
+      if (!content) {
+        throw new Error("No content in AI response");
+      }
+
       const subtasks = this.parseSubtasks(content);
 
       return {
@@ -98,12 +116,11 @@ class TaskDecompositionService {
       };
     } catch (error) {
       if (error instanceof Error) {
-        // Handle specific Anthropic API errors
         if (error.message.includes("rate")) {
-          throw new Error("Anthropic API rate limit exceeded. Please try again later.");
+          throw new Error("Z.AI API rate limit exceeded. Please try again later.");
         }
-        if (error.message.includes("auth")) {
-          throw new Error("Anthropic API authentication failed. Check your API key.");
+        if (error.message.includes("auth") || error.message.includes("401")) {
+          throw new Error("Z.AI API authentication failed. Check your API key.");
         }
       }
       throw new Error(
@@ -113,7 +130,7 @@ class TaskDecompositionService {
   }
 
   /**
-   * Build the prompt for Claude API
+   * Build the prompt for task decomposition
    */
   private buildDecompositionPrompt(request: DecompositionRequest): string {
     const { task, epic, project } = request;
@@ -135,7 +152,7 @@ class TaskDecompositionService {
       context += "\n\n";
     }
 
-    return `You are a senior project manager and technical lead. Your task is to break down the following task into 3-8 actionable subtasks.
+    return `Break down the following task into 3-8 actionable subtasks.
 
 ${context}**Task to Decompose:**
 Title: ${task.title}
@@ -150,9 +167,8 @@ ${task.description ? `Description: ${task.description}` : ""}
 6. Identify dependencies by referencing the suggestedOrder of prerequisite tasks
 
 **Output Format:**
-Return ONLY a valid JSON object (no markdown, no explanation). Use this exact structure:
+Return ONLY a valid JSON object (no markdown, no explanation, no code fences). Use this exact structure:
 
-\`\`\`json
 {
   "subtasks": [
     {
@@ -173,7 +189,6 @@ Return ONLY a valid JSON object (no markdown, no explanation). Use this exact st
     }
   ]
 }
-\`\`\`
 
 **Guidelines:**
 - Total estimated hours should be realistic for the task complexity
@@ -186,28 +201,26 @@ Now generate the JSON response:`;
   }
 
   /**
-   * Extract text content from Claude response
-   */
-  private extractTextContent(content: Anthropic.Message["content"]): string {
-    const textBlock = content.find(block => block.type === "text");
-    if (!textBlock || textBlock.type !== "text") {
-      throw new Error("No text content in Claude response");
-    }
-    return textBlock.text;
-  }
-
-  /**
-   * Parse subtasks from Claude's response
+   * Parse subtasks from AI response
    */
   private parseSubtasks(content: string): SubtaskSuggestion[] {
     try {
       // Try to extract JSON from markdown code blocks
-      const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
+      let jsonStr = content.trim();
+      const jsonMatch = jsonStr.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
       if (jsonMatch) {
-        content = jsonMatch[1];
+        jsonStr = jsonMatch[1];
       }
 
-      const parsed = JSON.parse(content.trim());
+      // Also try to find raw JSON object if no code fences
+      if (!jsonStr.startsWith("{")) {
+        const rawMatch = jsonStr.match(/(\{[\s\S]*\})/);
+        if (rawMatch) {
+          jsonStr = rawMatch[1];
+        }
+      }
+
+      const parsed = JSON.parse(jsonStr);
 
       if (!parsed.subtasks || !Array.isArray(parsed.subtasks)) {
         throw new Error("Invalid response format: missing subtasks array");
@@ -227,7 +240,7 @@ Now generate the JSON response:`;
       return subtasks.sort((a, b) => a.suggestedOrder - b.suggestedOrder);
     } catch (error) {
       throw new Error(
-        `Failed to parse Claude response: ${error instanceof Error ? error.message : "Invalid JSON"}`
+        `Failed to parse AI response: ${error instanceof Error ? error.message : "Invalid JSON"}`
       );
     }
   }
@@ -248,15 +261,14 @@ Now generate the JSON response:`;
    */
   async healthCheck(): Promise<{ status: string; model: string }> {
     try {
-      // Simple test call
-      await this.client.messages.create({
+      const response = await this.client.chat.completions.create({
         model: this.model,
         max_tokens: 10,
         messages: [{ role: "user", content: "test" }],
       });
 
       return {
-        status: "healthy",
+        status: response.choices[0] ? "healthy" : "unhealthy",
         model: this.model,
       };
     } catch (error) {

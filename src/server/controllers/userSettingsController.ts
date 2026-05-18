@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import prisma from "../lib/prisma";
 import { asyncHandler, ApiError } from "../middleware/errorHandler";
 import { encrypt, decrypt } from "../lib/encryption";
@@ -47,22 +47,26 @@ export const updateUserSettings = asyncHandler(async (req: Request, res: Respons
     throw new ApiError(400, "API key is required");
   }
 
-  // Validate the API key by making a test request
-  const client = new Anthropic({
+  // Validate the API key by making a test request to Z.AI
+  const baseURL = process.env.ZAI_BASE_URL || "https://api.z.ai/api/coding/paas/v4";
+  const model = process.env.ZAI_MODEL || "glm-5-turbo";
+
+  const client = new OpenAI({
     apiKey: anthropicApiKey,
+    baseURL,
     timeout: 10000,
   });
 
   try {
-    await client.messages.create({
-      model: "claude-sonnet-4-6",
+    await client.chat.completions.create({
+      model,
       max_tokens: 10,
       messages: [{ role: "user", content: "test" }],
     });
   } catch (error: any) {
     console.error("API key validation failed:", error);
     if (error.status === 401) {
-      throw new ApiError(401, "Invalid Anthropic API key");
+      throw new ApiError(401, "Invalid Z.AI API key");
     }
     throw new ApiError(400, `API key validation failed: ${error.message}`);
   }
@@ -117,14 +121,18 @@ export const validateApiKey = asyncHandler(async (req: Request, res: Response) =
     throw new ApiError(400, "API key is required");
   }
 
-  const client = new Anthropic({
+  const baseURL = process.env.ZAI_BASE_URL || "https://api.z.ai/api/coding/paas/v4";
+  const model = process.env.ZAI_MODEL || "glm-5-turbo";
+
+  const client = new OpenAI({
     apiKey,
+    baseURL,
     timeout: 10000,
   });
 
   try {
-    await client.messages.create({
-      model: "claude-sonnet-4-6",
+    await client.chat.completions.create({
+      model,
       max_tokens: 10,
       messages: [{ role: "user", content: "test" }],
     });

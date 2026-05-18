@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import prisma from "../lib/prisma";
 import { asyncHandler, ApiError } from "../middleware/errorHandler";
 import type { CreateEpicInput, UpdateEpicInput } from "../lib/validations";
@@ -138,8 +138,8 @@ export const aiDecomposeEpic = asyncHandler(async (req: Request, res: Response) 
     throw new ApiError(404, "Epic not found");
   }
 
-  // Get user's API key if userId provided
-  let apiKey = process.env.ANTHROPIC_API_KEY;
+  // Get API key: from user settings or environment
+  let apiKey = process.env.ZAI_API_KEY;
 
   if (userId) {
     const userSettings = await prisma.userSettings.findUnique({
@@ -159,17 +159,19 @@ export const aiDecomposeEpic = asyncHandler(async (req: Request, res: Response) 
   if (!apiKey) {
     throw new ApiError(
       400,
-      "No Anthropic API key found. Please add your API key in settings or set ANTHROPIC_API_KEY environment variable."
+      "No Z.AI API key found. Please add your API key in settings or set ZAI_API_KEY environment variable."
     );
   }
 
-  // Initialize Anthropic client
-  const client = new Anthropic({
+  // Initialize Z.AI (OpenAI-compatible) client
+  const baseURL = process.env.ZAI_BASE_URL || "https://api.z.ai/api/coding/paas/v4";
+  const client = new OpenAI({
     apiKey,
+    baseURL,
     timeout: 60000, // 60 second timeout for AI requests
   });
 
-  const model = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6";
+  const model = process.env.ZAI_MODEL || "glm-5-turbo";
 
   // Build the decomposition prompt
   const prompt = buildDecompositionPrompt(epic, epic.project, customPrompt);
@@ -177,11 +179,15 @@ export const aiDecomposeEpic = asyncHandler(async (req: Request, res: Response) 
   try {
     const startTime = Date.now();
 
-    // Call Claude API
-    const response = await client.messages.create({
+    // Call Z.AI API (OpenAI-compatible)
+    const response = await client.chat.completions.create({
       model,
       max_tokens: 8192,
       messages: [
+        {
+          role: "system",
+          content: "You are a senior project manager and technical lead. Break down epics into actionable tasks. Always respond with valid JSON only.",
+        },
         {
           role: "user",
           content: prompt,
@@ -192,7 +198,10 @@ export const aiDecomposeEpic = asyncHandler(async (req: Request, res: Response) 
     const decompositionTime = (Date.now() - startTime) / 1000;
 
     // Extract and parse response
-    const content = extractTextContent(response.content);
+    const content = response.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error("No content in AI response");
+    }
     const tasks = parseTaskSuggestions(content);
 
     res.json({
@@ -207,15 +216,15 @@ export const aiDecomposeEpic = asyncHandler(async (req: Request, res: Response) 
   } catch (error: any) {
     console.error("AI decomposition error:", error);
 
-    // Handle specific Anthropic errors
+    // Handle specific API errors
     if (error.status === 401) {
-      throw new ApiError(401, "Invalid Anthropic API key. Please check your settings.");
+      throw new ApiError(401, "Invalid Z.AI API key. Please check your settings.");
     }
     if (error.status === 429) {
-      throw new ApiError(429, "Anthropic API rate limit exceeded. Please try again later.");
+      throw new ApiError(429, "Z.AI API rate limit exceeded. Please try again later.");
     }
     if (error.status === 400) {
-      throw new ApiError(400, `Bad request to Anthropic API: ${error.message}`);
+      throw new ApiError(400, `Bad request to Z.AI API: ${error.message}`);
     }
 
     throw new ApiError(500, `Failed to decompose epic: ${error.message || "Unknown error"}`);
@@ -289,18 +298,7 @@ Now generate the JSON response:`;
 }
 
 /**
- * Extract text content from Claude response
- */
-function extractTextContent(content: Anthropic.Message["content"]): string {
-  const textBlock = content.find(block => block.type === "text");
-  if (!textBlock || textBlock.type !== "text") {
-    throw new Error("No text content in Claude response");
-  }
-  return textBlock.text;
-}
-
-/**
- * Parse task suggestions from Claude's response
+ * Parse task suggestions from AI response
  */
 function parseTaskSuggestions(content: string): any[] {
   try {

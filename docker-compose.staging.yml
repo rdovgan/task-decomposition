@@ -1,52 +1,5 @@
-version: "3.8"
-
 services:
-  # Next.js development server (frontend)
-  app:
-    build:
-      context: .
-      target: dev
-    container_name: task-decomp-frontend-staging
-    ports:
-      - "3000:3000"
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/.next
-    environment:
-      - NODE_ENV=staging
-      - DATABASE_URL=postgresql://taskdecomp:taskdecomp@postgres:5432/task_decomposition_staging?schema=public
-      - NEXT_PUBLIC_API_URL=http://localhost:3001/api
-    depends_on:
-      - postgres
-    restart: unless-stopped
-    networks:
-      - task-decomp-staging-network
-
-  # Express API server (backend)
-  server:
-    build:
-      context: .
-      target: dev
-    container_name: task-decomp-server-staging
-    ports:
-      - "3001:3001"
-    volumes:
-      - .:/app
-      - /app/node_modules
-    environment:
-      - NODE_ENV=staging
-      - DATABASE_URL=postgresql://taskdecomp:taskdecomp@postgres:5432/task_decomposition_staging?schema=public
-      - PORT=3001
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-    depends_on:
-      - postgres
-    command: npm run dev:server
-    restart: unless-stopped
-    networks:
-      - task-decomp-staging-network
-
-  # PostgreSQL database
+  # ─── PostgreSQL ───────────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
     container_name: task-decomp-db-staging
@@ -55,24 +8,24 @@ services:
       POSTGRES_PASSWORD: taskdecomp
       POSTGRES_DB: task_decomposition_staging
     ports:
-      - "5433:5432"  # Different port to avoid conflict
+      - "5433:5432"
     volumes:
       - postgres_staging_data:/var/lib/postgresql/data
     networks:
       - task-decomp-staging-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U taskdecomp"]
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready -U taskdecomp -d task_decomposition_staging"]
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
-  # Redis (for future caching/sessions)
+  # ─── Redis ────────────────────────────────────────────────────────
   redis:
     image: redis:7-alpine
     container_name: task-decomp-redis-staging
     ports:
-      - "6380:6379"  # Different port to avoid conflict
+      - "6380:6379"
     volumes:
       - redis_staging_data:/data
     networks:
@@ -84,9 +37,67 @@ services:
       timeout: 5s
       retries: 5
 
+  # ─── Express API server ──────────────────────────────────────────
+  server:
+    build:
+      context: .
+      target: dev
+    container_name: task-decomp-server-staging
+    ports:
+      - "3001:3001"
+    volumes:
+      - .:/app
+      - server_node_modules:/app/node_modules
+    environment:
+      NODE_ENV: staging
+      DATABASE_URL: postgresql://taskdecomp:taskdecomp@postgres:5432/task_decomposition_staging?schema=public
+      PORT: 3001
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-4-6}
+      ALLOWED_ORIGINS: https://staging.yourdomain.com,https://staging-api.yourdomain.com
+      JWT_SECRET: ${JWT_SECRET:-staging-secret-key}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: npm run dev:server
+    restart: unless-stopped
+    networks:
+      - task-decomp-staging-network
+
+  # ─── Next.js frontend ────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      target: dev
+    container_name: task-decomp-frontend-staging
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - app_node_modules:/app/node_modules
+      - app_next:/app/.next
+    environment:
+      NODE_ENV: staging
+      DATABASE_URL: postgresql://taskdecomp:taskdecomp@postgres:5432/task_decomposition_staging?schema=public
+      NEXT_PUBLIC_API_URL: http://localhost:3001/api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      server:
+        condition: service_started
+    command: npm run dev
+    restart: unless-stopped
+    networks:
+      - task-decomp-staging-network
+
 volumes:
   postgres_staging_data:
   redis_staging_data:
+  server_node_modules:
+  app_node_modules:
+  app_next:
 
 networks:
   task-decomp-staging-network:
