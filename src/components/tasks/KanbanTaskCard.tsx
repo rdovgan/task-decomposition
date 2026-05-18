@@ -6,7 +6,7 @@ import { CSS } from "@dnd-kit/utilities";
 import Link from "next/link";
 import { Task } from "@/types";
 import { PriorityBadge } from "@/components/ui/priority-badge";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, MessageSquare } from "lucide-react";
 
 interface KanbanTaskCardProps {
   task: Task;
@@ -35,8 +35,6 @@ export function KanbanTaskCard({ task, isDragging = false }: KanbanTaskCardProps
 
   // Calculate if task is overdue
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
-
-  // Generate task ID from database ID (simplified)
   const taskId = `DOV-${task.id.slice(-6).toUpperCase()}`;
 
   return (
@@ -46,87 +44,74 @@ export function KanbanTaskCard({ task, isDragging = false }: KanbanTaskCardProps
       {...attributes}
       {...listeners}
       className={`
-        bg-card rounded-lg p-3 border transition-all cursor-grab
+        group rounded-lg bg-card p-3 border border-border/60 transition-all cursor-grab
         ${
           dragging
-            ? "shadow-xl rotate-2 scale-105 opacity-50 cursor-grabbing"
-            : "hover:shadow-lg hover:-translate-y-0.5"
+            ? "shadow-2xl rotate-2 scale-105 opacity-50 cursor-grabbing z-50"
+            : "hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5"
         }
       `}
     >
-      {/* Top Row: Priority + Avatar */}
-      <div className="flex items-start justify-between mb-2">
+      {/* Top Row: ID + Priority */}
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-mono text-muted-foreground/70">{taskId}</span>
         <PriorityBadge priority={task.priority} />
-
-        {/* Assignee Avatar */}
-        {task.assignee && (
-          <div
-            className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium"
-            title={task.assignee.name}
-          >
-            {task.assignee.name?.charAt(0).toUpperCase() || "?"}
-          </div>
-        )}
       </div>
 
       {/* Task Title */}
       <Link
         href={`/tasks/${task.id}`}
         onClick={e => e.stopPropagation()}
-        className={`
-          block text-sm font-semibold mb-2 line-clamp-2
-          hover:text-primary hover:underline
-        `}
+        className="block text-sm font-medium leading-snug mb-2 line-clamp-2 text-foreground hover:text-primary transition-colors"
       >
         {task.title}
       </Link>
 
-      {/* Metadata Row */}
-      <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
-        <span className="font-mono">{taskId}</span>
-
-        {task.epic && (
-          <>
-            <span>•</span>
-            <span className="truncate max-w-[120px]" title={task.epic.title}>
-              {task.epic.title}
-            </span>
-          </>
-        )}
-      </div>
+      {/* Epic tag */}
+      {task.epic && (
+        <div className="mb-2">
+          <span className="inline-block max-w-full truncate rounded-md bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+            {task.epic.title}
+          </span>
+        </div>
+      )}
 
       {/* Divider */}
-      <hr className="border-muted my-2" />
+      <div className="border-t border-border/40 my-2" />
 
       {/* Bottom Row: Metadata */}
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        {/* Story Points */}
-        {task.storyPoints && (
-          <span className="flex items-center gap-1">
-            <span>📊</span>
-            <span>{task.storyPoints} SP</span>
-          </span>
-        )}
-
-        {/* Estimated Hours */}
-        {task.estimatedHours && (
-          <span className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            <span>{task.estimatedHours}h</span>
-          </span>
-        )}
-
-        {/* Due Date */}
-        {task.dueDate && (
-          <span className={`flex items-center gap-1 ${isOverdue ? "text-destructive" : ""}`}>
-            <Calendar className="h-3 w-3" />
-            <span>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+          {task.storyPoints && (
+            <span className="flex items-center gap-0.5 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium">
+              {task.storyPoints} SP
+            </span>
+          )}
+          {task.estimatedHours && (
+            <span className="flex items-center gap-0.5">
+              <Clock className="h-3 w-3" />
+              {task.estimatedHours}h
+            </span>
+          )}
+          {task.dueDate && (
+            <span className={`flex items-center gap-0.5 ${isOverdue ? "text-destructive font-medium" : ""}`}>
+              <Calendar className="h-3 w-3" />
               {new Date(task.dueDate).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",
               })}
             </span>
-          </span>
+          )}
+        </div>
+
+        {/* Assignee Avatar */}
+        {task.assignee && (
+          <div
+            className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-semibold text-primary ring-2 ring-background"
+            title={task.assignee.name}
+          >
+            {task.assignee.name?.charAt(0).toUpperCase() || "?"}
+          </div>
         )}
       </div>
     </div>

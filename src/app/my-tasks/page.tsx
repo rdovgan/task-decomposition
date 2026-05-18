@@ -12,6 +12,7 @@ import {
   Clock,
   LayoutDashboard,
   LayoutList,
+  CheckSquare,
 } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PriorityBadge } from "@/components/ui/priority-badge";
@@ -271,8 +272,8 @@ export default function MyTasksPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-8 px-4">
-        <div className="flex items-center justify-center">
+      <div className="mx-auto max-w-6xl px-6 py-10">
+        <div className="flex items-center justify-center py-20">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
       </div>
@@ -281,7 +282,7 @@ export default function MyTasksPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto py-8 px-4">
+      <div className="mx-auto max-w-6xl px-6 py-10">
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
           {error}
         </div>
@@ -291,8 +292,8 @@ export default function MyTasksPage() {
 
   if (!currentUser) {
     return (
-      <div className="container mx-auto py-8 px-4">
-        <div className="rounded-lg border border-muted bg-muted/10 p-8 text-center">
+      <div className="mx-auto max-w-6xl px-6 py-10">
+        <div className="rounded-lg border border-dashed p-12 text-center">
           <p className="text-muted-foreground">No user found. Please log in to view your tasks.</p>
         </div>
       </div>
@@ -300,56 +301,60 @@ export default function MyTasksPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="mx-auto max-w-[1400px] px-6 py-10">
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">My Tasks</h1>
-            <p className="mt-2 text-muted-foreground">Manage and track your assigned tasks</p>
-          </div>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">My Tasks</h1>
+          <p className="mt-2 text-muted-foreground">Manage and track your assigned tasks</p>
+        </div>
 
-          {/* View Toggle */}
-          <div className="flex gap-2">
-            <Button
-              variant={viewMode === "kanban" ? "default" : "outline"}
-              size="sm"
-              onClick={() => handleViewToggle("kanban")}
-            >
-              <LayoutDashboard className="h-4 w-4 mr-2" />
-              Board
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "default" : "outline"}
-              size="sm"
-              onClick={() => handleViewToggle("list")}
-            >
-              <LayoutList className="h-4 w-4 mr-2" />
-              List
-            </Button>
-          </div>
+        {/* View Toggle */}
+        <div className="flex rounded-lg border bg-muted/50 p-1">
+          <button
+            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+              viewMode === "kanban" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+            }`
+            }
+            onClick={() => handleViewToggle("kanban")}
+          >
+            <LayoutDashboard className="h-4 w-4" />
+            Board
+          </button>
+          <button
+            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+              viewMode === "list" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+            }`
+            }
+            onClick={() => handleViewToggle("list")}
+          >
+            <LayoutList className="h-4 w-4" />
+            List
+          </button>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="mb-6 rounded-lg border bg-card p-4">
-        <div className="mb-4 flex items-center justify-between">
+      <div className="mb-6 rounded-xl border bg-card p-4">
+        <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
-            <h2 className="font-semibold">Filters</h2>
+            <span className="text-sm font-medium">Filters</span>
             {activeFilterCount > 0 && (
-              <span className="text-sm text-muted-foreground">({activeFilterCount} active)</span>
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                {activeFilterCount} active
+              </span>
             )}
           </div>
           {activeFilterCount > 0 && (
             <Button variant="ghost" size="sm" onClick={clearFilters}>
-              <X className="mr-2 h-4 w-4" />
-              Clear All
+              <X className="mr-1 h-3 w-3" />
+              Clear
             </Button>
           )}
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -409,26 +414,29 @@ export default function MyTasksPage() {
       </div>
 
       {/* Sort Controls */}
-      <div className="mb-6 flex items-center gap-4">
-        <span className="text-sm text-muted-foreground">Sort by:</span>
-        <div className="flex gap-2">
+      <div className="mb-6 flex items-center gap-3">
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Sort</span>
+        <div className="flex gap-1 rounded-lg border bg-muted/50 p-1">
           {[
             { field: "dueDate" as SortField, label: "Due Date" },
             { field: "priority" as SortField, label: "Priority" },
-            { field: "storyPoints" as SortField, label: "Story Points" },
+            { field: "storyPoints" as SortField, label: "Points" },
             { field: "createdAt" as SortField, label: "Created" },
           ].map(({ field, label }) => (
-            <Button
+            <button
               key={field}
-              variant={sortField === field ? "default" : "outline"}
-              size="sm"
               onClick={() => handleSort(field)}
+              className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                sortField === field
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
             >
               {label}
               {sortField === field && (
-                <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                <span className="ml-0.5">{sortDirection === "asc" ? "↑" : "↓"}</span>
               )}
-            </Button>
+            </button>
           ))}
         </div>
       </div>
@@ -438,9 +446,10 @@ export default function MyTasksPage() {
         <>
           {/* Kanban Board View */}
           {filteredTasks.length === 0 ? (
-            <div className="rounded-lg border bg-card p-12 text-center">
+            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-20">
+              <CheckSquare className="h-10 w-10 text-muted-foreground/40 mb-4" />
               <p className="text-lg font-medium text-muted-foreground">No tasks found</p>
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm text-muted-foreground">
                 {activeFilterCount > 0
                   ? "Try adjusting your filters or search query"
                   : "You don't have any active tasks assigned to you"}
@@ -459,15 +468,13 @@ export default function MyTasksPage() {
               if (statusTasks.length === 0) return null;
 
               return (
-                <div key={status} className="rounded-lg border bg-card p-6">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-xl font-semibold flex items-center gap-2">
-                      <StatusBadge status={status} />
-                      <span>{statusTasks.length}</span>
-                    </h2>
+                <div key={status} className="rounded-xl border bg-card overflow-hidden">
+                  <div className="flex items-center gap-2 border-b bg-muted/30 px-5 py-3">
+                    <StatusBadge status={status} />
+                    <span className="text-sm font-medium tabular-nums">{statusTasks.length}</span>
                   </div>
 
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid gap-3 p-4 md:grid-cols-2 lg:grid-cols-3">
                     {statusTasks.map(task => {
                       const timeRemaining = getTimeRemaining(task);
 
@@ -475,30 +482,32 @@ export default function MyTasksPage() {
                         <Link
                           key={task.id}
                           href={`/tasks/${task.id}`}
-                          className="block rounded-lg border bg-card p-4 transition-colors hover:bg-muted/50"
+                          className="group block rounded-lg border p-4 transition-all hover:border-primary/30 hover:shadow-sm"
                         >
-                          <div className="mb-3 flex items-start justify-between gap-2">
-                            <h3 className="font-medium line-clamp-2">{task.title}</h3>
+                          <div className="mb-2 flex items-start justify-between gap-2">
+                            <h3 className="text-sm font-medium line-clamp-2 group-hover:text-primary transition-colors">
+                              {task.title}
+                            </h3>
                             <PriorityBadge priority={task.priority} />
                           </div>
 
                           {task.epic && (
-                            <Link
-                              href={`/epics/${task.epic.id}`}
-                              className="text-sm text-primary hover:underline"
-                              onClick={e => e.stopPropagation()}
-                            >
+                            <span className="mb-2 inline-block max-w-full truncate rounded-md bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
                               {task.epic.title}
-                            </Link>
+                            </span>
                           )}
 
-                          <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
-                            {task.storyPoints && <span>{task.storyPoints} pts</span>}
+                          <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
+                            {task.storyPoints && (
+                              <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium">
+                                {task.storyPoints} SP
+                              </span>
+                            )}
 
                             {task.dueDate && (
                               <span className="flex items-center gap-1">
                                 <Calendar className="h-3 w-3" />
-                                {new Date(task.dueDate).toLocaleDateString()}
+                                {new Date(task.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                               </span>
                             )}
 
@@ -511,7 +520,7 @@ export default function MyTasksPage() {
                           </div>
 
                           {/* Inline Status Change */}
-                          <div className="mt-3">
+                          <div className="mt-3 pt-2 border-t border-border/40">
                             <select
                               value={task.status}
                               onChange={e => {
@@ -519,7 +528,7 @@ export default function MyTasksPage() {
                                 handleStatusChange(task.id, e.target.value as TaskStatus);
                               }}
                               onClick={e => e.stopPropagation()}
-                              className="w-full rounded-md border border-input bg-background px-2 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              className="w-full rounded-md border border-input bg-background px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                               <option value="TODO">To Do</option>
                               <option value="IN_PROGRESS">In Progress</option>
@@ -539,9 +548,10 @@ export default function MyTasksPage() {
 
             {/* Empty State */}
             {filteredTasks.length === 0 && (
-              <div className="rounded-lg border bg-card p-12 text-center">
+              <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-20">
+                <CheckSquare className="h-10 w-10 text-muted-foreground/40 mb-4" />
                 <p className="text-lg font-medium text-muted-foreground">No tasks found</p>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {activeFilterCount > 0
                     ? "Try adjusting your filters or search query"
                     : "You don't have any active tasks assigned to you"}

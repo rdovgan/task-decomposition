@@ -3,7 +3,22 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Edit, Trash2, Calendar, User, Clock, AlertCircle, Copy } from "lucide-react";
+import {
+  Edit,
+  Trash2,
+  Calendar,
+  User,
+  Clock,
+  AlertCircle,
+  Copy,
+  ExternalLink,
+  CheckCircle2,
+  Circle,
+  Loader2,
+  Ban,
+  Eye,
+  ArrowLeft,
+} from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PriorityBadge } from "@/components/ui/priority-badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +26,7 @@ import { CommentList } from "@/components/tasks/CommentList";
 import { CommentForm } from "@/components/tasks/CommentForm";
 import { TaskLinkList } from "@/components/tasks/TaskLinkList";
 import { DependencyManager } from "@/components/tasks/DependencyManager";
-import { Task, Comment, TaskLink, Dependency } from "@/types";
+import { Task, Comment, TaskLink, Dependency, TaskStatus } from "@/types";
 import {
   tasksApi,
   commentsApi,
@@ -19,6 +34,16 @@ import {
   dependenciesApi,
   ApiErrorClass,
 } from "@/lib/api-client";
+import { PageHeaderSkeleton } from "@/components/ui/skeleton";
+
+const statusIcons: Record<TaskStatus, React.ElementType> = {
+  TODO: Circle,
+  IN_PROGRESS: Loader2,
+  IN_REVIEW: Eye,
+  DONE: CheckCircle2,
+  BLOCKED: Ban,
+  CANCELLED: AlertCircle,
+};
 
 export default function TaskDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -107,7 +132,6 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
     if (!task) return;
 
     const duplicateTitle = prompt("Enter title for the duplicate task:", `${task.title} (copy)`);
-
     if (!duplicateTitle) return;
 
     try {
@@ -123,7 +147,6 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
         dueDate: task.dueDate || undefined,
       });
 
-      // Navigate to the new task
       router.push(`/tasks/${duplicateTask.id}`);
     } catch (err) {
       if (err instanceof ApiErrorClass) {
@@ -154,17 +177,15 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-8 px-4">
-        <div className="flex items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        </div>
+      <div className="mx-auto max-w-6xl px-6 py-10">
+        <PageHeaderSkeleton />
       </div>
     );
   }
 
   if (error || !task) {
     return (
-      <div className="container mx-auto py-8 px-4">
+      <div className="mx-auto max-w-6xl px-6 py-10">
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
           {error || "Task not found"}
         </div>
@@ -172,240 +193,253 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
     );
   }
 
-  const dependencyColumns = [
+  const StatusIcon = statusIcons[task.status] || Circle;
+
+  // Metadata items for sidebar
+  const metaItems = [
     {
-      key: "type",
-      title: "Type",
-      render: (value: unknown) => {
-        const type = value as string;
-        const typeColors: Record<string, string> = {
-          BLOCKS: "bg-destructive/10 text-destructive",
-          RELATED_TO: "bg-primary/10 text-primary",
-          DUPLICATES: "bg-muted text-muted-foreground",
-        };
-        return (
-          <span className={`rounded-full px-2 py-1 text-xs font-medium ${typeColors[type] || ""}`}>
-            {type.replace("_", " ")}
-          </span>
-        );
-      },
+      label: "Assignee",
+      icon: User,
+      content: task.assignee ? (
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-medium">
+            {task.assignee.name.charAt(0).toUpperCase()}
+          </div>
+          <span className="font-medium text-sm">{task.assignee.name}</span>
+        </div>
+      ) : (
+        <span className="text-sm italic text-muted-foreground">Unassigned</span>
+      ),
     },
     {
-      key: "dependsOnTaskId",
-      title: "Depends On",
-      render: (value: unknown) => (
-        <Link href={`/tasks/${value}`} className="text-primary hover:underline">
-          Task {String(value).slice(0, 8)}
-        </Link>
+      label: "Status",
+      icon: StatusIcon,
+      content: <StatusBadge status={task.status} />,
+    },
+    {
+      label: "Priority",
+      icon: AlertCircle,
+      content: <PriorityBadge priority={task.priority} />,
+    },
+    ...(task.epic
+      ? [
+          {
+            label: "Epic",
+            icon: ExternalLink,
+            content: (
+              <Link
+                href={`/epics/${task.epic.id}`}
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                {task.epic.title}
+              </Link>
+            ),
+          },
+        ]
+      : []),
+    ...(task.storyPoints
+      ? [
+          {
+            label: "Story Points",
+            icon: CheckCircle2,
+            content: (
+              <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                {task.storyPoints} pts
+              </span>
+            ),
+          },
+        ]
+      : []),
+    ...(task.estimatedHours
+      ? [
+          {
+            label: "Estimated",
+            icon: Clock,
+            content: <span className="text-sm font-medium">{task.estimatedHours}h</span>,
+          },
+        ]
+      : []),
+    ...(task.actualHours
+      ? [
+          {
+            label: "Actual",
+            icon: Clock,
+            content: <span className="text-sm font-medium">{task.actualHours}h</span>,
+          },
+        ]
+      : []),
+    ...(task.startDate
+      ? [
+          {
+            label: "Start Date",
+            icon: Calendar,
+            content: (
+              <span className="text-sm">{new Date(task.startDate).toLocaleDateString()}</span>
+            ),
+          },
+        ]
+      : []),
+    ...(task.dueDate
+      ? [
+          {
+            label: "Due Date",
+            icon: Calendar,
+            content: (
+              <span
+                className={`text-sm ${
+                  new Date(task.dueDate) < new Date() ? "text-destructive font-medium" : ""
+                }`}
+              >
+                {new Date(task.dueDate).toLocaleDateString()}
+              </span>
+            ),
+          },
+        ]
+      : []),
+    ...(task.completedAt
+      ? [
+          {
+            label: "Completed",
+            icon: CheckCircle2,
+            content: (
+              <span className="text-sm">{new Date(task.completedAt).toLocaleDateString()}</span>
+            ),
+          },
+        ]
+      : []),
+    {
+      label: "Created",
+      icon: Calendar,
+      content: (
+        <span className="text-sm text-muted-foreground">
+          {new Date(task.createdAt).toLocaleDateString()}
+        </span>
+      ),
+    },
+    {
+      label: "Updated",
+      icon: Calendar,
+      content: (
+        <span className="text-sm text-muted-foreground">
+          {new Date(task.updatedAt).toLocaleDateString()}
+        </span>
       ),
     },
   ];
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="mb-8">
+    <div className="mx-auto max-w-6xl px-6 py-10">
+      {/* Breadcrumb */}
+      <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
         <Link
           href={task.epicId ? `/epics/${task.epicId}` : "/tasks"}
-          className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
+          className="hover:text-foreground transition-colors"
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {task.epicId ? "Back to Epic" : "Back to Tasks"}
+          {task.epicId ? (task.epic?.title || "Epic") : "Tasks"}
         </Link>
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold tracking-tight">{task.title}</h1>
-            {task.description && (
-              <div className="mt-4 prose max-w-none">
-                <p className="text-muted-foreground whitespace-pre-wrap">{task.description}</p>
-              </div>
-            )}
+        <span>/</span>
+        <span className="text-foreground truncate max-w-[200px]">{task.title}</span>
+      </div>
+
+      {/* Header */}
+      <div className="mb-8 flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-3">
+            <StatusIcon
+              className={`h-5 w-5 shrink-0 ${
+                task.status === "IN_PROGRESS" ? "animate-spin text-blue-500" : "text-muted-foreground"
+              }`}
+            />
+            <h1 className="text-2xl font-bold tracking-tight truncate">{task.title}</h1>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleDuplicate}>
-              <Copy className="mr-2 h-4 w-4" />
-              Duplicate
-            </Button>
-            <Button variant="outline" onClick={() => router.push(`/tasks/${task.id}/edit`)}>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit
-            </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </Button>
-          </div>
+          {task.description && (
+            <div className="mt-3 rounded-lg bg-muted/30 p-4">
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                {task.description}
+              </p>
+            </div>
+          )}
+        </div>
+        <div className="flex gap-2 shrink-0">
+          <Button variant="outline" size="sm" onClick={handleDuplicate}>
+            <Copy className="mr-2 h-4 w-4" />
+            Duplicate
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => router.push(`/tasks/${task.id}/edit`)}>
+            <Edit className="mr-2 h-4 w-4" />
+            Edit
+          </Button>
+          <Button variant="destructive" size="sm" onClick={handleDelete}>
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete
+          </Button>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
-          {/* Details Section */}
-          <div className="rounded-lg border bg-card p-6">
-            <h2 className="mb-4 text-xl font-semibold">Task Details</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <User className="h-4 w-4" />
-                  <span>Assignee</span>
-                </div>
-                <div className="mt-1 flex items-center gap-2">
-                  {task.assignee ? (
-                    <>
-                      <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground text-sm font-medium">
-                        {task.assignee.name.charAt(0).toUpperCase()}
-                      </div>
-                      <span className="font-medium">{task.assignee.name}</span>
-                    </>
-                  ) : (
-                    <span className="italic text-muted-foreground">Unassigned</span>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>Status</span>
-                </div>
-                <div className="mt-1">
-                  <StatusBadge status={task.status} />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>Priority</span>
-                </div>
-                <div className="mt-1">
-                  <PriorityBadge priority={task.priority} />
-                </div>
-              </div>
-
-              {task.epic && (
-                <div>
-                  <div className="text-sm text-muted-foreground">Epic</div>
-                  <div className="mt-1">
-                    <Link
-                      href={`/epics/${task.epic.id}`}
-                      className="font-medium text-primary hover:underline"
-                    >
-                      {task.epic.title}
-                    </Link>
-                  </div>
-                </div>
-              )}
-
-              {task.storyPoints && (
-                <div>
-                  <div className="text-sm text-muted-foreground">Story Points</div>
-                  <div className="mt-1 font-medium">{task.storyPoints} pts</div>
-                </div>
-              )}
-
-              {task.estimatedHours && (
-                <div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span>Time Estimate</span>
-                  </div>
-                  <div className="mt-1 font-medium">{task.estimatedHours}h</div>
-                </div>
-              )}
-
-              {task.actualHours && (
-                <div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span>Actual Hours</span>
-                  </div>
-                  <div className="mt-1 font-medium">{task.actualHours}h</div>
-                </div>
-              )}
-
-              {task.startDate && (
-                <div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    <span>Start Date</span>
-                  </div>
-                  <div className="mt-1 font-medium">
-                    {new Date(task.startDate).toLocaleDateString()}
-                  </div>
-                </div>
-              )}
-
-              {task.dueDate && (
-                <div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    <span>Due Date</span>
-                  </div>
-                  <div className="mt-1 font-medium">
-                    {new Date(task.dueDate).toLocaleDateString()}
-                  </div>
-                </div>
-              )}
-
-              {task.completedAt && (
-                <div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    <span>Completed</span>
-                  </div>
-                  <div className="mt-1 font-medium">
-                    {new Date(task.completedAt).toLocaleDateString()}
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Calendar className="h-4 w-4" />
-                  <span>Created</span>
-                </div>
-                <div className="mt-1 font-medium">
-                  {new Date(task.createdAt).toLocaleDateString()}
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Calendar className="h-4 w-4" />
-                  <span>Updated</span>
-                </div>
-                <div className="mt-1 font-medium">
-                  {new Date(task.updatedAt).toLocaleDateString()}
-                </div>
-              </div>
+      {/* Two-column layout */}
+      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+        {/* Main Content */}
+        <div className="space-y-6">
+          {/* Dependencies */}
+          <div className="rounded-xl border bg-card">
+            <div className="p-6">
+              <DependencyManager
+                taskId={task.id}
+                dependencies={dependencies}
+                onDependenciesChange={loadDependencies}
+              />
             </div>
           </div>
 
-          {/* Dependencies Section */}
-          <div className="rounded-lg border bg-card p-6">
-            <DependencyManager
-              taskId={task.id}
-              dependencies={dependencies}
-              onDependenciesChange={loadDependencies}
-            />
+          {/* External Links */}
+          <div className="rounded-xl border bg-card">
+            <div className="p-6">
+              <h2 className="mb-4 text-lg font-semibold">External Links</h2>
+              <TaskLinkList links={links} onDelete={handleDeleteLink} onCreate={handleAddLink} />
+            </div>
           </div>
 
-          {/* Links Section */}
-          <div className="rounded-lg border bg-card p-6">
-            <h2 className="mb-4 text-xl font-semibold">External Links</h2>
-            <TaskLinkList links={links} onDelete={handleDeleteLink} onCreate={handleAddLink} />
+          {/* Comments */}
+          <div className="rounded-xl border bg-card">
+            <div className="p-6">
+              <h2 className="mb-4 text-lg font-semibold">
+                Comments
+                {comments.length > 0 && (
+                  <span className="ml-2 text-sm font-normal text-muted-foreground">
+                    ({comments.length})
+                  </span>
+                )}
+              </h2>
+              <CommentForm onSubmit={handleAddComment} />
+              <div className="mt-6">
+                {commentsLoading ? (
+                  <div className="text-center text-sm text-muted-foreground">
+                    Loading comments...
+                  </div>
+                ) : (
+                  <CommentList comments={comments} onDelete={handleDeleteComment} />
+                )}
+              </div>
+            </div>
           </div>
+        </div>
 
-          {/* Comments Section */}
-          <div className="rounded-lg border bg-card p-6">
-            <h2 className="mb-4 text-xl font-semibold">Comments</h2>
-            <CommentForm onSubmit={handleAddComment} />
-            <div className="mt-6">
-              {commentsLoading ? (
-                <div className="text-center text-muted-foreground">Loading comments...</div>
-              ) : (
-                <CommentList comments={comments} onDelete={handleDeleteComment} />
-              )}
+        {/* Sidebar - Task Details */}
+        <div className="space-y-6">
+          <div className="rounded-xl border bg-card p-5">
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              Details
+            </h3>
+            <div className="space-y-4">
+              {metaItems.map(item => (
+                <div key={item.label}>
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5">
+                    <item.icon className="h-3 w-3" />
+                    {item.label}
+                  </div>
+                  {item.content}
+                </div>
+              ))}
             </div>
           </div>
         </div>

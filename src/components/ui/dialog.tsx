@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface DialogProps {
   open: boolean;
@@ -15,6 +16,21 @@ interface DialogProps {
 
 export function Dialog({ open, onClose, title, children, footer, size = "md" }: DialogProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  const [animating, setAnimating] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setVisible(true);
+      // Trigger enter animation on next frame
+      requestAnimationFrame(() => setAnimating(true));
+    } else {
+      setAnimating(false);
+      // Wait for animation to finish before hiding
+      const timer = setTimeout(() => setVisible(false), 200);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -32,7 +48,7 @@ export function Dialog({ open, onClose, title, children, footer, size = "md" }: 
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!visible) return null;
 
   const sizeClasses = {
     sm: "max-w-md",
@@ -44,23 +60,30 @@ export function Dialog({ open, onClose, title, children, footer, size = "md" }: 
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className={cn(
+        "fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity duration-200",
+        animating ? "opacity-100" : "opacity-0"
+      )}
       onClick={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="dialog-title"
-        className={`relative w-full ${sizeClasses[size]} bg-background rounded-lg shadow-lg`}
+        className={cn(
+          "relative w-full bg-background rounded-xl shadow-2xl transition-all duration-200",
+          sizeClasses[size],
+          animating ? "scale-100 opacity-100 translate-y-0" : "scale-95 opacity-0 translate-y-2"
+        )}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b p-6">
-          <h2 id="dialog-title" className="text-xl font-semibold">
+        <div className="flex items-center justify-between border-b px-6 py-4">
+          <h2 id="dialog-title" className="text-lg font-semibold">
             {title}
           </h2>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-5 w-5" />
+          <Button variant="ghost" size="icon-sm" onClick={onClose}>
+            <X className="h-4 w-4" />
           </Button>
         </div>
 
@@ -68,7 +91,11 @@ export function Dialog({ open, onClose, title, children, footer, size = "md" }: 
         <div className="max-h-[70vh] overflow-y-auto p-6">{children}</div>
 
         {/* Footer */}
-        {footer && <div className="flex justify-end gap-2 border-t p-6">{footer}</div>}
+        {footer && (
+          <div className="flex justify-end gap-2 border-t px-6 py-4 bg-muted/30 rounded-b-xl">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );

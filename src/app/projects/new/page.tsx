@@ -51,7 +51,7 @@ export default function NewProjectPage() {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-2xl">
+    <div className="mx-auto max-w-2xl px-6 py-10">
       <Link
         href="/projects"
         className="mb-6 inline-flex items-center text-sm text-muted-foreground hover:text-foreground"

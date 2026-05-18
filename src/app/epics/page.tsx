@@ -88,11 +88,11 @@ export default function EpicsPage() {
   ];
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="mb-8 flex items-center justify-between">
+    <div className="mx-auto max-w-6xl px-6 py-10">
+      <div className="mb-8 flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Epics</h1>
-          <p className="text-muted-foreground">Manage your epics and their tasks</p>
+          <p className="mt-2 text-muted-foreground">Manage your epics and their tasks</p>
         </div>
         <Button onClick={() => router.push("/epics/new")}>
           <Plus className="mr-2 h-4 w-4" />
@@ -143,12 +143,14 @@ export default function EpicsPage() {
         </div>
       )}
 
-      <DataTable
-        columns={columns}
-        data={epics as unknown as Record<string, unknown>[]}
-        loading={epicsLoading}
-        emptyMessage="No epics found. Create your first epic to get started."
-      />
+      <div className="rounded-xl border bg-card overflow-hidden">
+        <DataTable
+          columns={columns}
+          data={epics as unknown as Record<string, unknown>[]}
+          loading={epicsLoading}
+          emptyMessage="No epics found. Create your first epic to get started."
+        />
+      </div>
     </div>
   );
 }

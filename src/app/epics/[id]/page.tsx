@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Edit, Trash2, Plus, Sparkles } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Plus, Sparkles, Calendar } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PriorityBadge } from "@/components/ui/priority-badge";
@@ -317,8 +317,8 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-8 px-4">
-        <div className="flex items-center justify-center">
+      <div className="mx-auto max-w-6xl px-6 py-10">
+        <div className="flex items-center justify-center py-20">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
       </div>
@@ -327,7 +327,7 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
 
   if (error || !epic) {
     return (
-      <div className="container mx-auto py-8 px-4">
+      <div className="mx-auto max-w-6xl px-6 py-10">
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
           {error || "Epic not found"}
         </div>
@@ -336,51 +336,68 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="mx-auto max-w-6xl px-6 py-10">
+      {/* Breadcrumb */}
+      <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
+        {epic.project ? (
+          <>
+            <Link href="/epics" className="hover:text-foreground transition-colors">
+              Epics
+            </Link>
+            <span>/</span>
+            <Link
+              href={`/projects/${epic.project.id}`}
+              className="hover:text-foreground transition-colors"
+            >
+              {epic.project.name}
+            </Link>
+            <span>/</span>
+            <span className="text-foreground truncate max-w-[200px]">{epic.title}</span>
+          </>
+        ) : (
+          <>
+            <Link href="/epics" className="hover:text-foreground transition-colors">
+              <ArrowLeft className="mr-1 h-3.5 w-3.5" />
+              Back to Epics
+            </Link>
+          </>
+        )}
+      </div>
+      {/* Header */}
       <div className="mb-8">
-        <Link
-          href="/epics"
-          className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Epics
-        </Link>
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            {epic.project && (
-              <Link
-                href={`/projects/${epic.project.id}`}
-                className="mb-2 inline-flex text-sm text-primary hover:underline"
-              >
-                {epic.project.name}
-              </Link>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl font-bold tracking-tight">{epic.title}</h1>
+            {epic.description && (
+              <p className="mt-2 text-muted-foreground">{epic.description}</p>
             )}
-            <h1 className="text-3xl font-bold tracking-tight">{epic.title}</h1>
-            {epic.description && <p className="mt-2 text-muted-foreground">{epic.description}</p>}
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => router.push(`/epics/${epic.id}/edit`)}>
+          <div className="flex gap-2 shrink-0">
+            <Button variant="outline" size="sm" onClick={() => router.push(`/epics/${epic.id}/edit`)}>
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </Button>
-            <Button variant="destructive" onClick={handleDelete}>
+            <Button variant="destructive" size="sm" onClick={handleDelete}>
               <Trash2 className="mr-2 h-4 w-4" />
               Delete
             </Button>
           </div>
         </div>
-        <div className="mt-4 flex flex-wrap items-center gap-4">
-          <div>
-            <span className="text-sm text-muted-foreground">Status: </span>
+
+        {/* Meta bar */}
+        <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-lg border bg-muted/30 px-4 py-3">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Status</span>
             <StatusBadge status={epic.status} />
           </div>
-          <div>
-            <span className="text-sm text-muted-foreground">Priority: </span>
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Priority</span>
             <PriorityBadge priority={epic.priority} />
           </div>
           {epic.dueDate && (
-            <div className="text-sm text-muted-foreground">
-              Due: {new Date(epic.dueDate).toLocaleDateString()}
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Calendar className="h-3.5 w-3.5" />
+              Due {new Date(epic.dueDate).toLocaleDateString()}
             </div>
           )}
           <div className="text-sm text-muted-foreground">
@@ -391,16 +408,16 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
 
       {/* Dependency Graph Section */}
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-semibold">Dependency Graph</h2>
-          <Button variant="outline" onClick={() => setShowDependencyGraph(!showDependencyGraph)}>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold">Dependency Graph</h2>
+          <Button variant="outline" size="sm" onClick={() => setShowDependencyGraph(!showDependencyGraph)}>
             {showDependencyGraph ? "Hide" : "Show"} Graph
           </Button>
         </div>
 
         {showDependencyGraph && (
           <div
-            className="border border-gray-200 rounded-lg overflow-hidden"
+            className="rounded-xl border overflow-hidden"
             style={{ height: "500px" }}
           >
             <DependencyGraph tasks={tasks} dependencies={dependencies} />
@@ -409,14 +426,14 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
       </div>
 
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-semibold">Tasks</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold">Tasks</h2>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setAiDialogOpen(true)} className="gap-2">
-              <Sparkles className="h-4 w-4" />
+            <Button variant="outline" size="sm" onClick={() => setAiDialogOpen(true)} className="gap-1.5">
+              <Sparkles className="h-3.5 w-3.5" />
               AI Assist
             </Button>
-            <Button onClick={() => setCreateModalOpen(true)}>
+            <Button size="sm" onClick={() => setCreateModalOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
               New Task
             </Button>
@@ -425,11 +442,11 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
 
         {/* Bulk Actions */}
         {selectedTaskIds.size > 0 && (
-          <div className="mb-4 p-4 bg-muted rounded-lg border">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="text-sm font-medium">
+          <div className="mb-4 p-3 bg-primary/5 rounded-lg border border-primary/20">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <span className="text-sm font-medium">
                 {selectedTaskIds.size} task{selectedTaskIds.size !== 1 ? "s" : ""} selected
-              </div>
+              </span>
               <div className="flex items-center gap-3">
                 <select
                   value={bulkStatus}
@@ -475,23 +492,25 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
         )}
       </div>
 
-      <DataTable
-        columns={taskColumns}
-        data={sortedTasks as unknown as Record<string, unknown>[]}
-        loading={tasksLoading}
-        emptyMessage="No tasks found. Create your first task to get started."
-        onRowClick={row => {
-          const task = row as unknown as Task;
-          router.push(`/tasks/${task.id}`);
-        }}
-        onSort={handleSort}
-        sortKey={sortKey}
-        sortDirection={sortDirection}
-        selectable
-        selectedRows={selectedTaskIds}
-        onSelectionChange={selectedIds => setSelectedTaskIds(new Set(selectedIds) as Set<string>)}
-        getRowId={row => (row as unknown as Task).id}
-      />
+      <div className="rounded-xl border bg-card overflow-hidden">
+        <DataTable
+          columns={taskColumns}
+          data={sortedTasks as unknown as Record<string, unknown>[]}
+          loading={tasksLoading}
+          emptyMessage="No tasks found. Create your first task to get started."
+          onRowClick={row => {
+            const task = row as unknown as Task;
+            router.push(`/tasks/${task.id}`);
+          }}
+          onSort={handleSort}
+          sortKey={sortKey}
+          sortDirection={sortDirection}
+          selectable
+          selectedRows={selectedTaskIds}
+          onSelectionChange={selectedIds => setSelectedTaskIds(new Set(selectedIds) as Set<string>)}
+          getRowId={row => (row as unknown as Task).id}
+        />
+      </div>
 
       {/* AI Decomposition Dialog */}
       <AIDecompositionDialog

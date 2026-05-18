@@ -2,7 +2,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { ChevronUp, ChevronDown, Check } from "lucide-react";
+import { ChevronUp, ChevronDown } from "lucide-react";
 
 export interface Column<T> {
   key: string;
@@ -83,15 +83,15 @@ export function DataTable<T extends Record<string, unknown>>({
   const getSortIcon = (column: Column<T>) => {
     if (sortKey !== column.key) return null;
     return sortDirection === "asc" ? (
-      <ChevronUp className="ml-1 h-4 w-4" />
+      <ChevronUp className="ml-1 h-3.5 w-3.5" />
     ) : (
-      <ChevronDown className="ml-1 h-4 w-4" />
+      <ChevronDown className="ml-1 h-3.5 w-3.5" />
     );
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
+      <div className="flex items-center justify-center p-12">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
     );
@@ -99,8 +99,11 @@ export function DataTable<T extends Record<string, unknown>>({
 
   if (data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center">
-        <p className="text-muted-foreground">{emptyMessage}</p>
+      <div className="flex flex-col items-center justify-center p-16 text-center">
+        <div className="rounded-full bg-muted p-3 mb-3">
+          <ChevronDown className="h-5 w-5 text-muted-foreground" />
+        </div>
+        <p className="text-sm text-muted-foreground">{emptyMessage}</p>
       </div>
     );
   }
@@ -108,10 +111,10 @@ export function DataTable<T extends Record<string, unknown>>({
   return (
     <div className={cn("w-full overflow-auto", className)}>
       <table className="w-full caption-bottom text-sm">
-        <thead className="[&_tr]:border-b">
-          <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+        <thead>
+          <tr className="border-b bg-muted/30">
             {selectable && (
-              <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[50px]">
+              <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground w-[44px]">
                 <input
                   type="checkbox"
                   checked={isAllSelected}
@@ -121,7 +124,7 @@ export function DataTable<T extends Record<string, unknown>>({
                     }
                   }}
                   onChange={e => handleSelectAll(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring cursor-pointer"
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring cursor-pointer accent-primary"
                   aria-label="Select all rows"
                 />
               </th>
@@ -130,13 +133,13 @@ export function DataTable<T extends Record<string, unknown>>({
               <th
                 key={column.key}
                 className={cn(
-                  "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
-                  column.sortable && "cursor-pointer hover:text-foreground",
+                  "h-10 px-4 text-left align-middle text-xs font-semibold uppercase tracking-wider text-muted-foreground",
+                  column.sortable && "cursor-pointer hover:text-foreground transition-colors",
                   column.className
                 )}
                 onClick={() => handleSort(column)}
               >
-                <div className="flex items-center">
+                <div className="flex items-center gap-0.5">
                   {column.title}
                   {getSortIcon(column)}
                 </div>
@@ -144,7 +147,7 @@ export function DataTable<T extends Record<string, unknown>>({
             ))}
           </tr>
         </thead>
-        <tbody className="[&_tr:last-child]:border-0">
+        <tbody>
           {data.map((row, rowIndex) => {
             const rowId = getRowId(row, rowIndex);
             const isSelected = selectedRows.has(rowId);
@@ -153,12 +156,13 @@ export function DataTable<T extends Record<string, unknown>>({
               <tr
                 key={rowIndex}
                 className={cn(
-                  "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+                  "border-b transition-colors",
                   onRowClick && "cursor-pointer",
-                  isSelected && "bg-muted/50"
+                  isSelected
+                    ? "bg-primary/5"
+                    : "hover:bg-muted/40",
                 )}
                 onClick={e => {
-                  // Don't trigger row click if clicking on checkbox or interactive elements
                   if ((e.target as HTMLElement).closest('input[type="checkbox"]')) {
                     return;
                   }
@@ -166,7 +170,7 @@ export function DataTable<T extends Record<string, unknown>>({
                 }}
               >
                 {selectable && (
-                  <td className="p-4 align-middle w-[50px]">
+                  <td className="p-4 align-middle w-[44px]">
                     <input
                       type="checkbox"
                       checked={isSelected}
@@ -174,7 +178,7 @@ export function DataTable<T extends Record<string, unknown>>({
                         e.stopPropagation();
                         handleSelectRow(rowId, e.target.checked);
                       }}
-                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring cursor-pointer"
+                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring cursor-pointer accent-primary"
                       aria-label={`Select row ${rowIndex + 1}`}
                     />
                   </td>
@@ -182,10 +186,7 @@ export function DataTable<T extends Record<string, unknown>>({
                 {columns.map(column => (
                   <td
                     key={column.key}
-                    className={cn(
-                      "p-4 align-middle [&:has([role=checkbox])]:pr-0",
-                      column.className
-                    )}
+                    className={cn("px-4 py-3 align-middle", column.className)}
                   >
                     {column.render
                       ? column.render(row[column.key], row)
