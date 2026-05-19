@@ -10,13 +10,15 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/", label: "Home", icon: Home },
+  { href: "/", label: "Decompose", icon: Sparkles },
+  { href: "/team", label: "Team", icon: Users },
   { href: "/projects", label: "Projects", icon: FolderKanban },
   { href: "/epics", label: "Epics", icon: Layers },
   { href: "/my-tasks", label: "My Tasks", icon: CheckSquare },

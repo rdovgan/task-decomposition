@@ -14,6 +14,8 @@ import {
   CreateTaskRequest,
   UpdateTaskRequest,
   ApiError as ApiErrorType,
+  TeamConfig,
+  TeamMember,
 } from "@/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -343,6 +345,52 @@ export const userSettingsApi = {
     }>(`/api/user-settings/validate-api-key`, { apiKey });
     return res.data;
   },
+};
+
+// Decompose API
+export const decomposeApi = {
+  quick: async (file: File, data: { projectName?: string; teamConfigId?: string; customTeam?: string }) => {
+    const formData = new FormData();
+    formData.append("pdf", file);
+    if (data.projectName) formData.append("projectName", data.projectName);
+    if (data.teamConfigId) formData.append("teamConfigId", data.teamConfigId);
+    if (data.customTeam) formData.append("customTeam", data.customTeam);
+
+    const response = await fetch(`${API_BASE_URL}/api/decompose/quick`, {
+      method: "POST",
+      body: formData,
+    });
+    return handleResponse<any>(response);
+  },
+
+  text: async (data: { text: string; projectName?: string; teamConfigId?: string; customTeam?: string }) => {
+    return api.post<any>("/api/decompose/text", data);
+  },
+};
+
+// Team Config API
+export const teamConfigApi = {
+  list: async () => {
+    const res = await api.get<{ data: TeamConfig[] }>("/api/decompose/team-configs");
+    return res.data;
+  },
+
+  get: async (id: string) => {
+    const res = await api.get<{ data: TeamConfig }>(`/api/decompose/team-configs/${id}`);
+    return res.data;
+  },
+
+  create: async (data: { name: string; description?: string; members: TeamMember[]; isDefault?: boolean }) => {
+    const res = await api.post<{ data: TeamConfig }>("/api/decompose/team-configs", data);
+    return res.data;
+  },
+
+  update: async (id: string, data: { name?: string; description?: string; members?: TeamMember[]; isDefault?: boolean }) => {
+    const res = await api.patch<{ data: TeamConfig }>(`/api/decompose/team-configs/${id}`, data);
+    return res.data;
+  },
+
+  delete: (id: string) => api.delete<void>(`/api/decompose/team-configs/${id}`),
 };
 
 export { ApiError as ApiErrorClass };

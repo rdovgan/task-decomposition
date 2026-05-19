@@ -198,6 +198,19 @@ enum LinkType {
   EXTERNAL
 }
 
+// Team configuration - reusable team presets for estimation
+model TeamConfig {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  config      Json     // { members: [{ role: "senior", specialty: "java" }, ...] }
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("team_configs")
+}
+
 // Comment model - task discussions
 model Comment {
   id        String   @id @default(cuid())

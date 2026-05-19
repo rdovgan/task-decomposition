@@ -224,6 +224,49 @@ export interface AITaskSuggestion {
   priority: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
 }
 
+// Quick Decompose task suggestion (more detailed)
+export interface DecomposeTask {
+  title: string;
+  description: string;
+  estimatedHours: number;
+  priority: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+  specialty: string;
+  suggestedOrder: number;
+  dependencies: number[];
+}
+
+// Team member for estimation
+export interface TeamMember {
+  role: "junior" | "middle" | "senior" | "lead" | "architect";
+  specialty: string;
+  count?: number;
+}
+
+// Team configuration preset
+export interface TeamConfig {
+  id: string;
+  name: string;
+  description: string | null;
+  config: { members: TeamMember[] };
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Quick Decompose response
+export interface QuickDecomposeResponse {
+  tasks: DecomposeTask[];
+  project: { id: string; name: string } | null;
+  epic: { id: string; title: string } | null;
+  teamUsed: TeamMember[];
+  pdfTextLength?: number;
+  meta: {
+    decompositionTime: number;
+    modelUsed: string;
+    totalEstimatedHours: number;
+  };
+}
+
 // AI Decomposition Response
 export interface AIDecompositionResponse {
   data: AITaskSuggestion[];
