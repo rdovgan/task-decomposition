@@ -29,7 +29,7 @@ export default function SettingsPage() {
 
     try {
       const response = await userSettingsApi.get(DEMO_USER_ID);
-      setHasStoredKey(response.data.hasApiKey);
+      setHasStoredKey(response.hasApiKey);
     } catch (err) {
       if (err instanceof ApiErrorClass) {
         setError(err.message);
@@ -51,11 +51,11 @@ export default function SettingsPage() {
 
     try {
       const response = await userSettingsApi.validateApiKey(apiKey.trim());
-      if (response.data.valid) {
+      if (response.valid) {
         setSuccess(true);
         setTimeout(() => setSuccess(false), 3000);
       } else {
-        setError(response.data.message || "Invalid API key");
+        setError(response.message || "Invalid API key");
       }
     } catch (err) {
       if (err instanceof ApiErrorClass) {

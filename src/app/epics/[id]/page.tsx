@@ -78,7 +78,7 @@ export default function EpicDetailPage({ params }: { params: Promise<{ id: strin
         ]);
         setEpic(epicData);
         setTasks(tasksData.data);
-        setUsers(usersData.data);
+        setUsers(usersData);
 
         // Fetch dependencies for all tasks
         const allDependencies: Dependency[] = [];

@@ -232,7 +232,8 @@ const wouldCreateCircularDependency = async (
 };
 
 export const createDependency = asyncHandler(async (req: Request, res: Response) => {
-  const { taskId, dependsOnTaskId, type } = req.body;
+  const taskId = str(req.params.id)! || req.body.taskId;
+  const { dependsOnTaskId, type } = req.body;
 
   // Check for self-dependency
   if (taskId === dependsOnTaskId) {
@@ -305,10 +306,24 @@ export const createComment = asyncHandler(async (req: Request, res: Response) =>
   const id = str(req.params.id)!;
   const { content, authorId } = req.body;
 
+  // Get a fallback author - first admin user or any user
+  let finalAuthorId = authorId;
+  if (!finalAuthorId) {
+    const fallbackUser = await prisma.user.findFirst({
+      where: { role: "ADMIN" },
+      orderBy: { createdAt: "asc" },
+    });
+    finalAuthorId = fallbackUser?.id;
+  }
+
+  if (!finalAuthorId) {
+    throw new ApiError(400, "No author available. Please create a user first.");
+  }
+
   const comment = await prisma.comment.create({
     data: {
       taskId: id,
-      authorId,
+      authorId: finalAuthorId,
       content,
     },
     include: {

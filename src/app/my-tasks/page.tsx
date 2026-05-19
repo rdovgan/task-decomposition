@@ -73,7 +73,7 @@ export default function MyTasksPage() {
       // In production, get current user from auth context
       // For now, using a demo user or first available user
       const usersData = await usersApi.list();
-      const user = usersData.data[0] || null;
+      const user = usersData[0] || null;
       setCurrentUser(user);
 
       if (user) {

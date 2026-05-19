@@ -5,7 +5,7 @@ import { ApiError } from "./errorHandler";
 export const validate = (schema: ZodSchema) => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
-      schema.parse(req.body);
+      req.body = schema.parse(req.body);
       next();
     } catch (error: unknown) {
       if (error instanceof ZodError) {

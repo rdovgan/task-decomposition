@@ -110,7 +110,7 @@ const api = {
 
 // Projects API
 export const projectsApi = {
-  list: (params?: { page?: number; limit?: number; status?: string; ownerId?: string }) => {
+  list: async (params?: { page?: number; limit?: number; status?: string; ownerId?: string }) => {
     const searchParams = new URLSearchParams();
     if (params?.page) searchParams.set("page", params.page.toString());
     if (params?.limit) searchParams.set("limit", params.limit.toString());
@@ -118,22 +118,31 @@ export const projectsApi = {
     if (params?.ownerId) searchParams.set("ownerId", params.ownerId);
 
     const query = searchParams.toString();
-    return api.get<PaginatedResponse<Project>>(`/api/projects${query ? `?${query}` : ""}`);
+    const res = await api.get<PaginatedResponse<Project>>(`/api/projects${query ? `?${query}` : ""}`);
+    return res;
   },
 
-  get: (id: string) => api.get<Project>(`/api/projects/${id}`),
+  get: async (id: string) => {
+    const res = await api.get<{ data: Project }>(`/api/projects/${id}`);
+    return res.data;
+  },
 
-  create: (data: CreateProjectRequest) => api.post<Project>("/api/projects", data),
+  create: async (data: CreateProjectRequest) => {
+    const res = await api.post<{ data: Project }>("/api/projects", data);
+    return res.data;
+  },
 
-  update: (id: string, data: UpdateProjectRequest) =>
-    api.patch<Project>(`/api/projects/${id}`, data),
+  update: async (id: string, data: UpdateProjectRequest) => {
+    const res = await api.patch<{ data: Project }>(`/api/projects/${id}`, data);
+    return res.data;
+  },
 
   delete: (id: string) => api.delete<void>(`/api/projects/${id}`),
 };
 
 // Epics API
 export const epicsApi = {
-  list: (params?: {
+  list: async (params?: {
     page?: number;
     limit?: number;
     status?: string;
@@ -148,21 +157,31 @@ export const epicsApi = {
     if (params?.projectId) searchParams.set("projectId", params.projectId);
 
     const query = searchParams.toString();
-    return api.get<PaginatedResponse<Epic>>(`/api/epics${query ? `?${query}` : ""}`);
+    const res = await api.get<PaginatedResponse<Epic>>(`/api/epics${query ? `?${query}` : ""}`);
+    return res;
   },
 
-  get: (id: string) => api.get<Epic>(`/api/epics/${id}`),
+  get: async (id: string) => {
+    const res = await api.get<{ data: Epic }>(`/api/epics/${id}`);
+    return res.data;
+  },
 
-  create: (data: CreateEpicRequest) => api.post<Epic>("/api/epics", data),
+  create: async (data: CreateEpicRequest) => {
+    const res = await api.post<{ data: Epic }>("/api/epics", data);
+    return res.data;
+  },
 
-  update: (id: string, data: UpdateEpicRequest) => api.patch<Epic>(`/api/epics/${id}`, data),
+  update: async (id: string, data: UpdateEpicRequest) => {
+    const res = await api.patch<{ data: Epic }>(`/api/epics/${id}`, data);
+    return res.data;
+  },
 
   delete: (id: string) => api.delete<void>(`/api/epics/${id}`),
 };
 
 // Tasks API
 export const tasksApi = {
-  list: (params?: {
+  list: async (params?: {
     page?: number;
     limit?: number;
     status?: string;
@@ -177,24 +196,39 @@ export const tasksApi = {
     if (params?.assigneeId) searchParams.set("assigneeId", params.assigneeId);
 
     const query = searchParams.toString();
-    return api.get<PaginatedResponse<Task>>(`/api/tasks${query ? `?${query}` : ""}`);
+    const res = await api.get<PaginatedResponse<Task>>(`/api/tasks${query ? `?${query}` : ""}`);
+    return res;
   },
 
-  get: (id: string) => api.get<Task>(`/api/tasks/${id}`),
+  get: async (id: string) => {
+    const res = await api.get<{ data: Task }>(`/api/tasks/${id}`);
+    return res.data;
+  },
 
-  create: (data: CreateTaskRequest) => api.post<Task>("/api/tasks", data),
+  create: async (data: CreateTaskRequest) => {
+    const res = await api.post<{ data: Task }>("/api/tasks", data);
+    return res.data;
+  },
 
-  update: (id: string, data: UpdateTaskRequest) => api.patch<Task>(`/api/tasks/${id}`, data),
+  update: async (id: string, data: UpdateTaskRequest) => {
+    const res = await api.patch<{ data: Task }>(`/api/tasks/${id}`, data);
+    return res.data;
+  },
 
   delete: (id: string) => api.delete<void>(`/api/tasks/${id}`),
 };
 
 // Dependencies API
 export const dependenciesApi = {
-  list: (taskId: string) => api.get<Dependency[]>(`/api/tasks/${taskId}/dependencies`),
+  list: async (taskId: string) => {
+    const res = await api.get<{ data: Dependency[] }>(`/api/tasks/${taskId}/dependencies`);
+    return res.data;
+  },
 
-  create: (taskId: string, data: { dependsOnTaskId: string; type: string }) =>
-    api.post<Dependency>(`/api/tasks/${taskId}/dependencies`, data),
+  create: async (taskId: string, data: { dependsOnTaskId: string; type: string }) => {
+    const res = await api.post<{ data: Dependency }>(`/api/tasks/${taskId}/dependencies`, data);
+    return res.data;
+  },
 
   delete: (taskId: string, dependencyId: string) =>
     api.delete<void>(`/api/tasks/${taskId}/dependencies/${dependencyId}`),
@@ -202,10 +236,15 @@ export const dependenciesApi = {
 
 // Task Links API
 export const taskLinksApi = {
-  list: (taskId: string) => api.get<TaskLink[]>(`/api/tasks/${taskId}/links`),
+  list: async (taskId: string) => {
+    const res = await api.get<{ data: TaskLink[] }>(`/api/tasks/${taskId}/links`);
+    return res.data;
+  },
 
-  create: (taskId: string, data: { url: string; linkType: string; title?: string }) =>
-    api.post<TaskLink>(`/api/tasks/${taskId}/links`, data),
+  create: async (taskId: string, data: { url: string; linkType: string; title?: string }) => {
+    const res = await api.post<{ data: TaskLink }>(`/api/tasks/${taskId}/links`, data);
+    return res.data;
+  },
 
   delete: (taskId: string, linkId: string) =>
     api.delete<void>(`/api/tasks/${taskId}/links/${linkId}`),
@@ -213,13 +252,20 @@ export const taskLinksApi = {
 
 // Comments API
 export const commentsApi = {
-  list: (taskId: string) => api.get<Comment[]>(`/api/tasks/${taskId}/comments`),
+  list: async (taskId: string) => {
+    const res = await api.get<{ data: Comment[] }>(`/api/tasks/${taskId}/comments`);
+    return res.data;
+  },
 
-  create: (taskId: string, data: { content: string }) =>
-    api.post<Comment>(`/api/tasks/${taskId}/comments`, data),
+  create: async (taskId: string, data: { content: string }) => {
+    const res = await api.post<{ data: Comment }>(`/api/tasks/${taskId}/comments`, data);
+    return res.data;
+  },
 
-  update: (taskId: string, commentId: string, data: { content: string }) =>
-    api.patch<Comment>(`/api/tasks/${taskId}/comments/${commentId}`, data),
+  update: async (taskId: string, commentId: string, data: { content: string }) => {
+    const res = await api.patch<{ data: Comment }>(`/api/tasks/${taskId}/comments/${commentId}`, data);
+    return res.data;
+  },
 
   delete: (taskId: string, commentId: string) =>
     api.delete<void>(`/api/tasks/${taskId}/comments/${commentId}`),
@@ -227,8 +273,8 @@ export const commentsApi = {
 
 // AI Decomposition API
 export const aiDecompositionApi = {
-  decomposeEpic: (epicId: string, data: { userId?: string; customPrompt?: string }) =>
-    api.post<{
+  decomposeEpic: async (epicId: string, data: { userId?: string; customPrompt?: string }) => {
+    const res = await api.post<{
       data: Array<{
         title: string;
         description: string;
@@ -241,20 +287,28 @@ export const aiDecompositionApi = {
         epicId: string;
         epicTitle: string;
       };
-    }>(`/api/epics/${epicId}/ai-decompose`, data),
+    }>(`/api/epics/${epicId}/ai-decompose`, data);
+    return res;
+  },
 };
 
 // Users API
 export const usersApi = {
-  list: () => api.get<{ data: User[] }>(`/api/users`),
+  list: async () => {
+    const res = await api.get<{ data: User[] }>(`/api/users`);
+    return res.data;
+  },
 
-  get: (id: string) => api.get<{ data: User }>(`/api/users/${id}`),
+  get: async (id: string) => {
+    const res = await api.get<{ data: User }>(`/api/users/${id}`);
+    return res.data;
+  },
 };
 
 // User Settings API
 export const userSettingsApi = {
-  get: (userId: string) =>
-    api.get<{
+  get: async (userId: string) => {
+    const res = await api.get<{
       data: {
         id: string | null;
         userId: string;
@@ -262,27 +316,33 @@ export const userSettingsApi = {
         createdAt?: string;
         updatedAt?: string;
       };
-    }>(`/api/user-settings/${userId}`),
+    }>(`/api/user-settings/${userId}`);
+    return res.data;
+  },
 
-  update: (userId: string, data: { anthropicApiKey: string }) =>
-    api.put<{
+  update: async (userId: string, data: { anthropicApiKey: string }) => {
+    const res = await api.put<{
       data: {
         id: string;
         userId: string;
         hasApiKey: true;
         updatedAt: string;
       };
-    }>(`/api/user-settings/${userId}`, data),
+    }>(`/api/user-settings/${userId}`, data);
+    return res.data;
+  },
 
   deleteApiKey: (userId: string) => api.delete<void>(`/api/user-settings/${userId}/api-key`),
 
-  validateApiKey: (apiKey: string) =>
-    api.post<{
+  validateApiKey: async (apiKey: string) => {
+    const res = await api.post<{
       data: {
         valid: boolean;
         message: string;
       };
-    }>(`/api/user-settings/validate-api-key`, { apiKey }),
+    }>(`/api/user-settings/validate-api-key`, { apiKey });
+    return res.data;
+  },
 };
 
 export { ApiError as ApiErrorClass };

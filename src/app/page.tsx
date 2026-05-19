@@ -32,9 +32,9 @@ export default function Home() {
         tasksApi.list({ limit: 1 }),
       ]);
       setStats({
-        projects: (projects as any).length || 0,
-        epics: (epics as any).length || 0,
-        tasks: (tasks as any).total || (tasks as any).data?.length || 0,
+        projects: projects.meta?.total ?? projects.data.length,
+        epics: epics.meta?.total ?? epics.data.length,
+        tasks: tasks.meta?.total ?? tasks.data.length,
       });
     } catch {
       // Silently ignore stats errors on home page

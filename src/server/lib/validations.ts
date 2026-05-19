@@ -13,51 +13,62 @@ export const updateUserSchema = createUserSchema.partial();
 export const createProjectSchema = z.object({
   name: z.string().min(1, "Project name is required").max(200, "Project name too long"),
   description: z.string().max(1000, "Description too long").optional(),
-  ownerId: z.string().cuid("Invalid owner ID"),
+  ownerId: z.string().min(1, "Owner ID is required"),
 });
 
 export const updateProjectSchema = createProjectSchema.partial();
 
+// Date transform: accepts "YYYY-MM-DD" or ISO datetime, normalizes to ISO string for Prisma
+const dateToISO = z.preprocess(
+  (val) => {
+    if (val === undefined || val === null || val === "") return undefined;
+    if (typeof val === "string") {
+      const parsed = Date.parse(val);
+      if (!isNaN(parsed)) return new Date(parsed).toISOString();
+    }
+    return val;
+  },
+  z.string().datetime("Invalid date format")
+);
+
 // Epic schemas
 export const createEpicSchema = z.object({
-  projectId: z.string().cuid("Invalid project ID"),
+  projectId: z.string().min(1, "Project ID is required"),
   title: z.string().min(1, "Epic title is required").max(200, "Epic title too long"),
   description: z.string().max(2000, "Description too long").optional(),
   status: z.enum(["BACKLOG", "IN_PROGRESS", "IN_REVIEW", "DONE", "CANCELLED"]).optional(),
   priority: z.enum(["CRITICAL", "HIGH", "MEDIUM", "LOW"]).optional(),
-  startDate: z.string().datetime().optional(),
-  dueDate: z.string().datetime().optional(),
+  startDate: dateToISO.optional(),
+  dueDate: dateToISO.optional(),
 });
 
 export const updateEpicSchema = createEpicSchema.partial();
 
 // Task schemas
 export const createTaskSchema = z.object({
-  epicId: z.string().cuid("Invalid epic ID"),
+  epicId: z.string().min(1, "Epic ID is required"),
   title: z.string().min(1, "Task title is required").max(200, "Task title too long"),
   description: z.string().max(2000, "Description too long").optional(),
-  assigneeId: z.string().cuid("Invalid assignee ID").optional(),
+  assigneeId: z.string().min(1, "Invalid assignee ID").optional(),
   status: z.enum(["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE", "BLOCKED", "CANCELLED"]).optional(),
   priority: z.enum(["CRITICAL", "HIGH", "MEDIUM", "LOW"]).optional(),
   storyPoints: z.number().int().min(0).max(100).optional(),
   estimatedHours: z.number().min(0).optional(),
   actualHours: z.number().min(0).optional(),
-  startDate: z.string().datetime().optional(),
-  dueDate: z.string().datetime().optional(),
+  startDate: dateToISO.optional(),
+  dueDate: dateToISO.optional(),
 });
 
 export const updateTaskSchema = createTaskSchema.partial();
 
 // Dependency schemas
 export const createDependencySchema = z.object({
-  taskId: z.string().cuid("Invalid task ID"),
-  dependsOnTaskId: z.string().cuid("Invalid dependency task ID"),
+  dependsOnTaskId: z.string().min(1, "Dependency task ID is required"),
   type: z.enum(["BLOCKS", "RELATED_TO", "DUPLICATES"]).optional(),
 });
 
 // TaskLink schemas
 export const createTaskLinkSchema = z.object({
-  taskId: z.string().cuid("Invalid task ID"),
   url: z.string().url("Invalid URL"),
   linkType: z.enum(["CONFLUENCE", "NOTION", "GITHUB", "JIRA", "FIGMA", "EXTERNAL"]),
   title: z.string().max(200, "Title too long").optional(),
@@ -67,8 +78,6 @@ export const updateTaskLinkSchema = createTaskLinkSchema.partial();
 
 // Comment schemas
 export const createCommentSchema = z.object({
-  taskId: z.string().cuid("Invalid task ID"),
-  authorId: z.string().cuid("Invalid author ID"),
   content: z.string().min(1, "Comment content is required").max(2000, "Comment too long"),
 });
 
@@ -101,18 +110,18 @@ export const paginationSchema = z.object({
 
 export const projectFilterSchema = paginationSchema.extend({
   status: z.enum(["ACTIVE", "ARCHIVED", "ON_HOLD"]).optional(),
-  ownerId: z.string().cuid().optional(),
+  ownerId: z.string().optional(),
 });
 
 export const epicFilterSchema = paginationSchema.extend({
-  projectId: z.string().cuid().optional(),
+  projectId: z.string().optional(),
   status: z.enum(["BACKLOG", "IN_PROGRESS", "IN_REVIEW", "DONE", "CANCELLED"]).optional(),
   priority: z.enum(["CRITICAL", "HIGH", "MEDIUM", "LOW"]).optional(),
 });
 
 export const taskFilterSchema = paginationSchema.extend({
-  epicId: z.string().cuid().optional(),
-  assigneeId: z.string().cuid().optional(),
+  epicId: z.string().optional(),
+  assigneeId: z.string().optional(),
   status: z.enum(["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE", "BLOCKED", "CANCELLED"]).optional(),
   priority: z.enum(["CRITICAL", "HIGH", "MEDIUM", "LOW"]).optional(),
   search: z.string().optional(),
