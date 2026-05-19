@@ -81,7 +81,7 @@ services:
     environment:
       NODE_ENV: staging
       DATABASE_URL: postgresql://taskdecomp:taskdecomp@postgres:5432/task_decomposition_staging?schema=public
-      NEXT_PUBLIC_API_URL: http://localhost:3001/api
+      NEXT_PUBLIC_API_URL: http://localhost:3001
     depends_on:
       postgres:
         condition: service_healthy

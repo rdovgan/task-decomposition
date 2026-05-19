@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -45,7 +45,8 @@ const statusIcons: Record<TaskStatus, React.ElementType> = {
   CANCELLED: AlertCircle,
 };
 
-export default function TaskDetailPage({ params }: { params: { id: string } }) {
+export default function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const [task, setTask] = useState<Task | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -60,13 +61,13 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
     loadComments();
     loadLinks();
     loadDependencies();
-  }, [params.id]);
+  }, [id]);
 
   async function loadTask() {
     setLoading(true);
     setError(null);
     try {
-      const taskData = await tasksApi.get(params.id);
+      const taskData = await tasksApi.get(id);
       setTask(taskData);
     } catch (err) {
       if (err instanceof ApiErrorClass) {
@@ -82,7 +83,7 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
   async function loadComments() {
     setCommentsLoading(true);
     try {
-      const commentsData = await commentsApi.list(params.id);
+      const commentsData = await commentsApi.list(id);
       setComments(commentsData);
     } catch (err) {
       console.error("Failed to load comments:", err);
@@ -93,7 +94,7 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
 
   async function loadLinks() {
     try {
-      const linksData = await taskLinksApi.list(params.id);
+      const linksData = await taskLinksApi.list(id);
       setLinks(linksData);
     } catch (err) {
       console.error("Failed to load links:", err);
@@ -102,7 +103,7 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
 
   async function loadDependencies() {
     try {
-      const dependenciesData = await dependenciesApi.list(params.id);
+      const dependenciesData = await dependenciesApi.list(id);
       setDependencies(dependenciesData);
     } catch (err) {
       console.error("Failed to load dependencies:", err);
@@ -115,7 +116,7 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
     }
 
     try {
-      await tasksApi.delete(params.id);
+      await tasksApi.delete(id);
       if (task?.epicId) {
         router.push(`/epics/${task.epicId}`);
       } else {
@@ -156,22 +157,22 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
   };
 
   const handleAddComment = async (content: string) => {
-    await commentsApi.create(params.id, { content });
+    await commentsApi.create(id, { content });
     await loadComments();
   };
 
   const handleDeleteComment = async (commentId: string) => {
-    await commentsApi.delete(params.id, commentId);
+    await commentsApi.delete(id, commentId);
     await loadComments();
   };
 
   const handleDeleteLink = async (linkId: string) => {
-    await taskLinksApi.delete(params.id, linkId);
+    await taskLinksApi.delete(id, linkId);
     await loadLinks();
   };
 
   const handleAddLink = async (data: { url: string; linkType: string; title?: string }) => {
-    await taskLinksApi.create(params.id, data);
+    await taskLinksApi.create(id, data);
     await loadLinks();
   };
 

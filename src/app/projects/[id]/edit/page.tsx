@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { UpdateProjectRequest, ProjectStatus, Project } from "@/types";
 import { projectsApi, ApiErrorClass } from "@/lib/api-client";
 
-export default function EditProjectPage({ params }: { params: { id: string } }) {
+export default function EditProjectPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
@@ -25,7 +26,7 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
       setFetching(true);
       setError(null);
       try {
-        const data = await projectsApi.get(params.id);
+        const data = await projectsApi.get(id);
         setProject(data);
         setFormData({
           name: data.name,
@@ -44,7 +45,7 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
     }
 
     loadProject();
-  }, [params.id]);
+  }, [id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,8 +53,8 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
     setError(null);
 
     try {
-      await projectsApi.update(params.id, formData);
-      router.push(`/projects/${params.id}`);
+      await projectsApi.update(id, formData);
+      router.push(`/projects/${id}`);
     } catch (err) {
       if (err instanceof ApiErrorClass) {
         setError(err.message);
@@ -88,7 +89,7 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
   return (
     <div className="container mx-auto py-8 px-4 max-w-2xl">
       <Link
-        href={`/projects/${params.id}`}
+        href={`/projects/${id}`}
         className="mb-6 inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="mr-2 h-4 w-4" />

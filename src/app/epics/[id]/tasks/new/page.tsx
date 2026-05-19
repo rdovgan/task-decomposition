@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { TaskForm } from "@/components/tasks/TaskForm";
 import { Epic, User } from "@/types";
 import { epicsApi, ApiErrorClass } from "@/lib/api-client";
 
-export default function NewEpicTaskPage({ params }: { params: { id: string } }) {
+export default function NewEpicTaskPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const [epic, setEpic] = useState<Epic | null>(null);
   const [loading, setLoading] = useState(true);
@@ -18,13 +19,13 @@ export default function NewEpicTaskPage({ params }: { params: { id: string } }) 
     loadEpic();
     // In a real app, you'd fetch users from an API
     setUsers([]);
-  }, [params.id]);
+  }, [id]);
 
   async function loadEpic() {
     setLoading(true);
     setError(null);
     try {
-      const epicData = await epicsApi.get(params.id);
+      const epicData = await epicsApi.get(id);
       setEpic(epicData);
     } catch (err) {
       if (err instanceof ApiErrorClass) {

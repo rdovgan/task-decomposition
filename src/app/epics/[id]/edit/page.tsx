@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { UpdateEpicRequest, EpicStatus, Priority, Epic } from "@/types";
 import { epicsApi, ApiErrorClass } from "@/lib/api-client";
 
-export default function EditEpicPage({ params }: { params: { id: string } }) {
+export default function EditEpicPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
@@ -26,7 +27,7 @@ export default function EditEpicPage({ params }: { params: { id: string } }) {
       setFetching(true);
       setError(null);
       try {
-        const data = await epicsApi.get(params.id);
+        const data = await epicsApi.get(id);
         setEpic(data);
         setFormData({
           title: data.title,
@@ -46,7 +47,7 @@ export default function EditEpicPage({ params }: { params: { id: string } }) {
     }
 
     loadEpic();
-  }, [params.id]);
+  }, [id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,8 +55,8 @@ export default function EditEpicPage({ params }: { params: { id: string } }) {
     setError(null);
 
     try {
-      await epicsApi.update(params.id, formData);
-      router.push(`/epics/${params.id}`);
+      await epicsApi.update(id, formData);
+      router.push(`/epics/${id}`);
     } catch (err) {
       if (err instanceof ApiErrorClass) {
         setError(err.message);
@@ -90,7 +91,7 @@ export default function EditEpicPage({ params }: { params: { id: string } }) {
   return (
     <div className="container mx-auto py-8 px-4 max-w-2xl">
       <Link
-        href={`/epics/${params.id}`}
+        href={`/epics/${id}`}
         className="mb-6 inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="mr-2 h-4 w-4" />

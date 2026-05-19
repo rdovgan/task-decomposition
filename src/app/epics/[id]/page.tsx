@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Edit, Trash2, Plus, Sparkles, Calendar } from "lucide-react";
@@ -30,7 +30,8 @@ import {
   ApiErrorClass,
 } from "@/lib/api-client";
 
-export default function EpicDetailPage({ params }: { params: { id: string } }) {
+export default function EpicDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const [epic, setEpic] = useState<Epic | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -71,8 +72,8 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
       setError(null);
       try {
         const [epicData, tasksData, usersData] = await Promise.all([
-          epicsApi.get(params.id),
-          tasksApi.list({ epicId: params.id, limit: 100 }),
+          epicsApi.get(id),
+          tasksApi.list({ epicId: id, limit: 100 }),
           usersApi.list(),
         ]);
         setEpic(epicData);
@@ -104,7 +105,7 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
     }
 
     loadEpic();
-  }, [params.id]);
+  }, [id]);
 
   const handleDelete = async () => {
     if (
@@ -116,7 +117,7 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
     }
 
     try {
-      await epicsApi.delete(params.id);
+      await epicsApi.delete(id);
       router.push("/epics");
     } catch (err) {
       if (err instanceof ApiErrorClass) {
@@ -130,7 +131,7 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
     setAiError(null);
 
     try {
-      const response = await aiDecompositionApi.decomposeEpic(params.id, {
+      const response = await aiDecompositionApi.decomposeEpic(id, {
         userId: "demo-user-id", // In production, get from auth
         customPrompt,
       });
@@ -151,7 +152,7 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
   const handleTaskCreated = async () => {
     // Refresh the task list after creation
     try {
-      const tasksData = await tasksApi.list({ epicId: params.id, limit: 100 });
+      const tasksData = await tasksApi.list({ epicId: id, limit: 100 });
       setTasks(tasksData.data);
     } catch (err) {
       console.error("Failed to refresh tasks:", err);
@@ -212,7 +213,7 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
       );
 
       // Refresh task list
-      const tasksData = await tasksApi.list({ epicId: params.id, limit: 100 });
+      const tasksData = await tasksApi.list({ epicId: id, limit: 100 });
       setTasks(tasksData.data);
 
       // Clear selection
@@ -241,7 +242,7 @@ export default function EpicDetailPage({ params }: { params: { id: string } }) {
       await Promise.all(Array.from(selectedTaskIds).map(taskId => tasksApi.delete(taskId)));
 
       // Refresh task list
-      const tasksData = await tasksApi.list({ epicId: params.id, limit: 100 });
+      const tasksData = await tasksApi.list({ epicId: id, limit: 100 });
       setTasks(tasksData.data);
 
       // Clear selection

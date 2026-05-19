@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -21,7 +21,8 @@ import { Project, Epic, EpicStatus, Priority } from "@/types";
 import { projectsApi, epicsApi, ApiErrorClass } from "@/lib/api-client";
 import { PageHeaderSkeleton } from "@/components/ui/skeleton";
 
-export default function ProjectDetailPage({ params }: { params: { id: string } }) {
+export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const [project, setProject] = useState<Project | null>(null);
   const [epics, setEpics] = useState<Epic[]>([]);
@@ -30,15 +31,15 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
 
   useEffect(() => {
     loadProject();
-  }, [params.id]);
+  }, [id]);
 
   async function loadProject() {
     setLoading(true);
     setError(null);
     try {
       const [projectData, epicsData] = await Promise.all([
-        projectsApi.get(params.id),
-        epicsApi.list({ projectId: params.id, limit: 100 }),
+        projectsApi.get(id),
+        epicsApi.list({ projectId: id, limit: 100 }),
       ]);
       setProject(projectData);
       setEpics(epicsData.data);
@@ -63,7 +64,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
     }
 
     try {
-      await projectsApi.delete(params.id);
+      await projectsApi.delete(id);
       router.push("/projects");
     } catch (err) {
       if (err instanceof ApiErrorClass) {

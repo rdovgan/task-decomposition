@@ -55,7 +55,7 @@ services:
       PORT: 3001
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-4-6}
-      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:3001
+      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:3001,https://task.dovg.cloud,http://task.dovg.cloud
       JWT_SECRET: ${JWT_SECRET:-dev-secret-key-change-in-production}
     depends_on:
       postgres:
@@ -82,7 +82,7 @@ services:
     environment:
       NODE_ENV: development
       DATABASE_URL: postgresql://taskdecomp:taskdecomp@postgres:5432/task_decomposition?schema=public
-      NEXT_PUBLIC_API_URL: http://localhost:3003/api
+      NEXT_PUBLIC_API_URL: https://task.dovg.cloud
     depends_on:
       postgres:
         condition: service_healthy

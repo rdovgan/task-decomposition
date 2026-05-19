@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus, Search } from "lucide-react";
@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Task, TaskStatus, Priority, Epic } from "@/types";
 import { tasksApi, epicsApi, ApiErrorClass } from "@/lib/api-client";
 
-export default function EpicTasksPage({ params }: { params: { id: string } }) {
+export default function EpicTasksPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const [epic, setEpic] = useState<Epic | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -23,15 +24,15 @@ export default function EpicTasksPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     loadData();
-  }, [params.id]);
+  }, [id]);
 
   async function loadData() {
     setLoading(true);
     setError(null);
     try {
       const [epicData, tasksData] = await Promise.all([
-        epicsApi.get(params.id),
-        tasksApi.list({ epicId: params.id, limit: 100 }),
+        epicsApi.get(id),
+        tasksApi.list({ epicId: id, limit: 100 }),
       ]);
       setEpic(epicData);
       setTasks(tasksData.data);
@@ -121,7 +122,7 @@ export default function EpicTasksPage({ params }: { params: { id: string } }) {
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8">
         <Link
-          href={`/epics/${params.id}`}
+          href={`/epics/${id}`}
           className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -136,7 +137,7 @@ export default function EpicTasksPage({ params }: { params: { id: string } }) {
               </p>
             )}
           </div>
-          <Button onClick={() => router.push(`/epics/${params.id}/tasks/new`)}>
+          <Button onClick={() => router.push(`/epics/${id}/tasks/new`)}>
             <Plus className="mr-2 h-4 w-4" />
             New Task
           </Button>
