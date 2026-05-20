@@ -7,13 +7,23 @@ import { asyncHandler, ApiError } from "../middleware/errorHandler";
 import { decrypt } from "../lib/encryption";
 import { str } from "../lib/express";
 
-// PDF text extraction
+// PDF text extraction using pdfjs-dist
 async function extractTextFromPDF(filePath: string): Promise<string> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const pdfParse = require("pdf-parse");
+  const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.mjs");
   const dataBuffer = fs.readFileSync(filePath);
-  const data = await pdfParse(dataBuffer);
-  return data.text;
+  const data = new Uint8Array(dataBuffer);
+  const doc = await pdfjsLib.getDocument({ data }).promise;
+  const textParts: string[] = [];
+  for (let i = 1; i <= doc.numPages; i++) {
+    const page = await doc.getPage(i);
+    const textContent = await page.getTextContent();
+    const pageText = textContent.items
+      .map((item: any) => item.str)
+      .join(" ");
+    textParts.push(pageText);
+  }
+  return textParts.join("\n\n");
 }
 
 // Team member type
@@ -46,12 +56,17 @@ export const quickDecompose = asyncHandler(async (req: Request, res: Response) =
     throw new ApiError(400, "PDF file is required");
   }
 
+  console.log(`[decompose] Starting quick decompose for file: ${file.originalname} (${file.size} bytes)`);
+
   // Extract text from PDF
   let pdfText: string;
   try {
+    const pdfStart = Date.now();
     pdfText = await extractTextFromPDF(file.path);
-  } catch (error) {
-    throw new ApiError(400, "Failed to parse PDF file. Please ensure it's a valid PDF.");
+    console.log(`[decompose] PDF extraction took ${Date.now() - pdfStart}ms, extracted ${pdfText.length} chars`);
+  } catch (error: any) {
+    console.error(`[decompose] PDF extraction failed:`, error.message);
+    throw new ApiError(400, `Failed to parse PDF file: ${error.message}`);
   } finally {
     // Clean up uploaded file
     try { fs.unlinkSync(file.path); } catch {}
@@ -100,6 +115,7 @@ export const quickDecompose = asyncHandler(async (req: Request, res: Response) =
   const prompt = buildQuickDecompositionPrompt(pdfText, teamMembers, projectName);
 
   const startTime = Date.now();
+  console.log(`[quickDecompose] Starting AI call with model=${model}, prompt=${prompt.length} chars`);
 
   try {
     const response = await client.chat.completions.create({
@@ -117,6 +133,7 @@ export const quickDecompose = asyncHandler(async (req: Request, res: Response) =
     });
 
     const decompositionTime = (Date.now() - startTime) / 1000;
+    console.log(`[quickDecompose] AI call completed in ${decompositionTime}s`);
     const content = response.choices[0]?.message?.content;
 
     if (!content) {
