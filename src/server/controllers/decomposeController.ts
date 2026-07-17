@@ -142,79 +142,13 @@ export const quickDecompose = asyncHandler(async (req: Request, res: Response) =
 
     const tasks = parseTaskSuggestions(content);
 
-    // Auto-create project and epic if projectName provided
-    let project = null;
-    let epic = null;
-
-    if (projectName) {
-      // Get or create a default admin user
-      let adminUser = await prisma.user.findFirst({ where: { role: "ADMIN" } });
-      if (!adminUser) {
-        adminUser = await prisma.user.create({
-          data: { email: "admin@local.dev", name: "Admin", role: "ADMIN" },
-        });
-      }
-
-      project = await prisma.project.create({
-        data: {
-          name: projectName,
-          description: `Auto-created from PDF upload`,
-          ownerId: adminUser.id,
-          status: "ACTIVE",
-        },
-      });
-
-      epic = await prisma.epic.create({
-        data: {
-          projectId: project.id,
-          title: projectName,
-          description: `Requirements decomposed from uploaded PDF`,
-          status: "BACKLOG",
-          priority: "MEDIUM",
-        },
-      });
-
-      // Create tasks in the database
-      const createdTasks = await Promise.all(
-        tasks.map(async (task) => {
-          return prisma.task.create({
-            data: {
-              epicId: epic!.id,
-              title: task.title,
-              description: task.description,
-              estimatedHours: task.estimatedHours,
-              priority: task.priority,
-              status: "TODO",
-            },
-          });
-        })
-      );
-
-      // Create dependencies
-      for (const task of tasks) {
-        if (task.dependencies && task.dependencies.length > 0) {
-          const createdTask = createdTasks[task.suggestedOrder - 1];
-          for (const depOrder of task.dependencies) {
-            const dependsOnTask = createdTasks[depOrder - 1];
-            if (createdTask && dependsOnTask && createdTask.id !== dependsOnTask.id) {
-              await prisma.dependency.create({
-                data: {
-                  taskId: createdTask.id,
-                  dependsOnTaskId: dependsOnTask.id,
-                  type: "BLOCKS",
-                },
-              });
-            }
-          }
-        }
-      }
-    }
-
+    // Suggestions are review-only here; nothing is persisted until the user
+    // reviews and saves the selected tasks via POST /api/decompose/save
     res.json({
       data: {
         tasks,
-        project: project ? { id: project.id, name: project.name } : null,
-        epic: epic ? { id: epic.id, title: epic.title } : null,
+        project: null,
+        epic: null,
         teamUsed: teamMembers,
         pdfTextLength: pdfText.length,
       },
@@ -226,6 +160,99 @@ export const quickDecompose = asyncHandler(async (req: Request, res: Response) =
     });
   } catch (error: any) {
     console.error("Quick decompose error:", error);
+    if (error instanceof ApiError) throw error;
+    if (error.status === 401) throw new ApiError(401, "Invalid AI API key");
+    if (error.status === 429) throw new ApiError(429, "AI API rate limit exceeded");
+    throw new ApiError(500, `Decomposition failed: ${error.message}`);
+  }
+});
+
+/**
+ * Public API: upload a PDF, get decomposed tasks back as JSON.
+ * Stateless — nothing is persisted, no team/project concepts involved.
+ * Requires the X-API-Key header (see apiKeyAuth middleware).
+ * POST /api/v1/decompose
+ */
+export const decomposePdfPublic = asyncHandler(async (req: Request, res: Response) => {
+  const file = (req as any).file;
+
+  if (!file) {
+    throw new ApiError(400, "A PDF file is required (multipart field name: 'file')");
+  }
+
+  console.log(`[v1/decompose] Starting decompose for file: ${file.originalname} (${file.size} bytes)`);
+
+  let pdfText: string;
+  try {
+    pdfText = await extractTextFromPDF(file.path);
+  } catch (error: any) {
+    console.error(`[v1/decompose] PDF extraction failed:`, error.message);
+    throw new ApiError(400, `Failed to parse PDF file: ${error.message}`);
+  } finally {
+    try { fs.unlinkSync(file.path); } catch {}
+  }
+
+  if (!pdfText || pdfText.trim().length < 20) {
+    throw new ApiError(400, "PDF appears to be empty or contains too little text to analyze.");
+  }
+
+  if (pdfText.length > 30000) {
+    pdfText = pdfText.substring(0, 30000) + "\n\n[... document truncated ...]";
+  }
+
+  const apiKey = process.env.ZAI_API_KEY;
+  if (!apiKey) {
+    throw new ApiError(500, "AI API key not configured on the server.");
+  }
+
+  const baseURL = process.env.ZAI_BASE_URL || "https://api.z.ai/api/coding/paas/v4";
+  const model = process.env.ZAI_MODEL || "glm-5-turbo";
+  const client = new OpenAI({ apiKey, baseURL, timeout: 300000 });
+
+  const prompt = buildQuickDecompositionPrompt(pdfText, [], undefined);
+  const startTime = Date.now();
+
+  try {
+    const response = await client.chat.completions.create({
+      model,
+      max_tokens: 8192,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a senior project manager and technical architect. You analyze requirements documents and break them into well-estimated, actionable tasks. Always respond with valid JSON only, no markdown.",
+        },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.5,
+    });
+
+    const decompositionTime = (Date.now() - startTime) / 1000;
+    const content = response.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error("Empty AI response");
+    }
+
+    const tasks = parseTaskSuggestions(content);
+
+    res.json({
+      tasks: tasks.map(t => ({
+        title: t.title,
+        description: t.description,
+        estimatedHours: t.estimatedHours,
+        priority: t.priority,
+        specialty: t.specialty,
+        order: t.suggestedOrder,
+        dependencies: t.dependencies,
+      })),
+      meta: {
+        decompositionTime,
+        modelUsed: model,
+        totalEstimatedHours: tasks.reduce((sum, t) => sum + t.estimatedHours, 0),
+      },
+    });
+  } catch (error: any) {
+    console.error("[v1/decompose] error:", error);
     if (error instanceof ApiError) throw error;
     if (error.status === 401) throw new ApiError(401, "Invalid AI API key");
     if (error.status === 429) throw new ApiError(429, "AI API rate limit exceeded");
@@ -295,75 +322,13 @@ export const textDecompose = asyncHandler(async (req: Request, res: Response) =>
 
     const tasks = parseTaskSuggestions(content);
 
-    let project = null;
-    let epic = null;
-
-    if (projectName) {
-      let adminUser = await prisma.user.findFirst({ where: { role: "ADMIN" } });
-      if (!adminUser) {
-        adminUser = await prisma.user.create({
-          data: { email: "admin@local.dev", name: "Admin", role: "ADMIN" },
-        });
-      }
-
-      project = await prisma.project.create({
-        data: {
-          name: projectName,
-          description: "Auto-created from text input",
-          ownerId: adminUser.id,
-          status: "ACTIVE",
-        },
-      });
-
-      epic = await prisma.epic.create({
-        data: {
-          projectId: project.id,
-          title: projectName,
-          description: "Requirements decomposed from text input",
-          status: "BACKLOG",
-          priority: "MEDIUM",
-        },
-      });
-
-      const createdTasks = await Promise.all(
-        tasks.map((task) =>
-          prisma.task.create({
-            data: {
-              epicId: epic!.id,
-              title: task.title,
-              description: task.description,
-              estimatedHours: task.estimatedHours,
-              priority: task.priority,
-              status: "TODO",
-            },
-          })
-        )
-      );
-
-      for (const task of tasks) {
-        if (task.dependencies && task.dependencies.length > 0) {
-          const createdTask = createdTasks[task.suggestedOrder - 1];
-          for (const depOrder of task.dependencies) {
-            const dependsOnTask = createdTasks[depOrder - 1];
-            if (createdTask && dependsOnTask && createdTask.id !== dependsOnTask.id) {
-              await prisma.dependency.create({
-                data: {
-                  taskId: createdTask.id,
-                  dependsOnTaskId: dependsOnTask.id,
-                  type: "BLOCKS",
-                },
-              });
-            }
-          }
-        }
-      }
-    }
-
+    // Suggestions are review-only here; nothing is persisted until the user
+    // reviews and saves the selected tasks via POST /api/decompose/save
     res.json({
       data: {
         tasks,
-        project: project ? { id: project.id, name: project.name } : null,
-        epic: epic ? { id: epic.id, title: epic.title } : null,
+        project: null,
+        epic: null,
         teamUsed: teamMembers,
       },
       meta: {
@@ -376,6 +341,90 @@ export const textDecompose = asyncHandler(async (req: Request, res: Response) =>
     if (error instanceof ApiError) throw error;
     throw new ApiError(500, `Decomposition failed: ${error.message}`);
   }
+});
+
+/**
+ * Persist a reviewed set of decomposed tasks as a new project + epic.
+ * Called after the user has reviewed AI suggestions and selected which
+ * ones to keep (quick/text decompose no longer auto-persist).
+ * POST /api/decompose/save
+ */
+export const saveDecomposition = asyncHandler(async (req: Request, res: Response) => {
+  const { projectName, tasks } = req.body as { projectName?: string; tasks?: TaskSuggestion[] };
+
+  if (!projectName || !projectName.trim()) {
+    throw new ApiError(400, "projectName is required");
+  }
+  if (!Array.isArray(tasks) || tasks.length === 0) {
+    throw new ApiError(400, "At least one task is required");
+  }
+
+  let adminUser = await prisma.user.findFirst({ where: { role: "ADMIN" } });
+  if (!adminUser) {
+    adminUser = await prisma.user.create({
+      data: { email: "admin@local.dev", name: "Admin", role: "ADMIN" },
+    });
+  }
+
+  const project = await prisma.project.create({
+    data: {
+      name: projectName,
+      description: "Auto-created from AI decomposition",
+      ownerId: adminUser.id,
+      status: "ACTIVE",
+    },
+  });
+
+  const epic = await prisma.epic.create({
+    data: {
+      projectId: project.id,
+      title: projectName,
+      description: "Requirements decomposed with AI",
+      status: "BACKLOG",
+      priority: "MEDIUM",
+    },
+  });
+
+  // Map by suggestedOrder rather than array position, since the caller may
+  // have sent only a subset of the originally suggested tasks
+  const orderToCreated = new Map<number, { id: string }>();
+  for (const task of tasks) {
+    const created = await prisma.task.create({
+      data: {
+        epicId: epic.id,
+        title: task.title,
+        description: task.description,
+        estimatedHours: task.estimatedHours,
+        priority: task.priority,
+        status: "TODO",
+      },
+    });
+    orderToCreated.set(task.suggestedOrder, created);
+  }
+
+  for (const task of tasks) {
+    const createdTask = orderToCreated.get(task.suggestedOrder);
+    if (!createdTask || !task.dependencies) continue;
+    for (const depOrder of task.dependencies) {
+      const dependsOnTask = orderToCreated.get(depOrder);
+      if (dependsOnTask && dependsOnTask.id !== createdTask.id) {
+        await prisma.dependency.create({
+          data: {
+            taskId: createdTask.id,
+            dependsOnTaskId: dependsOnTask.id,
+            type: "BLOCKS",
+          },
+        });
+      }
+    }
+  }
+
+  res.status(201).json({
+    data: {
+      project: { id: project.id, name: project.name },
+      epic: { id: epic.id, title: epic.title },
+    },
+  });
 });
 
 // ─── Team Config CRUD ─────────────────────────────────────────────
@@ -492,16 +541,17 @@ ${requirementsText}
 ---
 
 **Instructions:**
-1. Analyze ALL requirements and features described in the document
-2. Break down into 5-25 actionable tasks (adjust quantity based on complexity)
-3. For each task, provide:
+1. Analyze the requirements document and identify the distinct implementation areas (e.g. "Build checkout API", "Build product catalog UI") — do NOT enumerate every minor step
+2. Break down into the minimum number of tasks that cover those areas — typically 4-10. Only go higher if the document describes a genuinely large number of independent features. Do not pad the list to hit a target count.
+3. Each task should represent a coherent area of work a developer could pick up, not a granular sub-step. Merge closely related work into a single task instead of splitting it further.
+4. For each task, provide:
    - Clear, specific title
    - Detailed description with acceptance criteria
    - Realistic time estimate in hours (adjusted for team seniority)
    - Priority based on business value and dependencies
    - Which specialty should handle it
    - Dependencies on other tasks (by suggestedOrder number)
-4. Order tasks logically: setup → core features → edge cases → integration
+5. Order tasks logically: setup → core features → edge cases → integration
 
 **CRITICAL RULE — ONLY DEVELOPMENT TASKS:**
 You must ONLY generate tasks that are directly related to implementing the features and functionality described in the requirements document.

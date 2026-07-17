@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2, Sparkles, CheckCircle2, AlertCircle, Download } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -37,18 +37,40 @@ export function AIDecompositionDialog({
   const [customPrompt, setCustomPrompt] = useState("");
   const [showCustomPrompt, setShowCustomPrompt] = useState(false);
   const [editedSuggestions, setEditedSuggestions] = useState<AITaskSuggestion[]>([]);
+  const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
-  // Update edited suggestions when new suggestions come in
-  if (suggestions && editedSuggestions.length === 0 && !loading) {
-    setEditedSuggestions(suggestions);
-  }
+  // Sync local editable copy whenever a new suggestions array arrives from the API
+  useEffect(() => {
+    if (suggestions) {
+      setEditedSuggestions(suggestions);
+      setSelectedIndices(new Set());
+    }
+  }, [suggestions]);
+
+  // Tasks to act on (create/export): the checked subset, or all of them if none are checked
+  const tasksToUse = selectedIndices.size > 0
+    ? editedSuggestions.filter((_, i) => selectedIndices.has(i))
+    : editedSuggestions;
 
   const handleGenerate = () => {
     setEditedSuggestions([]);
+    setSelectedIndices(new Set());
     setCreateError(null);
     onGenerate(customPrompt || undefined);
+  };
+
+  const toggleSelected = (index: number) => {
+    setSelectedIndices(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
   };
 
   const handleCreateTasks = async () => {
@@ -56,8 +78,8 @@ export function AIDecompositionDialog({
     setCreateError(null);
 
     try {
-      // Create all tasks
-      const createPromises = editedSuggestions.map(suggestion =>
+      // Create the reviewed (checked, or all if none checked) tasks
+      const createPromises = tasksToUse.map(suggestion =>
         tasksApi.create({
           epicId,
           title: suggestion.title,
@@ -96,6 +118,14 @@ export function AIDecompositionDialog({
   const handleRemoveSuggestion = (index: number) => {
     const updated = editedSuggestions.filter((_, i) => i !== index);
     setEditedSuggestions(updated);
+    setSelectedIndices(prev => {
+      const next = new Set<number>();
+      for (const i of prev) {
+        if (i === index) continue;
+        next.add(i > index ? i - 1 : i);
+      }
+      return next;
+    });
   };
 
   return (
@@ -113,7 +143,9 @@ export function AIDecompositionDialog({
         !loading && !error && editedSuggestions.length > 0 ? (
           <div className="flex w-full items-center justify-between">
             <div className="text-sm text-muted-foreground">
-              {editedSuggestions.length} task{editedSuggestions.length !== 1 ? "s" : ""} suggested
+              {selectedIndices.size > 0
+                ? `${selectedIndices.size} of ${editedSuggestions.length} task${editedSuggestions.length !== 1 ? "s" : ""} selected`
+                : `${editedSuggestions.length} task${editedSuggestions.length !== 1 ? "s" : ""} suggested (none checked — all will be used)`}
             </div>
             <div className="flex gap-2">
               <Button
@@ -121,7 +153,7 @@ export function AIDecompositionDialog({
                 onClick={() => {
                   const md = generateSuggestionsMarkdown({
                     epicTitle,
-                    suggestions: editedSuggestions,
+                    suggestions: tasksToUse,
                     decompositionTime: meta?.decompositionTime,
                     modelUsed: meta?.modelUsed,
                   });
@@ -141,7 +173,7 @@ export function AIDecompositionDialog({
                     Creating...
                   </>
                 ) : (
-                  `Create ${editedSuggestions.length} Task${editedSuggestions.length !== 1 ? "s" : ""}`
+                  `Create ${tasksToUse.length} Task${tasksToUse.length !== 1 ? "s" : ""}`
                 )}
               </Button>
             </div>
@@ -229,10 +261,25 @@ export function AIDecompositionDialog({
                 </div>
               )}
             </div>
+            <p className="text-xs text-muted-foreground">
+              Check the tasks you want to create. If none are checked, all of them will be created.
+            </p>
 
-            {editedSuggestions.map((suggestion, index) => (
-              <div key={index} className="rounded-lg border bg-card p-4 shadow-sm">
+            {editedSuggestions.map((suggestion, index) => {
+              const isSelected = selectedIndices.has(index);
+              return (
+              <div
+                key={index}
+                className={`rounded-lg border bg-card p-4 shadow-sm transition-colors ${isSelected ? "border-primary/60 ring-1 ring-primary/20" : ""}`}
+              >
                 <div className="flex items-start justify-between gap-4">
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => toggleSelected(index)}
+                    className="mt-2 h-4 w-4 shrink-0 rounded border-input"
+                    aria-label={`Select task: ${suggestion.title}`}
+                  />
                   <div className="flex-1 space-y-3">
                     {/* Title */}
                     <input
@@ -296,7 +343,22 @@ export function AIDecompositionDialog({
                   </Button>
                 </div>
               </div>
-            ))}
+              );
+            })}
+          </div>
+        )}
+
+        {/* Empty State: AI ran but suggested nothing to do */}
+        {!loading && !error && suggestions && editedSuggestions.length === 0 && (
+          <div className="flex flex-col items-center gap-3 py-12 text-center">
+            <AlertCircle className="h-8 w-8 text-muted-foreground" />
+            <p className="text-muted-foreground">
+              The AI didn&apos;t suggest any tasks for this epic. Try adding more detail to the
+              epic description, or use a custom prompt.
+            </p>
+            <Button onClick={handleGenerate} variant="outline">
+              Try Again
+            </Button>
           </div>
         )}
 

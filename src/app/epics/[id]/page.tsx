@@ -380,18 +380,20 @@ export default function EpicDetailPage({ params }: { params: Promise<{ id: strin
               size="sm"
               disabled={tasks.length === 0}
               onClick={() => {
+                const tasksToExport =
+                  selectedTaskIds.size > 0 ? tasks.filter(t => selectedTaskIds.has(t.id)) : tasks;
                 const md = generateEpicTasksMarkdown({
                   epicTitle: epic.title,
                   epicDescription: epic.description,
                   projectName: epic.project?.name,
-                  tasks,
+                  tasks: tasksToExport,
                   dependencies,
                 });
                 downloadMarkdown(md, `${epic.title.replace(/\s+/g, "-").toLowerCase()}-tasks.md`);
               }}
             >
               <Download className="mr-2 h-4 w-4" />
-              Export .md
+              Export .md{selectedTaskIds.size > 0 ? ` (${selectedTaskIds.size})` : ""}
             </Button>
             <Button variant="outline" size="sm" onClick={() => router.push(`/epics/${epic.id}/edit`)}>
               <Edit className="mr-2 h-4 w-4" />

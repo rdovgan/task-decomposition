@@ -16,6 +16,7 @@ import {
   ApiError as ApiErrorType,
   TeamConfig,
   TeamMember,
+  DecomposeTask,
 } from "@/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -379,6 +380,16 @@ export const decomposeApi = {
 
   text: async (data: { text: string; projectName?: string; teamConfigId?: string; customTeam?: string }) => {
     return api.post<any>("/api/decompose/text", data, 300000);
+  },
+
+  save: async (data: { projectName: string; tasks: DecomposeTask[] }) => {
+    const res = await api.post<{
+      data: {
+        project: { id: string; name: string };
+        epic: { id: string; title: string };
+      };
+    }>("/api/decompose/save", data);
+    return res.data;
   },
 };
 

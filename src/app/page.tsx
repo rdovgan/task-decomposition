@@ -81,6 +81,11 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<QuickDecomposeResponse | null>(null);
 
+  // Review/selection state (for the results view)
+  const [selectedOrders, setSelectedOrders] = useState<Set<number>>(new Set());
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   // Stats
   const [mounted, setMounted] = useState(false);
 
@@ -187,6 +192,8 @@ export default function Home() {
       }
 
       setResult(response.data);
+      setSelectedOrders(new Set());
+      setSaveError(null);
     } catch (err) {
       if (err instanceof ApiErrorClass) {
         setError(err.message);
@@ -195,6 +202,50 @@ export default function Home() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleTaskSelection = (order: number) => {
+    setSelectedOrders(prev => {
+      const next = new Set(prev);
+      if (next.has(order)) {
+        next.delete(order);
+      } else {
+        next.add(order);
+      }
+      return next;
+    });
+  };
+
+  const getTasksToUse = () => {
+    if (!result) return [];
+    return selectedOrders.size > 0
+      ? result.tasks.filter(t => selectedOrders.has(t.suggestedOrder))
+      : result.tasks;
+  };
+
+  const handleSaveToBoard = async () => {
+    if (!result) return;
+    const name = projectName.trim();
+    if (!name) {
+      setSaveError("Please enter a project name before saving to the board.");
+      return;
+    }
+
+    setSaving(true);
+    setSaveError(null);
+
+    try {
+      const saved = await decomposeApi.save({ projectName: name, tasks: getTasksToUse() });
+      router.push(`/epics/${saved.epic.id}`);
+    } catch (err) {
+      if (err instanceof ApiErrorClass) {
+        setSaveError(err.message);
+      } else {
+        setSaveError("Failed to save tasks to the board");
+      }
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -223,6 +274,8 @@ export default function Home() {
     setTextInput("");
     setResult(null);
     setError(null);
+    setSelectedOrders(new Set());
+    setSaveError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -234,48 +287,69 @@ export default function Home() {
     return (
       <div className="mx-auto max-w-6xl px-6 py-10">
         {/* Success header */}
-        <div className="mb-8 flex items-start justify-between">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="flex items-center gap-2 text-green-600 mb-2">
               <CheckCircle2 className="h-5 w-5" />
               <span className="text-sm font-medium">Decomposition Complete</span>
             </div>
             <h1 className="text-3xl font-bold tracking-tight">
-              {result.project?.name || projectName || "Requirements Decomposed"}
+              {projectName || "Requirements Decomposed"}
             </h1>
             <p className="mt-2 text-muted-foreground">
               {result.tasks.length} tasks generated
+              {selectedOrders.size > 0 && ` · ${selectedOrders.size} selected`}
               {result.meta?.totalEstimatedHours && ` · ${result.meta.totalEstimatedHours}h estimated`}
               {result.meta?.decompositionTime && ` · ${result.meta.decompositionTime.toFixed(1)}s`}
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                const md = generateTasksMarkdown({
-                  projectName: result.project?.name || projectName || undefined,
-                  tasks: result.tasks,
-                  totalHours: result.meta?.totalEstimatedHours,
-                  decompositionTime: result.meta?.decompositionTime,
-                  modelUsed: result.meta?.modelUsed,
-                });
-                downloadMarkdown(md, `${(result.project?.name || projectName || "tasks").replace(/\s+/g, "-").toLowerCase()}-decomposition.md`);
-              }}
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Export .md
-            </Button>
-            {result.project && result.epic && (
-              <Button onClick={() => router.push(`/epics/${result.epic!.id}`)}>
-                <Layers className="mr-2 h-4 w-4" />
-                View in Board
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const tasksToExport = getTasksToUse();
+                  const md = generateTasksMarkdown({
+                    projectName: projectName || undefined,
+                    tasks: tasksToExport,
+                    totalHours: tasksToExport.reduce((s, t) => s + t.estimatedHours, 0),
+                    decompositionTime: result.meta?.decompositionTime,
+                    modelUsed: result.meta?.modelUsed,
+                  });
+                  downloadMarkdown(md, `${(projectName || "tasks").replace(/\s+/g, "-").toLowerCase()}-decomposition.md`);
+                }}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export .md
               </Button>
-            )}
-            <Button variant="outline" onClick={reset}>
-              <Upload className="mr-2 h-4 w-4" />
-              New Decomposition
-            </Button>
+              <Button variant="outline" onClick={reset}>
+                <Upload className="mr-2 h-4 w-4" />
+                New Decomposition
+              </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                placeholder="Project name"
+                className="w-44 rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+              <Button onClick={handleSaveToBoard} disabled={saving}>
+                {saving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Layers className="mr-2 h-4 w-4" />
+                    Save {selectedOrders.size > 0 ? selectedOrders.size : result.tasks.length} to Board
+                  </>
+                )}
+              </Button>
+            </div>
+            {saveError && <p className="text-xs text-destructive">{saveError}</p>}
           </div>
         </div>
 
@@ -303,10 +377,27 @@ export default function Home() {
 
         {/* Task list */}
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold">Generated Tasks</h2>
-          {result.tasks.map((task) => (
-            <div key={task.suggestedOrder} className="rounded-xl border bg-card p-5">
+          <div>
+            <h2 className="text-lg font-semibold">Generated Tasks</h2>
+            <p className="text-sm text-muted-foreground">
+              Check the tasks you want to keep. If none are checked, all tasks will be saved and exported.
+            </p>
+          </div>
+          {result.tasks.map((task) => {
+            const isSelected = selectedOrders.has(task.suggestedOrder);
+            return (
+            <div
+              key={task.suggestedOrder}
+              className={`rounded-xl border bg-card p-5 transition-colors ${isSelected ? "border-primary/60 ring-1 ring-primary/20" : ""}`}
+            >
               <div className="flex items-start gap-4">
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={() => toggleTaskSelection(task.suggestedOrder)}
+                  className="mt-2 h-4 w-4 shrink-0 rounded border-input"
+                  aria-label={`Select task: ${task.title}`}
+                />
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
                   {task.suggestedOrder}
                 </div>
@@ -346,7 +437,8 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );

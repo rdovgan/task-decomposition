@@ -1,41 +1,17 @@
 import { Router } from "express";
-import multer from "multer";
-import path from "path";
-import fs from "fs";
+import { pdfUpload } from "../lib/pdfUpload";
 import * as decomposeController from "../controllers/decomposeController";
 
 const router = Router();
 
-// Ensure uploads directory exists
-const uploadDir = "/tmp/uploads";
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Multer config for PDF uploads
-const upload = multer({
-  storage: multer.diskStorage({
-    destination: uploadDir,
-    filename: (_req, file, cb) => {
-      const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-      cb(null, `${uniqueSuffix}${path.extname(file.originalname)}`);
-    },
-  }),
-  fileFilter: (_req, file, cb) => {
-    if (file.mimetype === "application/pdf" || file.originalname.endsWith(".pdf")) {
-      cb(null, true);
-    } else {
-      cb(new Error("Only PDF files are allowed"));
-    }
-  },
-  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
-});
-
 // Quick decompose from PDF upload
-router.post("/quick", upload.single("pdf"), decomposeController.quickDecompose);
+router.post("/quick", pdfUpload.single("pdf"), decomposeController.quickDecompose);
 
 // Decompose from text input
 router.post("/text", decomposeController.textDecompose);
+
+// Persist reviewed/selected tasks from a decomposition as a project + epic
+router.post("/save", decomposeController.saveDecomposition);
 
 // Team config CRUD
 router.get("/team-configs", decomposeController.getTeamConfigs);

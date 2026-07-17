@@ -250,18 +250,19 @@ function buildDecompositionPrompt(epic: any, project: any, customPrompt?: string
   const basePrompt =
     customPrompt || `${epic.title}\n\n${epic.description || "No description provided."}`;
 
-  return `You are a senior project manager and technical lead. Your task is to break down the following epic into 5-15 actionable, well-defined tasks.
+  return `You are a senior project manager and technical lead. Your task is to break down the following epic into the essential implementation areas needed to deliver it — NOT an exhaustive checklist.
 
 ${context}**Epic to Decompose:**
 ${basePrompt}
 
 **Requirements:**
-1. Break down the epic into logical, sequential tasks
-2. Each task should be specific, actionable, and testable
-3. Estimate story points (1, 2, 3, 5, 8, 13) based on complexity
-4. Assign priority (CRITICAL, HIGH, MEDIUM, LOW) based on importance and dependencies
-5. Provide clear descriptions for each task
-6. Include acceptance criteria where applicable
+1. Identify the minimum number of tasks that cover the distinct implementation areas of this epic — typically 3-8. Only exceed 8 if the epic is genuinely large in scope.
+2. Each task should represent a meaningful, coherent area of work (e.g. "Build payment checkout flow"), not a minor step (e.g. "Add a button"). Merge closely related work into a single task instead of splitting it further.
+3. Do not pad the list to reach a target count — fewer, high-value tasks are better than many small ones. This is meant to help a team understand which areas of the epic need to be implemented, not to enumerate every line of code.
+4. Estimate story points (1, 2, 3, 5, 8, 13) based on complexity
+5. Assign priority (CRITICAL, HIGH, MEDIUM, LOW) based on importance and dependencies
+6. Provide clear descriptions for each task
+7. Include acceptance criteria where applicable
 
 **CRITICAL RULE — ONLY DEVELOPMENT TASKS:**
 You must ONLY generate tasks that are directly related to implementing the features and functionality described in the epic.
@@ -307,7 +308,7 @@ Return ONLY a valid JSON object (no markdown, no explanation). Use this exact st
 - Earlier tasks are typically prerequisites for later tasks
 - Use Fibonacci story points: 1 (very small), 2 (small), 3 (medium), 5 (medium-large), 8 (large), 13 (very large)
 - CRITICAL/HIGH priority for blockers, critical path, or security items
-- Each task should be completable in 1-3 days
+- Prefer a task with a larger story point estimate over splitting it into several small tasks
 
 Now generate the JSON response:`;
 }
