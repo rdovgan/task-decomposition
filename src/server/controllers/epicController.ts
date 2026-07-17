@@ -169,7 +169,7 @@ export const aiDecomposeEpic = asyncHandler(async (req: Request, res: Response) 
   const client = new OpenAI({
     apiKey,
     baseURL,
-    timeout: 60000, // 60 second timeout for AI requests
+    timeout: 300000, // 5 minute timeout for AI requests
   });
 
   const model = process.env.ZAI_MODEL || "glm-5-turbo";
@@ -263,6 +263,23 @@ ${basePrompt}
 5. Provide clear descriptions for each task
 6. Include acceptance criteria where applicable
 
+**CRITICAL RULE — ONLY DEVELOPMENT TASKS:**
+You must ONLY generate tasks that are directly related to implementing the features and functionality described in the epic.
+
+DO NOT include any of the following types of tasks:
+- Testing tasks (unit tests, integration tests, E2E tests, QA, test plans, test strategy)
+- Code review tasks (PR reviews, code review meetings, review checklists)
+- Monitoring tasks (logging, metrics, dashboards, alerts, observability)
+- Documentation tasks (technical docs, API docs, user guides, README updates)
+- CI/CD tasks (pipeline setup, deployment automation, build configuration)
+- DevOps/infrastructure tasks (server setup, cloud configuration, environment provisioning)
+- Project management tasks (sprint planning, retrospectives, standups, stakeholder reviews)
+- Security audit tasks (penetration testing, security reviews, compliance checks)
+- Performance testing/benchmarking tasks
+- Training/knowledge transfer tasks
+
+ONLY include tasks that involve writing code to implement the actual features described in the epic: designing components, building APIs, implementing business logic, creating UI, database schema changes, data migrations, etc.
+
 **Output Format:**
 Return ONLY a valid JSON object (no markdown, no explanation). Use this exact structure:
 
@@ -286,14 +303,11 @@ Return ONLY a valid JSON object (no markdown, no explanation). Use this exact st
 \`\`\`
 
 **Guidelines:**
-- Tasks should follow a logical sequence (setup, core features, edge cases, testing, documentation)
+- Tasks should follow a logical sequence (setup, core features, edge cases, integration)
 - Earlier tasks are typically prerequisites for later tasks
 - Use Fibonacci story points: 1 (very small), 2 (small), 3 (medium), 5 (medium-large), 8 (large), 13 (very large)
 - CRITICAL/HIGH priority for blockers, critical path, or security items
 - Each task should be completable in 1-3 days
-- Include technical tasks (setup, configuration, deployment)
-- Include testing tasks (unit tests, integration tests, E2E tests)
-- Include documentation tasks where relevant
 
 Now generate the JSON response:`;
 }

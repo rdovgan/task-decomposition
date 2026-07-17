@@ -22,6 +22,7 @@ import {
   Layers,
   FolderKanban,
   Zap,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +36,7 @@ import {
   DecomposeTask,
   QuickDecomposeResponse,
 } from "@/types";
+import { generateTasksMarkdown, downloadMarkdown } from "@/lib/export-md";
 
 const SPECIALTIES = [
   "frontend",
@@ -248,6 +250,22 @@ export default function Home() {
             </p>
           </div>
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                const md = generateTasksMarkdown({
+                  projectName: result.project?.name || projectName || undefined,
+                  tasks: result.tasks,
+                  totalHours: result.meta?.totalEstimatedHours,
+                  decompositionTime: result.meta?.decompositionTime,
+                  modelUsed: result.meta?.modelUsed,
+                });
+                downloadMarkdown(md, `${(result.project?.name || projectName || "tasks").replace(/\s+/g, "-").toLowerCase()}-decomposition.md`);
+              }}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Export .md
+            </Button>
             {result.project && result.epic && (
               <Button onClick={() => router.push(`/epics/${result.epic!.id}`)}>
                 <Layers className="mr-2 h-4 w-4" />

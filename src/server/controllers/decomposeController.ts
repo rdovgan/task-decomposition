@@ -108,7 +108,7 @@ export const quickDecompose = asyncHandler(async (req: Request, res: Response) =
   const client = new OpenAI({
     apiKey,
     baseURL,
-    timeout: 120000,
+    timeout: 300000,
   });
 
   // Build prompt
@@ -267,7 +267,7 @@ export const textDecompose = asyncHandler(async (req: Request, res: Response) =>
   const baseURL = process.env.ZAI_BASE_URL || "https://api.z.ai/api/coding/paas/v4";
   const model = process.env.ZAI_MODEL || "glm-5-turbo";
 
-  const client = new OpenAI({ apiKey, baseURL, timeout: 120000 });
+  const client = new OpenAI({ apiKey, baseURL, timeout: 300000 });
 
   let pdfText = text.substring(0, 30000);
   const prompt = buildQuickDecompositionPrompt(pdfText, teamMembers, projectName);
@@ -501,8 +501,24 @@ ${requirementsText}
    - Priority based on business value and dependencies
    - Which specialty should handle it
    - Dependencies on other tasks (by suggestedOrder number)
-4. Order tasks logically: setup → core features → polish → testing
-5. Include infrastructure, testing, and documentation tasks where appropriate
+4. Order tasks logically: setup → core features → edge cases → integration
+
+**CRITICAL RULE — ONLY DEVELOPMENT TASKS:**
+You must ONLY generate tasks that are directly related to implementing the features and functionality described in the requirements document.
+
+DO NOT include any of the following types of tasks:
+- Testing tasks (unit tests, integration tests, E2E tests, QA, test plans, test strategy)
+- Code review tasks (PR reviews, code review meetings, review checklists)
+- Monitoring tasks (logging, metrics, dashboards, alerts, observability)
+- Documentation tasks (technical docs, API docs, user guides, README updates)
+- CI/CD tasks (pipeline setup, deployment automation, build configuration)
+- DevOps/infrastructure tasks (server setup, cloud configuration, environment provisioning)
+- Project management tasks (sprint planning, retrospectives, standups, stakeholder reviews)
+- Security audit tasks (penetration testing, security reviews, compliance checks)
+- Performance testing/benchmarking tasks
+- Training/knowledge transfer tasks
+
+ONLY include tasks that involve writing code to implement the actual features described in the requirements: designing components, building APIs, implementing business logic, creating UI, database schema changes, data migrations, etc.
 
 Return ONLY valid JSON (no markdown fences, no explanation):
 

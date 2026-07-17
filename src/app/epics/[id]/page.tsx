@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Edit, Trash2, Plus, Sparkles, Calendar } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Plus, Sparkles, Calendar, Download } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PriorityBadge } from "@/components/ui/priority-badge";
@@ -29,6 +29,7 @@ import {
   dependenciesApi,
   ApiErrorClass,
 } from "@/lib/api-client";
+import { generateEpicTasksMarkdown, downloadMarkdown } from "@/lib/export-md";
 
 export default function EpicDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -374,6 +375,24 @@ export default function EpicDetailPage({ params }: { params: Promise<{ id: strin
             )}
           </div>
           <div className="flex gap-2 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={tasks.length === 0}
+              onClick={() => {
+                const md = generateEpicTasksMarkdown({
+                  epicTitle: epic.title,
+                  epicDescription: epic.description,
+                  projectName: epic.project?.name,
+                  tasks,
+                  dependencies,
+                });
+                downloadMarkdown(md, `${epic.title.replace(/\s+/g, "-").toLowerCase()}-tasks.md`);
+              }}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Export .md
+            </Button>
             <Button variant="outline" size="sm" onClick={() => router.push(`/epics/${epic.id}/edit`)}>
               <Edit className="mr-2 h-4 w-4" />
               Edit

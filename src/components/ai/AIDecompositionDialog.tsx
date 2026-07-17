@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Sparkles, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, Sparkles, CheckCircle2, AlertCircle, Download } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { PriorityBadge } from "@/components/ui/priority-badge";
 import { AITaskSuggestion, AIDecompositionResponse } from "@/types";
 import { tasksApi, ApiErrorClass } from "@/lib/api-client";
+import { generateSuggestionsMarkdown, downloadMarkdown } from "@/lib/export-md";
 import { useRouter } from "next/navigation";
 
 interface AIDecompositionDialogProps {
@@ -115,6 +116,21 @@ export function AIDecompositionDialog({
               {editedSuggestions.length} task{editedSuggestions.length !== 1 ? "s" : ""} suggested
             </div>
             <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const md = generateSuggestionsMarkdown({
+                    epicTitle,
+                    suggestions: editedSuggestions,
+                    decompositionTime: meta?.decompositionTime,
+                    modelUsed: meta?.modelUsed,
+                  });
+                  downloadMarkdown(md, `${epicTitle.replace(/\s+/g, "-").toLowerCase()}-tasks.md`);
+                }}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export .md
+              </Button>
               <Button variant="outline" onClick={onClose}>
                 Cancel
               </Button>
@@ -172,7 +188,7 @@ export function AIDecompositionDialog({
             <p className="mt-4 text-muted-foreground">
               Generating task suggestions with Claude AI...
             </p>
-            <p className="mt-2 text-sm text-muted-foreground">This may take 10-30 seconds</p>
+            <p className="mt-2 text-sm text-muted-foreground">This may take up to 2-3 minutes</p>
           </div>
         )}
 

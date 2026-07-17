@@ -62,7 +62,7 @@ class TaskDecompositionService {
     }
 
     const baseURL = process.env.ZAI_BASE_URL || "https://api.z.ai/api/coding/paas/v4";
-    const timeout = process.env.API_TIMEOUT_MS ? parseInt(process.env.API_TIMEOUT_MS, 10) : 30000;
+    const timeout = process.env.API_TIMEOUT_MS ? parseInt(process.env.API_TIMEOUT_MS, 10) : 300000;
 
     this.client = new OpenAI({
       apiKey,
@@ -164,6 +164,20 @@ ${task.description ? `Description: ${task.description}` : ""}
 4. Assign priority (HIGH, MEDIUM, LOW) based on importance
 5. Specify the suggested order (1 = first, 2 = second, etc.)
 6. Identify dependencies by referencing the suggestedOrder of prerequisite tasks
+
+**CRITICAL RULE — ONLY DEVELOPMENT TASKS:**
+You must ONLY generate tasks that are directly related to implementing the features and functionality described.
+
+DO NOT include any of the following types of tasks:
+- Testing tasks (unit tests, integration tests, E2E tests, QA, test plans)
+- Code review tasks (PR reviews, code review meetings)
+- Monitoring tasks (logging, metrics, dashboards, alerts)
+- Documentation tasks (technical docs, API docs, README updates)
+- CI/CD tasks (pipeline setup, deployment automation)
+- DevOps/infrastructure tasks (server setup, cloud configuration)
+- Project management tasks (sprint planning, retrospectives)
+
+ONLY include tasks that involve writing code to implement actual features.
 
 **Output Format:**
 Return ONLY a valid JSON object (no markdown, no explanation, no code fences). Use this exact structure:

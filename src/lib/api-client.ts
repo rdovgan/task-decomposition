@@ -66,15 +66,22 @@ const api = {
     return handleResponse<T>(response);
   },
 
-  async post<T>(url: string, data: unknown): Promise<T> {
-    const response = await fetch(`${API_BASE_URL}${url}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    return handleResponse<T>(response);
+  async post<T>(url: string, data: unknown, timeoutMs?: number): Promise<T> {
+    const controller = new AbortController();
+    const timer = timeoutMs ? setTimeout(() => controller.abort(), timeoutMs) : undefined;
+    try {
+      const response = await fetch(`${API_BASE_URL}${url}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+        signal: controller.signal,
+      });
+      return handleResponse<T>(response);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
   },
 
   async patch<T>(url: string, data: unknown): Promise<T> {
@@ -289,7 +296,7 @@ export const aiDecompositionApi = {
         epicId: string;
         epicTitle: string;
       };
-    }>(`/api/epics/${epicId}/ai-decompose`, data);
+    }>(`/api/epics/${epicId}/ai-decompose`, data, 300000);
     return res;
   },
 };
@@ -356,15 +363,22 @@ export const decomposeApi = {
     if (data.teamConfigId) formData.append("teamConfigId", data.teamConfigId);
     if (data.customTeam) formData.append("customTeam", data.customTeam);
 
-    const response = await fetch(`${API_BASE_URL}/api/decompose/quick`, {
-      method: "POST",
-      body: formData,
-    });
-    return handleResponse<any>(response);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 300000);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/decompose/quick`, {
+        method: "POST",
+        body: formData,
+        signal: controller.signal,
+      });
+      return handleResponse<any>(response);
+    } finally {
+      clearTimeout(timer);
+    }
   },
 
   text: async (data: { text: string; projectName?: string; teamConfigId?: string; customTeam?: string }) => {
-    return api.post<any>("/api/decompose/text", data);
+    return api.post<any>("/api/decompose/text", data, 300000);
   },
 };
 
