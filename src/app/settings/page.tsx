@@ -164,7 +164,7 @@ export default function SettingsPage() {
             {hasStoredKey && (
               <div className="rounded-lg bg-muted p-3">
                 <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <CheckCircle2 className="h-4 w-4 text-success" />
                   <span className="font-medium">API key is configured</span>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
@@ -222,8 +222,8 @@ export default function SettingsPage() {
 
             {/* Success Message */}
             {success && (
-              <div className="rounded-lg border border-green-500/50 bg-green-500/10 p-3">
-                <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
+              <div className="rounded-lg border border-success/40 bg-success/10 p-3">
+                <div className="flex items-center gap-2 text-sm text-success">
                   <CheckCircle2 className="h-4 w-4" />
                   <span className="font-medium">Settings saved successfully</span>
                 </div>
@@ -241,8 +241,8 @@ export default function SettingsPage() {
             )}
 
             {/* Help Text */}
-            <div className="rounded-lg border border-blue-500/50 bg-blue-500/10 p-3">
-              <p className="text-sm text-blue-700 dark:text-blue-400">
+            <div className="rounded-lg border border-info/40 bg-info/10 p-3">
+              <p className="text-sm text-info">
                 <span className="font-semibold">Get your API key:</span>{" "}
                 <a
                   href="https://console.anthropic.com/"

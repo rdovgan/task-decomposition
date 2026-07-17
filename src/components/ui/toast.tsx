@@ -66,23 +66,23 @@ const toastConfig: Record<
 > = {
   success: {
     icon: CheckCircle2,
-    className: "border-green-500/30 bg-green-50 dark:bg-green-950/50",
-    iconClass: "text-green-600 dark:text-green-400",
+    className: "border-success/30 bg-success/10",
+    iconClass: "text-success",
   },
   error: {
     icon: AlertCircle,
-    className: "border-red-500/30 bg-red-50 dark:bg-red-950/50",
-    iconClass: "text-red-600 dark:text-red-400",
+    className: "border-danger/30 bg-danger/10",
+    iconClass: "text-danger",
   },
   warning: {
     icon: AlertTriangle,
-    className: "border-yellow-500/30 bg-yellow-50 dark:bg-yellow-950/50",
-    iconClass: "text-yellow-600 dark:text-yellow-400",
+    className: "border-warning/30 bg-warning/10",
+    iconClass: "text-warning",
   },
   info: {
     icon: Info,
-    className: "border-blue-500/30 bg-blue-50 dark:bg-blue-950/50",
-    iconClass: "text-blue-600 dark:text-blue-400",
+    className: "border-info/30 bg-info/10",
+    iconClass: "text-info",
   },
 };
 

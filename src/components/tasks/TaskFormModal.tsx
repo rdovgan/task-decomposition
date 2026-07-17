@@ -189,7 +189,7 @@ export function TaskFormModal({
     <Dialog open={open} onClose={onClose} title={modalTitle} size="lg">
       {success ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <CheckCircle2 className="h-16 w-16 text-green-500 mb-4" />
+          <CheckCircle2 className="h-16 w-16 text-success mb-4" />
           <h3 className="text-xl font-semibold mb-2">Success!</h3>
           <p className="text-muted-foreground">
             Task {mode === "create" ? "created" : "updated"} successfully

@@ -23,21 +23,21 @@ const STATUS_LABELS: Record<TaskStatus, string> = {
 };
 
 const STATUS_DOT_COLORS: Record<TaskStatus, string> = {
-  TODO: "bg-gray-400",
-  IN_PROGRESS: "bg-blue-500",
-  IN_REVIEW: "bg-purple-500",
-  DONE: "bg-green-500",
-  BLOCKED: "bg-red-500",
-  CANCELLED: "bg-gray-500",
+  TODO: "bg-muted-foreground/60",
+  IN_PROGRESS: "bg-info",
+  IN_REVIEW: "bg-purple",
+  DONE: "bg-success",
+  BLOCKED: "bg-danger",
+  CANCELLED: "bg-muted-foreground/60",
 };
 
 const COLUMN_BG: Record<TaskStatus, string> = {
-  TODO: "bg-gray-50/80 dark:bg-gray-950/30",
-  IN_PROGRESS: "bg-blue-50/60 dark:bg-blue-950/20",
-  IN_REVIEW: "bg-purple-50/60 dark:bg-purple-950/20",
-  DONE: "bg-green-50/60 dark:bg-green-950/20",
-  BLOCKED: "bg-red-50/60 dark:bg-red-950/20",
-  CANCELLED: "bg-gray-50/60 dark:bg-gray-950/20",
+  TODO: "bg-muted/50",
+  IN_PROGRESS: "bg-info/[0.06]",
+  IN_REVIEW: "bg-purple/[0.06]",
+  DONE: "bg-success/[0.06]",
+  BLOCKED: "bg-danger/[0.06]",
+  CANCELLED: "bg-muted/50",
 };
 
 export function KanbanColumn({ status, tasks }: KanbanColumnProps) {

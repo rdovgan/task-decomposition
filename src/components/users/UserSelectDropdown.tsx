@@ -213,7 +213,7 @@ export function UserSelectDropdown({
         disabled={disabled || updating}
         className={cn(
           "gap-2 font-medium",
-          success && "border-green-500 text-green-700",
+          success && "border-success text-success",
           sizeClasses[size]
         )}
         aria-haspopup="listbox"

@@ -289,7 +289,7 @@ export default function Home() {
         {/* Success header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="flex items-center gap-2 text-green-600 mb-2">
+            <div className="flex items-center gap-2 text-success mb-2">
               <CheckCircle2 className="h-5 w-5" />
               <span className="text-sm font-medium">Decomposition Complete</span>
             </div>
@@ -413,19 +413,19 @@ export default function Home() {
                     </div>
                   </div>
                   <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-info/10 px-2.5 py-0.5 text-xs font-medium text-info dark:bg-info/15">
                       <Clock className="h-3 w-3" />
                       {task.estimatedHours}h
                     </span>
                     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                      task.priority === "CRITICAL" ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300" :
-                      task.priority === "HIGH" ? "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300" :
-                      task.priority === "MEDIUM" ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300" :
-                      "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300"
+                      task.priority === "CRITICAL" ? "bg-danger/10 text-danger dark:bg-danger/15" :
+                      task.priority === "HIGH" ? "bg-warning/15 text-warning dark:bg-warning/20" :
+                      task.priority === "MEDIUM" ? "bg-info/10 text-info dark:bg-info/15" :
+                      "bg-muted text-muted-foreground"
                     }`}>
                       {task.priority}
                     </span>
-                    <span className="inline-flex rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                    <span className="inline-flex rounded-full bg-purple/10 px-2.5 py-0.5 text-xs font-medium text-purple dark:bg-purple/15">
                       {task.specialty}
                     </span>
                     {task.dependencies.length > 0 && (
@@ -449,7 +449,10 @@ export default function Home() {
     <div className="mx-auto max-w-4xl px-6 py-10">
       {/* Header */}
       <div className="mb-10 text-center">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+        <div
+          className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl text-white shadow-glow"
+          style={{ backgroundImage: "var(--gradient-brand)" }}
+        >
           <Sparkles className="h-7 w-7" />
         </div>
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
@@ -461,7 +464,7 @@ export default function Home() {
       </div>
 
       {/* Main card */}
-      <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
+      <div className="rounded-2xl border bg-card overflow-hidden shadow-md">
         {/* Step 1: Input */}
         <div className="border-b p-6">
           <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-primary">
@@ -498,7 +501,7 @@ export default function Home() {
                 onDragOver={handleDragOver}
                 onClick={() => fileInputRef.current?.click()}
                 className={`cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-colors ${
-                  file ? "border-green-500/50 bg-green-50/50 dark:bg-green-950/20" : "border-muted-foreground/25 hover:border-primary/50 hover:bg-primary/5"
+                  file ? "border-success/50 bg-success/[0.06]" : "border-muted-foreground/25 hover:border-primary/50 hover:bg-primary/5"
                 }`}
               >
                 <input
@@ -510,7 +513,7 @@ export default function Home() {
                 />
                 {file ? (
                   <div className="flex items-center justify-center gap-3">
-                    <FileText className="h-8 w-8 text-green-600" />
+                    <FileText className="h-8 w-8 text-success" />
                     <div className="text-left">
                       <div className="font-medium">{file.name}</div>
                       <div className="text-sm text-muted-foreground">
@@ -764,7 +767,8 @@ export default function Home() {
               size="lg"
               onClick={handleDecompose}
               disabled={loading || (inputMode === "pdf" ? !file : textInput.trim().length < 20)}
-              className="gap-2 px-8"
+              className="gap-2 px-8 border-0 text-white shadow-glow hover:opacity-90"
+              style={{ backgroundImage: "var(--gradient-brand)" }}
             >
               {loading ? (
                 <>

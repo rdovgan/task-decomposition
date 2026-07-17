@@ -35,14 +35,14 @@ function TaskNode({ data }: { data: TaskNodeData }) {
   const isUnblocked = !isBlocked && data.task.status !== "DONE" && data.task.status !== "CANCELLED";
 
   const nodeColor = isBlocked
-    ? "bg-red-100 border-red-400"
+    ? "bg-danger/10 border-danger/40"
     : isUnblocked
-      ? "bg-green-100 border-green-400"
-      : "bg-gray-100 border-gray-400";
+      ? "bg-success/10 border-success/40"
+      : "bg-muted border-border";
 
   return (
     <div
-      className={`px-4 py-2 shadow-md rounded-md border-2 ${nodeColor} min-w-[200px] transition-all`}
+      className={`px-4 py-2 shadow-md rounded-lg border-2 ${nodeColor} min-w-[200px] transition-all text-foreground`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -52,7 +52,7 @@ function TaskNode({ data }: { data: TaskNodeData }) {
       </div>
 
       {isHovered && data.dependents.length > 0 && (
-        <div className="absolute top-full left-0 mt-2 p-2 bg-white border border-gray-300 rounded shadow-lg z-10 min-w-[200px]">
+        <div className="absolute top-full left-0 mt-2 p-2 bg-popover text-popover-foreground border border-border rounded-lg shadow-lg z-10 min-w-[200px]">
           <div className="text-xs font-semibold mb-1">Blocks {data.dependents.length} task(s):</div>
           {data.dependents.map(depId => {
             const dependentTask = data.task.epic?._count?.tasks
@@ -60,7 +60,7 @@ function TaskNode({ data }: { data: TaskNodeData }) {
                 data.tasks?.find((t: Task) => t.id === depId)
               : null;
             return dependentTask ? (
-              <div key={depId} className="text-xs text-gray-700 truncate">
+              <div key={depId} className="text-xs text-muted-foreground truncate">
                 • {dependentTask.title}
               </div>
             ) : null;
@@ -120,7 +120,7 @@ export function DependencyGraph({ tasks, dependencies }: DependencyGraphProps) {
       target: dep.taskId,
       animated: true,
       type: "smoothstep",
-      style: { stroke: "#94a3b8" },
+      style: { stroke: "#8b87c9" },
     }));
 
     return { nodes, edges };
@@ -137,14 +137,14 @@ export function DependencyGraph({ tasks, dependencies }: DependencyGraphProps) {
   // Handle empty state
   if (tasks.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg border border-gray-200">
-        <p className="text-gray-500">No tasks to display in the dependency graph</p>
+      <div className="flex items-center justify-center h-64 bg-muted/40 rounded-lg border border-border">
+        <p className="text-muted-foreground">No tasks to display in the dependency graph</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full bg-gray-50 rounded-lg border border-gray-200">
+    <div className="w-full h-full bg-muted/40 rounded-lg border border-border">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -153,7 +153,7 @@ export function DependencyGraph({ tasks, dependencies }: DependencyGraphProps) {
         onConnect={onConnect}
         nodeTypes={nodeTypes}
         fitView
-        className="bg-gray-50"
+        className="!bg-transparent"
       >
         <Background />
         <Controls />
@@ -164,11 +164,11 @@ export function DependencyGraph({ tasks, dependencies }: DependencyGraphProps) {
             const isUnblocked =
               !isBlocked && data.task.status !== "DONE" && data.task.status !== "CANCELLED";
 
-            if (isBlocked) return "#f87171";
-            if (isUnblocked) return "#4ade80";
-            return "#d1d5db";
+            if (isBlocked) return "#e5484d";
+            if (isUnblocked) return "#4fb87b";
+            return "#a3a3c2";
           }}
-          className="!bg-gray-100"
+          className="!bg-muted"
         />
       </ReactFlow>
     </div>

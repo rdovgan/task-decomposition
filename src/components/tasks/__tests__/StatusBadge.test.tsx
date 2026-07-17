@@ -23,42 +23,42 @@ describe("TaskStatusBadge", () => {
       render(<TaskStatusBadge {...defaultProps} status="TODO" />);
       const badge = screen.getByText("To Do").closest("button");
       expect(screen.getByText("To Do")).toBeInTheDocument();
-      expect(badge).toHaveClass("bg-gray-100");
+      expect(badge).toHaveClass("bg-muted");
     });
 
     it("renders IN_PROGRESS status with correct styling", () => {
       render(<TaskStatusBadge {...defaultProps} status="IN_PROGRESS" />);
       const badge = screen.getByText("In Progress").closest("button");
       expect(screen.getByText("In Progress")).toBeInTheDocument();
-      expect(badge).toHaveClass("bg-blue-100");
+      expect(badge).toHaveClass("bg-info/10");
     });
 
     it("renders IN_REVIEW status with correct styling", () => {
       render(<TaskStatusBadge {...defaultProps} status="IN_REVIEW" />);
       const badge = screen.getByText("In Review").closest("button");
       expect(screen.getByText("In Review")).toBeInTheDocument();
-      expect(badge).toHaveClass("bg-purple-100");
+      expect(badge).toHaveClass("bg-purple/10");
     });
 
     it("renders DONE status with correct styling", () => {
       render(<TaskStatusBadge {...defaultProps} status="DONE" />);
       const badge = screen.getByText("Done").closest("button");
       expect(screen.getByText("Done")).toBeInTheDocument();
-      expect(badge).toHaveClass("bg-green-100");
+      expect(badge).toHaveClass("bg-success/10");
     });
 
     it("renders BLOCKED status with correct styling", () => {
       render(<TaskStatusBadge {...defaultProps} status="BLOCKED" />);
       const badge = screen.getByText("Blocked").closest("button");
       expect(screen.getByText("Blocked")).toBeInTheDocument();
-      expect(badge).toHaveClass("bg-red-100");
+      expect(badge).toHaveClass("bg-danger/10");
     });
 
     it("renders CANCELLED status with correct styling", () => {
       render(<TaskStatusBadge {...defaultProps} status="CANCELLED" />);
       const badge = screen.getByText("Cancelled").closest("button");
       expect(screen.getByText("Cancelled")).toBeInTheDocument();
-      expect(badge).toHaveClass("bg-gray-100");
+      expect(badge).toHaveClass("bg-muted");
     });
 
     it("applies custom className", () => {

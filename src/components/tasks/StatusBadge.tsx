@@ -37,43 +37,37 @@ const STATUS_CONFIG: Record<
   TODO: {
     label: "To Do",
     icon: Circle,
-    className:
-      "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400 border-gray-300 dark:border-gray-600",
+    className: "bg-muted text-muted-foreground border-border",
     description: "Task is not yet started",
   },
   IN_PROGRESS: {
     label: "In Progress",
     icon: CircleDot,
-    className:
-      "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-300 dark:border-blue-600",
+    className: "bg-info/10 text-info dark:bg-info/15 border-info/30",
     description: "Task is currently being worked on",
   },
   IN_REVIEW: {
     label: "In Review",
     icon: Eye,
-    className:
-      "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 border-purple-300 dark:border-purple-600",
+    className: "bg-purple/10 text-purple dark:bg-purple/15 border-purple/30",
     description: "Task is under review",
   },
   DONE: {
     label: "Done",
     icon: CheckCircle2,
-    className:
-      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-300 dark:border-green-600",
+    className: "bg-success/10 text-success dark:bg-success/15 border-success/30",
     description: "Task is completed",
   },
   BLOCKED: {
     label: "Blocked",
     icon: Ban,
-    className:
-      "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-300 dark:border-red-600",
+    className: "bg-danger/10 text-danger dark:bg-danger/15 border-danger/30",
     description: "Task is blocked and cannot proceed",
   },
   CANCELLED: {
     label: "Cancelled",
     icon: XCircle,
-    className:
-      "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400 line-through border-gray-300 dark:border-gray-600",
+    className: "bg-muted text-muted-foreground line-through border-border",
     description: "Task has been cancelled",
   },
 };
@@ -185,7 +179,7 @@ export function TaskStatusBadge({
         disabled={!canChange || !hasValidTransitions}
         className={cn(
           "inline-flex items-center gap-1.5 rounded-full border font-medium transition-colors",
-          "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
           "disabled:cursor-not-allowed disabled:opacity-70",
           sizeClasses[size],
           config.className,
@@ -209,7 +203,7 @@ export function TaskStatusBadge({
 
       {/* Error Message */}
       {error && (
-        <p id="status-error" className="mt-1 text-xs text-red-600 dark:text-red-400" role="alert">
+        <p id="status-error" className="mt-1 text-xs text-danger" role="alert">
           <AlertCircle className="inline h-3 w-3 mr-1" aria-hidden="true" />
           {error}
         </p>
@@ -218,7 +212,7 @@ export function TaskStatusBadge({
       {/* Status Dropdown */}
       {isOpen && canChange && (
         <div
-          className="absolute z-50 mt-1 min-w-[200px] rounded-md border bg-white dark:bg-gray-800 shadow-lg"
+          className="absolute z-50 mt-1 min-w-[200px] rounded-lg border bg-popover shadow-lg"
           role="listbox"
           aria-label="Select status"
           aria-activedescendant={status}
@@ -236,8 +230,8 @@ export function TaskStatusBadge({
                   disabled={isLoading}
                   className={cn(
                     "flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors",
-                    "focus:outline-none focus:bg-blue-50 dark:focus:bg-blue-900/20",
-                    "hover:bg-gray-50 dark:hover:bg-gray-700/50",
+                    "focus:outline-none focus:bg-accent",
+                    "hover:bg-muted",
                     "disabled:cursor-not-allowed disabled:opacity-50"
                   )}
                   role="option"
@@ -253,7 +247,7 @@ export function TaskStatusBadge({
             })}
 
             {validTransitions.length === 0 && (
-              <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+              <div className="px-3 py-2 text-sm text-muted-foreground">
                 No valid status transitions
               </div>
             )}

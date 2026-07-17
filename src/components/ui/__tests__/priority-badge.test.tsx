@@ -6,28 +6,28 @@ describe("PriorityBadge", () => {
     render(<PriorityBadge priority="CRITICAL" />);
     const badge = screen.getByText(/critical/i);
     expect(badge).toBeInTheDocument();
-    expect(badge).toHaveClass("bg-red-100");
+    expect(badge).toHaveClass("bg-danger/10");
   });
 
   it("renders high priority with correct styling", () => {
     render(<PriorityBadge priority="HIGH" />);
     const badge = screen.getByText(/high/i);
     expect(badge).toBeInTheDocument();
-    expect(badge).toHaveClass("bg-orange-100");
+    expect(badge).toHaveClass("bg-warning/15");
   });
 
   it("renders medium priority with correct styling", () => {
     render(<PriorityBadge priority="MEDIUM" />);
     const badge = screen.getByText(/medium/i);
     expect(badge).toBeInTheDocument();
-    expect(badge).toHaveClass("bg-yellow-100");
+    expect(badge).toHaveClass("bg-info/10");
   });
 
   it("renders low priority with correct styling", () => {
     render(<PriorityBadge priority="LOW" />);
     const badge = screen.getByText(/low/i);
     expect(badge).toBeInTheDocument();
-    expect(badge).toHaveClass("bg-blue-100");
+    expect(badge).toHaveClass("bg-muted");
   });
 
   it("renders icon for each priority", () => {

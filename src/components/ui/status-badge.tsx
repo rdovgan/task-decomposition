@@ -7,72 +7,76 @@ interface StatusBadgeProps {
   showDot?: boolean;
 }
 
-const statusConfig: Record<string, { label: string; className: string; dotColor: string }> = {
+const statusConfig: Record<string, { label: string; tone: string; dotColor: string }> = {
   // Project statuses
   ACTIVE: {
     label: "Active",
-    className: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-    dotColor: "bg-green-500",
+    tone: "bg-success/10 text-success dark:bg-success/15",
+    dotColor: "bg-success",
   },
   ARCHIVED: {
     label: "Archived",
-    className: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400",
-    dotColor: "bg-gray-500",
+    tone: "bg-muted text-muted-foreground",
+    dotColor: "bg-muted-foreground",
   },
   ON_HOLD: {
     label: "On Hold",
-    className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
-    dotColor: "bg-yellow-500",
+    tone: "bg-warning/15 text-warning dark:bg-warning/20",
+    dotColor: "bg-warning",
   },
 
   // Epic statuses
   BACKLOG: {
     label: "Backlog",
-    className: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400",
-    dotColor: "bg-gray-400",
+    tone: "bg-muted text-muted-foreground",
+    dotColor: "bg-muted-foreground",
   },
   IN_PROGRESS: {
     label: "In Progress",
-    className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-    dotColor: "bg-blue-500",
+    tone: "bg-info/10 text-info dark:bg-info/15",
+    dotColor: "bg-info",
   },
   IN_REVIEW: {
     label: "In Review",
-    className: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
-    dotColor: "bg-purple-500",
+    tone: "bg-purple/10 text-purple dark:bg-purple/15",
+    dotColor: "bg-purple",
   },
   DONE: {
     label: "Done",
-    className: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-    dotColor: "bg-green-500",
+    tone: "bg-success/10 text-success dark:bg-success/15",
+    dotColor: "bg-success",
   },
   CANCELLED: {
     label: "Cancelled",
-    className: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-    dotColor: "bg-red-500",
+    tone: "bg-danger/10 text-danger dark:bg-danger/15",
+    dotColor: "bg-danger",
   },
 
   // Task statuses
   TODO: {
     label: "To Do",
-    className: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400",
-    dotColor: "bg-gray-400",
+    tone: "bg-muted text-muted-foreground",
+    dotColor: "bg-muted-foreground",
   },
   BLOCKED: {
     label: "Blocked",
-    className: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-    dotColor: "bg-red-500",
+    tone: "bg-danger/10 text-danger dark:bg-danger/15",
+    dotColor: "bg-danger",
   },
 };
 
 export function StatusBadge({ status, className, showDot = false }: StatusBadgeProps) {
-  const config = statusConfig[status] || { label: status, className: "bg-gray-100 text-gray-800", dotColor: "bg-gray-400" };
+  const config = statusConfig[status] || {
+    label: status,
+    tone: "bg-muted text-muted-foreground",
+    dotColor: "bg-muted-foreground",
+  };
 
   return (
     <span
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium",
-        config.className,
+        config.tone,
         className
       )}
     >

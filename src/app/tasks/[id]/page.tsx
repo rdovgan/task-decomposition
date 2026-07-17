@@ -348,7 +348,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
           <div className="flex items-center gap-3">
             <StatusIcon
               className={`h-5 w-5 shrink-0 ${
-                task.status === "IN_PROGRESS" ? "animate-spin text-blue-500" : "text-muted-foreground"
+                task.status === "IN_PROGRESS" ? "animate-spin text-info" : "text-muted-foreground"
               }`}
             />
             <h1 className="text-2xl font-bold tracking-tight truncate">{task.title}</h1>
