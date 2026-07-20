@@ -49,7 +49,7 @@ export function UserSelectDropdown({
       setError(null);
       try {
         const response = await usersApi.list();
-        setUsers(response.data);
+        setUsers(response);
       } catch (err) {
         if (err instanceof ApiErrorClass) {
           setError(err.message);

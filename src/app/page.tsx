@@ -498,7 +498,7 @@ export default function Home() {
             <button
               onClick={() => setInputMode("pdf")}
               className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                inputMode === "pdf" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                inputMode === "pdf" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <FileText className="h-4 w-4" />
@@ -507,7 +507,7 @@ export default function Home() {
             <button
               onClick={() => setInputMode("text")}
               className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                inputMode === "text" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                inputMode === "text" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Zap className="h-4 w-4" />

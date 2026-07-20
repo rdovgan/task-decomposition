@@ -13,6 +13,8 @@ import {
   LayoutDashboard,
   LayoutList,
   CheckSquare,
+  User as UserIcon,
+  Users,
 } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PriorityBadge } from "@/components/ui/priority-badge";
@@ -24,8 +26,10 @@ import { KanbanBoard } from "@/components/tasks/KanbanBoard";
 // Storage keys
 const SORT_STORAGE_KEY = "my-tasks-sort";
 const VIEW_STORAGE_KEY = "my-tasks-view";
+const SCOPE_STORAGE_KEY = "my-tasks-scope";
 
 type ViewMode = "kanban" | "list";
+type TaskScope = "mine" | "all";
 
 type SortField = "dueDate" | "priority" | "storyPoints" | "createdAt";
 type SortDirection = "asc" | "desc";
@@ -47,6 +51,7 @@ export default function MyTasksPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("kanban");
+  const [scope, setScope] = useState<TaskScope>("mine");
 
   // Filter state
   const [filters, setFilters] = useState<FilterState>({
@@ -61,12 +66,21 @@ export default function MyTasksPage() {
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
   useEffect(() => {
-    loadInitialData();
     loadSortPreferences();
     loadViewPreferences();
+    loadInitialData(loadScopePreference());
   }, []);
 
-  async function loadInitialData() {
+  async function loadTasks(user: User, taskScope: TaskScope) {
+    const [tasksData, epicsData] = await Promise.all([
+      tasksApi.list(taskScope === "mine" ? { assigneeId: user.id, limit: 100 } : { limit: 100 }),
+      epicsApi.list({ limit: 100 }),
+    ]);
+    setTasks(tasksData.data);
+    setEpics(epicsData.data);
+  }
+
+  async function loadInitialData(initialScope: TaskScope) {
     setLoading(true);
     setError(null);
     try {
@@ -77,13 +91,27 @@ export default function MyTasksPage() {
       setCurrentUser(user);
 
       if (user) {
-        const [tasksData, epicsData] = await Promise.all([
-          tasksApi.list({ assigneeId: user.id, limit: 100 }),
-          epicsApi.list({ limit: 100 }),
-        ]);
-        setTasks(tasksData.data);
-        setEpics(epicsData.data);
+        await loadTasks(user, initialScope);
       }
+    } catch (err) {
+      if (err instanceof ApiErrorClass) {
+        setError(err.message);
+      } else {
+        setError("Failed to load tasks");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleScopeChange(newScope: TaskScope) {
+    setScope(newScope);
+    saveScopePreference(newScope);
+    if (!currentUser) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await loadTasks(currentUser, newScope);
     } catch (err) {
       if (err instanceof ApiErrorClass) {
         setError(err.message);
@@ -124,6 +152,27 @@ export default function MyTasksPage() {
       localStorage.setItem(VIEW_STORAGE_KEY, mode);
     } catch (err) {
       console.error("Failed to save view preferences:", err);
+    }
+  }
+
+  function loadScopePreference(): TaskScope {
+    try {
+      const stored = localStorage.getItem(SCOPE_STORAGE_KEY);
+      if (stored === "mine" || stored === "all") {
+        setScope(stored);
+        return stored;
+      }
+    } catch (err) {
+      console.error("Failed to load scope preference:", err);
+    }
+    return "mine";
+  }
+
+  function saveScopePreference(taskScope: TaskScope) {
+    try {
+      localStorage.setItem(SCOPE_STORAGE_KEY, taskScope);
+    } catch (err) {
+      console.error("Failed to save scope preference:", err);
     }
   }
 
@@ -306,31 +355,57 @@ export default function MyTasksPage() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">My Tasks</h1>
-          <p className="mt-2 text-muted-foreground">Manage and track your assigned tasks</p>
+          <p className="mt-2 text-muted-foreground">
+            {scope === "mine" ? "Manage and track your assigned tasks" : "Manage and track all tasks"}
+          </p>
         </div>
 
-        {/* View Toggle */}
-        <div className="flex rounded-lg border bg-muted/50 p-1">
-          <button
-            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              viewMode === "kanban" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-            }`
-            }
-            onClick={() => handleViewToggle("kanban")}
-          >
-            <LayoutDashboard className="h-4 w-4" />
-            Board
-          </button>
-          <button
-            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              viewMode === "list" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-            }`
-            }
-            onClick={() => handleViewToggle("list")}
-          >
-            <LayoutList className="h-4 w-4" />
-            List
-          </button>
+        <div className="flex items-center gap-3">
+          {/* Scope Toggle */}
+          <div className="flex rounded-lg border bg-muted/50 p-1">
+            <button
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                scope === "mine" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+              onClick={() => handleScopeChange("mine")}
+            >
+              <UserIcon className="h-4 w-4" />
+              Assigned to Me
+            </button>
+            <button
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                scope === "all" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+              onClick={() => handleScopeChange("all")}
+            >
+              <Users className="h-4 w-4" />
+              All Tasks
+            </button>
+          </div>
+
+          {/* View Toggle */}
+          <div className="flex rounded-lg border bg-muted/50 p-1">
+            <button
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                viewMode === "kanban" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`
+              }
+              onClick={() => handleViewToggle("kanban")}
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              Board
+            </button>
+            <button
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                viewMode === "list" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`
+              }
+              onClick={() => handleViewToggle("list")}
+            >
+              <LayoutList className="h-4 w-4" />
+              List
+            </button>
+          </div>
         </div>
       </div>
 
@@ -354,7 +429,7 @@ export default function MyTasksPage() {
           )}
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
