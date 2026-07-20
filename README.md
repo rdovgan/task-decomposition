@@ -1,44 +1,65 @@
 # Task Decomposition Tool
 
-An intelligent tool for breaking down complex tasks into manageable subtasks, built with modern web technologies.
+An AI-powered tool that turns a PDF or pasted requirements doc into an estimated, dependency-aware task breakdown — then tracks that work through projects, epics, and a Kanban board.
+
+## Features
+
+- **One-click decompose** - Upload a PDF (or paste text) and get an AI-generated task list with estimates, priorities, and specialties in one step
+- **Team-aware estimates** - Configure team presets (roles, specialties, headcount) to improve AI estimates, and save them for reuse
+- **Projects → Epics → Tasks** hierarchy with status/priority tracking, story points, and due dates
+- **Kanban board** with drag-and-drop status changes (`My Tasks`)
+- **Dependency graph** visualization for task blocking relationships (React Flow)
+- **Comments** and **task links** (Confluence, Notion, GitHub, Jira, Figma, external URLs)
+- **Markdown export** of a decomposition result
+- **Per-user Anthropic API key** management (encrypted at rest) in Settings
 
 ## Tech Stack
 
 ### Frontend
-- **Next.js 16+** - React framework with App Router
+- **Next.js 16** - React framework with App Router
 - **TypeScript** - Type-safe JavaScript
-- **React 19** - Latest React features
-- **CSS Modules** - Component-scoped styling (Tailwind CSS can be added by dev team)
-- **shadcn/ui** - High-quality React components
+- **React 19**
+- **Tailwind CSS v4** - Utility-first styling with a custom OKLCH-based design system (`src/app/globals.css`)
+- **base-ui/react** + **class-variance-authority** - Headless component primitives styled shadcn-style (see `components.json`)
+- **@dnd-kit** - Kanban drag-and-drop
+- **reactflow** - Dependency graph visualization
 
 ### Backend
 - **Node.js/Express** - Backend API server
 - **PostgreSQL** - Primary database with Prisma ORM
 - **Zod** - Runtime type validation
+- **Anthropic SDK (Claude)** - AI-powered task decomposition
 - **TypeScript** - End-to-end type safety
 
 ### Infrastructure
 - **Docker** - Containerized development and deployment
-- **GitHub Actions** - CI/CD pipelines (planned)
+- **GitHub Actions** - CI/CD pipelines (`.github/workflows`)
 
 ## Project Structure
 
 ```
 task-decomposition-tool/
 ├── src/
-│   ├── app/              # Next.js App Router pages
+│   ├── app/              # Next.js App Router pages (decompose, projects, epics, tasks, my-tasks, team, settings)
 │   ├── components/       # React components
-│   │   └── ui/           # shadcn/ui components
-│   ├── lib/              # Utility functions and shared code
-│   ├── server/           # Backend code (planned)
-│   │   ├── api/          # API routes
-│   │   ├── controllers/  # Request handlers
-│   │   ├── middleware/   # Express middleware
-│   │   └── models/       # Database models
-│   ├── types/            # TypeScript type definitions
-│   └── utils/            # Helper functions
-├── public/               # Static assets
-└── tests/                # Test files (to be added)
+│   │   ├── ui/           # Base components (button, dialog, toast, data-table, badges, ...)
+│   │   ├── tasks/        # Kanban board, task forms, comments, dependency manager
+│   │   ├── dependency-graph/  # React Flow dependency visualization
+│   │   ├── layout/        # Sidebar / app shell
+│   │   └── ai/            # AI decomposition dialog
+│   ├── contexts/          # App-wide React context
+│   ├── lib/               # API client, utils, markdown export, validations
+│   ├── server/             # Express backend
+│   │   ├── api/            # Route definitions (projects, epics, tasks, decompose, users, userSettings, v1 public API)
+│   │   ├── controllers/    # Request handlers
+│   │   ├── services/       # Business logic (AI decomposition, PDF parsing, etc.)
+│   │   ├── middleware/     # Express middleware
+│   │   └── lib/            # Server-side utilities (Prisma client, etc.)
+│   └── types/              # TypeScript type definitions
+├── prisma/                 # Prisma schema and seed scripts
+├── e2e/                     # Playwright end-to-end tests
+├── public/                  # Static assets
+└── docs/                    # Requirements, architecture, and design docs
 ```
 
 ## Getting Started
@@ -116,14 +137,24 @@ npm run env:current
 
 📖 **See [Environment Management Guide](docs/environment-management.md) for detailed instructions.**
 
-### Docker Setup (Coming Soon)
+### Docker Setup
 
 ```bash
-# Build the Docker image
-docker build -t task-decomposition-tool .
+# Start app, server, and Postgres
+npm run docker:up
 
-# Run the container
-docker run -p 3000:3000 task-decomposition-tool
+# View logs / stop / check status
+npm run docker:logs
+npm run docker:down
+npm run docker:ps
+
+# Run Prisma migrate/seed inside the container
+npm run docker:db:push
+npm run docker:db:seed
+
+# Staging / production compose files
+npm run docker:staging:up
+npm run docker:prod:up
 ```
 
 ## Development
@@ -139,6 +170,10 @@ docker run -p 3000:3000 task-decomposition-tool
 - `npm run start:server` - Start Express production server
 - `npm run lint` - Run ESLint
 - `npm run format` - Format code with Prettier
+- `npm run test` - Run frontend/component unit tests (Jest)
+- `npm run test:server` - Run backend unit tests (Jest)
+- `npm run test:e2e` - Run end-to-end tests (Playwright)
+- `npm run test:all` - Run unit + e2e tests
 
 ### Database Scripts
 
@@ -210,6 +245,11 @@ The API will be available at `http://localhost:3001`
 #### AI-Powered Task Decomposition ✨
 - `POST /api/tasks/:id/decompose` - Break down a task into subtasks using Claude AI
 - `GET /api/tasks/decompose/health` - Check AI service health status
+- `POST /api/decompose/quick` - One-click decompose: upload a PDF and get a full task breakdown
+- `POST /api/decompose/text` - Same as above, from pasted requirements text
+- `POST /api/decompose/save` - Save a decomposition result as a Project + Epic + Tasks
+- `GET/POST/PATCH/DELETE /api/decompose/team-configs` - Manage reusable team presets used to improve estimates
+- `POST /api/v1/decompose` - Public API (requires `X-API-Key` header) for PDF decomposition
 
 **Example Request:**
 ```bash
@@ -237,6 +277,13 @@ POST /api/tasks/{taskId}/decompose
   }
 }
 ```
+
+#### Users & Settings
+- `GET /api/users` - List team members
+- `GET /api/user-settings/:userId` - Get a user's settings (whether an API key is stored)
+- `PUT /api/user-settings/:userId` - Save a user's Anthropic API key (encrypted at rest)
+- `DELETE /api/user-settings/:userId/api-key` - Remove a stored API key
+- `POST /api/user-settings/validate-api-key` - Validate an API key against Anthropic
 
 ### Database Schema
 
@@ -279,4 +326,4 @@ This project is being developed as part of the Paperclip team's task decompositi
 
 ## License
 
-MIT License - See LICENSE file for details
+MIT License
