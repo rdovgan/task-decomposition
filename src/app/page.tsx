@@ -25,6 +25,7 @@ import {
   Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useApp } from "@/contexts/AppContext";
 import {
   decomposeApi,
   teamConfigApi,
@@ -58,10 +59,12 @@ const ROLES: TeamMember["role"][] = ["junior", "middle", "senior", "lead", "arch
 export default function Home() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { projects, fetchProjects } = useApp();
 
   // Upload state
   const [file, setFile] = useState<File | null>(null);
   const [projectName, setProjectName] = useState("");
+  const [selectedProjectId, setSelectedProjectId] = useState("");
   const [textInput, setTextInput] = useState("");
   const [inputMode, setInputMode] = useState<"pdf" | "text">("pdf");
 
@@ -92,7 +95,8 @@ export default function Home() {
   useEffect(() => {
     setMounted(true);
     loadTeamConfigs();
-  }, []);
+    fetchProjects();
+  }, [fetchProjects]);
 
   const loadTeamConfigs = async () => {
     try {
@@ -227,8 +231,8 @@ export default function Home() {
   const handleSaveToBoard = async () => {
     if (!result) return;
     const name = projectName.trim();
-    if (!name) {
-      setSaveError("Please enter a project name before saving to the board.");
+    if (!selectedProjectId && !name) {
+      setSaveError("Please enter a project name or select an existing project before saving to the board.");
       return;
     }
 
@@ -236,7 +240,11 @@ export default function Home() {
     setSaveError(null);
 
     try {
-      const saved = await decomposeApi.save({ projectName: name, tasks: getTasksToUse() });
+      const saved = await decomposeApi.save({
+        projectId: selectedProjectId || undefined,
+        projectName: name,
+        tasks: getTasksToUse(),
+      });
       router.push(`/epics/${saved.epic.id}`);
     } catch (err) {
       if (err instanceof ApiErrorClass) {
@@ -271,6 +279,7 @@ export default function Home() {
   const reset = () => {
     setFile(null);
     setProjectName("");
+    setSelectedProjectId("");
     setTextInput("");
     setResult(null);
     setError(null);
@@ -328,11 +337,23 @@ export default function Home() {
               </Button>
             </div>
             <div className="flex items-center gap-2">
+              <select
+                value={selectedProjectId}
+                onChange={(e) => setSelectedProjectId(e.target.value)}
+                className="w-36 rounded-lg border border-input bg-background px-2 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <option value="">New project</option>
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
               <input
                 type="text"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
-                placeholder="Project name"
+                placeholder={selectedProjectId ? "Epic title" : "Project name"}
                 className="w-44 rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
               <Button onClick={handleSaveToBoard} disabled={saving}>
@@ -547,16 +568,28 @@ export default function Home() {
             />
           )}
 
-          {/* Project name */}
+          {/* Project */}
           <div className="mt-4">
             <label className="block text-sm font-medium mb-1.5">
-              Project Name <span className="text-muted-foreground font-normal">(optional — auto-saves results)</span>
+              Project <span className="text-muted-foreground font-normal">(optional — auto-saves results)</span>
             </label>
+            <select
+              value={selectedProjectId}
+              onChange={(e) => setSelectedProjectId(e.target.value)}
+              className="mb-2 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <option value="">+ Create new project</option>
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
             <input
               type="text"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
-              placeholder="e.g. E-Commerce Platform v2"
+              placeholder={selectedProjectId ? "e.g. Sprint 3 Backend Work (epic title)" : "e.g. E-Commerce Platform v2"}
               className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>

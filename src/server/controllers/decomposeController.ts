@@ -350,35 +350,45 @@ export const textDecompose = asyncHandler(async (req: Request, res: Response) =>
  * POST /api/decompose/save
  */
 export const saveDecomposition = asyncHandler(async (req: Request, res: Response) => {
-  const { projectName, tasks } = req.body as { projectName?: string; tasks?: TaskSuggestion[] };
+  const { projectId, projectName, tasks } = req.body as {
+    projectId?: string;
+    projectName?: string;
+    tasks?: TaskSuggestion[];
+  };
 
-  if (!projectName || !projectName.trim()) {
+  if (!projectId && (!projectName || !projectName.trim())) {
     throw new ApiError(400, "projectName is required");
   }
   if (!Array.isArray(tasks) || tasks.length === 0) {
     throw new ApiError(400, "At least one task is required");
   }
 
-  let adminUser = await prisma.user.findFirst({ where: { role: "ADMIN" } });
-  if (!adminUser) {
-    adminUser = await prisma.user.create({
-      data: { email: "admin@local.dev", name: "Admin", role: "ADMIN" },
+  let project;
+  if (projectId) {
+    project = await prisma.project.findUnique({ where: { id: projectId } });
+    if (!project) throw new ApiError(404, "Project not found");
+  } else {
+    let adminUser = await prisma.user.findFirst({ where: { role: "ADMIN" } });
+    if (!adminUser) {
+      adminUser = await prisma.user.create({
+        data: { email: "admin@local.dev", name: "Admin", role: "ADMIN" },
+      });
+    }
+
+    project = await prisma.project.create({
+      data: {
+        name: projectName!,
+        description: "Auto-created from AI decomposition",
+        ownerId: adminUser.id,
+        status: "ACTIVE",
+      },
     });
   }
-
-  const project = await prisma.project.create({
-    data: {
-      name: projectName,
-      description: "Auto-created from AI decomposition",
-      ownerId: adminUser.id,
-      status: "ACTIVE",
-    },
-  });
 
   const epic = await prisma.epic.create({
     data: {
       projectId: project.id,
-      title: projectName,
+      title: projectName?.trim() || project.name,
       description: "Requirements decomposed with AI",
       status: "BACKLOG",
       priority: "MEDIUM",

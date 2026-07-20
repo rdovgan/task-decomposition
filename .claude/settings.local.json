@@ -3,7 +3,20 @@
     "allow": [
       "Bash(chmod +x:*)",
       "Bash(npm run:*)",
-      "Bash(./scripts/switch-env.sh development:*)"
+      "Bash(./scripts/switch-env.sh development:*)",
+      "Bash(npx tsc *)",
+      "Bash(curl -s http://localhost:3001/health)",
+      "Bash(curl -s http://localhost:3001/api/projects)",
+      "Bash(pstree -p 3723705)",
+      "Bash(ps --ppid 3723706 -o pid,cmd)",
+      "Bash(ps -eo pid,ppid,cmd)",
+      "Bash(kill 3723705 3723706)",
+      "Bash(PORT=3011 nohup npx tsx watch /opt/projects/task-decomposition/src/server/index.ts)",
+      "Bash(curl -s http://localhost:3011/health)",
+      "Bash(curl -s http://localhost:3011/api/projects)",
+      "Bash(pkill -f \"next dev -p 3010\")",
+      "Bash(NEXT_PUBLIC_API_URL=http://localhost:3011 nohup npx next dev -p 3010)",
+      "Bash(disown)"
     ]
   }
 }

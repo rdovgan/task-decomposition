@@ -382,7 +382,7 @@ export const decomposeApi = {
     return api.post<any>("/api/decompose/text", data, 300000);
   },
 
-  save: async (data: { projectName: string; tasks: DecomposeTask[] }) => {
+  save: async (data: { projectId?: string; projectName: string; tasks: DecomposeTask[] }) => {
     const res = await api.post<{
       data: {
         project: { id: string; name: string };
