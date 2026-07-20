@@ -336,11 +336,11 @@ export default function Home() {
                 New Decomposition
               </Button>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-2">
               <select
                 value={selectedProjectId}
                 onChange={(e) => setSelectedProjectId(e.target.value)}
-                className="w-36 rounded-lg border border-input bg-background px-2 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full min-w-[9rem] rounded-lg border border-input bg-background px-2 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-36"
               >
                 <option value="">New project</option>
                 {projects.map((project) => (
@@ -354,9 +354,9 @@ export default function Home() {
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
                 placeholder={selectedProjectId ? "Epic title" : "Project name"}
-                className="w-44 rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full min-w-[11rem] rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-44"
               />
-              <Button onClick={handleSaveToBoard} disabled={saving}>
+              <Button onClick={handleSaveToBoard} disabled={saving} className="w-full sm:w-auto">
                 {saving ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -544,6 +544,7 @@ export default function Home() {
                     <button
                       onClick={(e) => { e.stopPropagation(); setFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
                       className="ml-4 rounded-full p-1 hover:bg-muted"
+                      aria-label="Remove file"
                     >
                       <X className="h-4 w-4" />
                     </button>

@@ -16,7 +16,19 @@
       "Bash(curl -s http://localhost:3011/api/projects)",
       "Bash(pkill -f \"next dev -p 3010\")",
       "Bash(NEXT_PUBLIC_API_URL=http://localhost:3011 nohup npx next dev -p 3010)",
-      "Bash(disown)"
+      "Bash(disown)",
+      "Bash(node *)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d['meta']['total']\\)\")",
+      "Bash(curl -s -X POST http://localhost:3011/api/decompose/save -H 'Content-Type: application/json' -d '{\"projectId\": \"cmrovp4md0005ywd4x22nlr8i\", \"projectName\": \"Test Epic Via ProjectId\", \"tasks\": [{\"title\":\"Test task\",\"description\":\"desc\",\"estimatedHours\":2,\"priority\":\"MEDIUM\",\"specialty\":\"backend\",\"suggestedOrder\":1,\"dependencies\":[]}]}')",
+      "Bash(curl -s -X POST http://localhost:3011/api/decompose/save -H 'Content-Type: application/json' -d '{\"projectName\": \"Fresh New Project Via Test\", \"tasks\": [{\"title\":\"Test task\",\"description\":\"desc\",\"estimatedHours\":2,\"priority\":\"MEDIUM\",\"specialty\":\"backend\",\"suggestedOrder\":1,\"dependencies\":[]}]}')",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" -X POST http://localhost:3011/api/decompose/save -H \"Content-Type: application/json\" -d '{\"tasks\": []}')",
+      "Bash(cd *)",
+      "Bash(rm -f /opt/projects/task-decomposition/pw-check*.tmp.js)",
+      "Bash(pkill -f \"tsx watch src/server/index.ts\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3010)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3011/health)",
+      "Bash(PORT=3011 ALLOWED_ORIGINS=\"http://localhost:3010,http://localhost:3000,http://localhost:3001\" nohup npx tsx watch src/server/index.ts)",
+      "Bash(echo \"started pid $!\")"
     ]
   }
 }

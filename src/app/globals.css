@@ -101,8 +101,7 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
+:root[data-theme="dark"] {
     --color-background: oklch(0.155 0.018 280);
     --color-foreground: oklch(0.94 0.012 285);
     --color-card: oklch(0.185 0.02 280);
@@ -152,10 +151,9 @@
     --color-sidebar-ring: oklch(0.685 0.19 277.5);
 
     --shadow-glow: 0 0 0 1px oklch(0.685 0.19 277.5 / 0.2), 0 8px 24px oklch(0 0 0 / 0.35);
-  }
+}
 
-  body {
-    background-image:
-      radial-gradient(ellipse 80% 50% at 50% -10%, oklch(0.685 0.19 277.5 / 0.10), transparent);
-  }
+:root[data-theme="dark"] body {
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, oklch(0.685 0.19 277.5 / 0.10), transparent);
 }
