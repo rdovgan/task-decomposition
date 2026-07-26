@@ -18,6 +18,7 @@ import {
   Ban,
   Eye,
   ArrowLeft,
+  Sparkles,
 } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PriorityBadge } from "@/components/ui/priority-badge";
@@ -26,6 +27,7 @@ import { CommentList } from "@/components/tasks/CommentList";
 import { CommentForm } from "@/components/tasks/CommentForm";
 import { TaskLinkList } from "@/components/tasks/TaskLinkList";
 import { DependencyManager } from "@/components/tasks/DependencyManager";
+import { AITaskUpdateDialog } from "@/components/ai/AITaskUpdateDialog";
 import { Task, Comment, TaskLink, Dependency, TaskStatus } from "@/types";
 import {
   tasksApi,
@@ -55,6 +57,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   const [loading, setLoading] = useState(true);
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [aiUpdateOpen, setAiUpdateOpen] = useState(false);
 
   useEffect(() => {
     loadTask();
@@ -362,6 +365,10 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
           )}
         </div>
         <div className="flex gap-2 shrink-0">
+          <Button variant="outline" size="sm" onClick={() => setAiUpdateOpen(true)}>
+            <Sparkles className="mr-2 h-4 w-4" />
+            Improve with AI
+          </Button>
           <Button variant="outline" size="sm" onClick={handleDuplicate}>
             <Copy className="mr-2 h-4 w-4" />
             Duplicate
@@ -376,6 +383,13 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
           </Button>
         </div>
       </div>
+
+      <AITaskUpdateDialog
+        open={aiUpdateOpen}
+        onClose={() => setAiUpdateOpen(false)}
+        task={task}
+        onApplied={loadTask}
+      />
 
       {/* Two-column layout */}
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">

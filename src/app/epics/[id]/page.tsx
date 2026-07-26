@@ -127,7 +127,7 @@ export default function EpicDetailPage({ params }: { params: Promise<{ id: strin
     }
   };
 
-  const handleAIDecompose = async (customPrompt?: string) => {
+  const handleAIDecompose = async (customPrompt?: string, teamConfigId?: string) => {
     setAiLoading(true);
     setAiError(null);
 
@@ -135,6 +135,7 @@ export default function EpicDetailPage({ params }: { params: Promise<{ id: strin
       const response = await aiDecompositionApi.decomposeEpic(id, {
         userId: "demo-user-id", // In production, get from auth
         customPrompt,
+        teamConfigId,
       });
 
       setAiSuggestions(response.data);

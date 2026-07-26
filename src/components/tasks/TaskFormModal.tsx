@@ -376,7 +376,7 @@ export function TaskFormModal({
 
             <div>
               <label htmlFor="estimatedHours" className="block text-sm font-medium mb-1">
-                Estimated Hours
+                Estimated Hours <span className="font-normal text-muted-foreground">(optional)</span>
               </label>
               <input
                 type="number"

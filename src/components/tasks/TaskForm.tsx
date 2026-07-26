@@ -220,7 +220,7 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
 
         <div>
           <label htmlFor="estimatedHours" className="block text-sm font-medium">
-            Estimated Hours
+            Estimated Hours <span className="font-normal text-muted-foreground">(optional)</span>
           </label>
           <input
             type="number"

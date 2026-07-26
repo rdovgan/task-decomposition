@@ -80,6 +80,12 @@ export interface Dependency {
   dependsOnTaskId: string;
   type: DependencyType;
   createdAt: string;
+  dependsOn?: {
+    id: string;
+    title: string;
+    status: TaskStatus;
+    assignee?: { id: string; name: string } | null;
+  };
 }
 
 export interface TaskLink {
@@ -180,7 +186,7 @@ export interface ApiError {
 export interface SubtaskSuggestion {
   title: string;
   description: string;
-  estimatedHours: number;
+  storyPoints: number;
   priority: "HIGH" | "MEDIUM" | "LOW";
   suggestedOrder: number;
   dependencies?: number[];
@@ -205,6 +211,7 @@ export interface DecompositionRequest {
     name: string;
     description: string | null;
   };
+  team?: TeamMember[];
 }
 
 export interface DecompositionResult {
@@ -228,7 +235,7 @@ export interface AITaskSuggestion {
 export interface DecomposeTask {
   title: string;
   description: string;
-  estimatedHours: number;
+  storyPoints: number;
   priority: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
   specialty: string;
   suggestedOrder: number;
@@ -263,7 +270,7 @@ export interface QuickDecomposeResponse {
   meta: {
     decompositionTime: number;
     modelUsed: string;
-    totalEstimatedHours: number;
+    totalStoryPoints: number;
   };
 }
 

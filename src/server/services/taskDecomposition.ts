@@ -1,12 +1,21 @@
 import OpenAI from "openai";
 
 /**
+ * Team member used to decide estimation/QA guidance
+ */
+export interface TeamMember {
+  role: "junior" | "middle" | "senior" | "lead" | "architect";
+  specialty: string;
+  count?: number;
+}
+
+/**
  * Subtask suggestion from AI decomposition
  */
 export interface SubtaskSuggestion {
   title: string;
   description: string;
-  estimatedHours: number;
+  storyPoints: number;
   priority: "HIGH" | "MEDIUM" | "LOW";
   suggestedOrder: number;
   dependencies?: number[]; // Array of suggestedOrder indices this task depends on
@@ -37,6 +46,7 @@ export interface DecompositionRequest {
     name: string;
     description: string | null;
   };
+  team?: TeamMember[];
 }
 
 /**
@@ -132,7 +142,7 @@ class TaskDecompositionService {
    * Build the prompt for task decomposition
    */
   private buildDecompositionPrompt(request: DecompositionRequest): string {
-    const { task, epic, project } = request;
+    const { task, epic, project, team = [] } = request;
 
     let context = "";
     if (project) {
@@ -151,6 +161,11 @@ class TaskDecompositionService {
       context += "\n\n";
     }
 
+    const hasQA = team.some(m => m.specialty?.toLowerCase() === "qa");
+    const testingRule = hasQA
+      ? `- Testing/QA tasks ARE allowed: the team includes a QA specialist, so you may include dedicated testing subtasks where they represent meaningful, distinct work.`
+      : `- Testing tasks (unit tests, integration tests, E2E tests, QA, test plans): do NOT create separate testing subtasks — instead, fold the time/effort needed to test each piece of work into that subtask's own story point estimate, since there is no QA specialist on this team.`;
+
     return `Break down the following task into 3-8 actionable subtasks.
 
 ${context}**Task to Decompose:**
@@ -160,7 +175,7 @@ ${task.description ? `Description: ${task.description}` : ""}
 **Requirements:**
 1. Break down the task into logical, sequential subtasks
 2. Each subtask should be specific and actionable
-3. Estimate hours for each subtask (be realistic)
+3. Estimate story points (1, 2, 3, 5, 8, 13 — Fibonacci) for each subtask, based on complexity
 4. Assign priority (HIGH, MEDIUM, LOW) based on importance
 5. Specify the suggested order (1 = first, 2 = second, etc.)
 6. Identify dependencies by referencing the suggestedOrder of prerequisite tasks
@@ -169,7 +184,7 @@ ${task.description ? `Description: ${task.description}` : ""}
 You must ONLY generate tasks that are directly related to implementing the features and functionality described.
 
 DO NOT include any of the following types of tasks:
-- Testing tasks (unit tests, integration tests, E2E tests, QA, test plans)
+${testingRule}
 - Code review tasks (PR reviews, code review meetings)
 - Monitoring tasks (logging, metrics, dashboards, alerts)
 - Documentation tasks (technical docs, API docs, README updates)
@@ -187,7 +202,7 @@ Return ONLY a valid JSON object (no markdown, no explanation, no code fences). U
     {
       "title": "Clear, specific task title",
       "description": "Detailed description of what needs to be done",
-      "estimatedHours": 4,
+      "storyPoints": 3,
       "priority": "HIGH",
       "suggestedOrder": 1,
       "dependencies": []
@@ -195,7 +210,7 @@ Return ONLY a valid JSON object (no markdown, no explanation, no code fences). U
     {
       "title": "Second task title",
       "description": "Description of the second task",
-      "estimatedHours": 3,
+      "storyPoints": 2,
       "priority": "MEDIUM",
       "suggestedOrder": 2,
       "dependencies": [1]
@@ -204,11 +219,11 @@ Return ONLY a valid JSON object (no markdown, no explanation, no code fences). U
 }
 
 **Guidelines:**
-- Total estimated hours should be realistic for the task complexity
+- Total story points should be realistic for the task complexity
 - Earlier tasks should typically be completed first
 - Dependencies: use an array of suggestedOrder numbers (e.g., [1] means this task depends on task with suggestedOrder=1)
 - High priority for critical path items or blockers
-- Each subtask should be completable in 1-8 hours
+- Each subtask should be small enough to complete in one sitting (1-2 points ideally, up to 5 for more complex work)
 
 Now generate the JSON response:`;
   }
@@ -243,7 +258,7 @@ Now generate the JSON response:`;
       const subtasks: SubtaskSuggestion[] = parsed.subtasks.map((st: any, index: number) => ({
         title: st.title || `Subtask ${index + 1}`,
         description: st.description || "",
-        estimatedHours: Number(st.estimatedHours) || 2,
+        storyPoints: this.validateStoryPoints(st.storyPoints),
         priority: this.validatePriority(st.priority),
         suggestedOrder: Number(st.suggestedOrder) || index + 1,
         dependencies: Array.isArray(st.dependencies) ? st.dependencies : [],
@@ -267,6 +282,15 @@ Now generate the JSON response:`;
       return normalized;
     }
     return "MEDIUM"; // Default
+  }
+
+  /**
+   * Validate and normalize story points to the nearest valid Fibonacci value
+   */
+  private validateStoryPoints(points: any): number {
+    const validPoints = [1, 2, 3, 5, 8, 13];
+    const normalized = Number(points);
+    return validPoints.includes(normalized) ? normalized : 2;
   }
 
   /**

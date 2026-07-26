@@ -51,5 +51,6 @@ router.delete("/links/:id", taskController.deleteLink);
 
 // AI-powered task decomposition
 router.post("/:id/decompose", taskController.decomposeTask);
+router.post("/:id/ai-update", taskController.aiUpdateTask);
 
 export default router;

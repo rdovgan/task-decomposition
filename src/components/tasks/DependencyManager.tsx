@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Dependency, Task } from "@/types";
 import { dependenciesApi, tasksApi, ApiErrorClass } from "@/lib/api-client";
 
@@ -112,11 +114,15 @@ export function DependencyManager({
                 <span className="rounded-full bg-destructive/10 px-3 py-1 text-xs font-medium text-destructive">
                   BLOCKS
                 </span>
-                <span className="text-sm">
+                <span className="flex items-center gap-2 text-sm">
                   This task blocks{" "}
-                  <code className="rounded bg-muted px-2 py-1 text-xs">
-                    Task {dep.dependsOnTaskId.slice(0, 8)}
-                  </code>
+                  <Link
+                    href={`/tasks/${dep.dependsOnTaskId}`}
+                    className="font-medium text-primary hover:underline"
+                  >
+                    {dep.dependsOn?.title || `Task ${dep.dependsOnTaskId.slice(0, 8)}`}
+                  </Link>
+                  {dep.dependsOn?.status && <StatusBadge status={dep.dependsOn.status} />}
                 </span>
               </div>
               <Button

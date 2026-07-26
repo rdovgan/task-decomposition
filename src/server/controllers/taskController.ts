@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
+import OpenAI from "openai";
 import prisma from "../lib/prisma";
 import { asyncHandler, ApiError } from "../middleware/errorHandler";
 import type { CreateTaskInput, UpdateTaskInput } from "../lib/validations";
 import { taskDecompositionService } from "../services/taskDecomposition";
+import { decrypt } from "../lib/encryption";
 import { str } from "../lib/express";
 
 export const getTasks = asyncHandler(async (req: Request, res: Response) => {
@@ -438,6 +440,7 @@ export const deleteLink = asyncHandler(async (req: Request, res: Response) => {
  */
 export const decomposeTask = asyncHandler(async (req: Request, res: Response) => {
   const id = str(req.params.id)!;
+  const { teamConfigId, customTeam } = req.body;
 
   // Fetch the parent task with context
   const task = await prisma.task.findUnique({
@@ -466,6 +469,21 @@ export const decomposeTask = asyncHandler(async (req: Request, res: Response) =>
     },
   });
 
+  // Resolve team composition (used to decide whether QA subtasks are appropriate)
+  let teamMembers: import("../services/taskDecomposition").TeamMember[] = [];
+  if (teamConfigId) {
+    const config = await prisma.teamConfig.findUnique({ where: { id: teamConfigId } });
+    if (config) {
+      teamMembers = (config.config as any).members || [];
+    }
+  } else if (customTeam) {
+    try {
+      teamMembers = typeof customTeam === "string" ? JSON.parse(customTeam) : customTeam;
+    } catch {
+      throw new ApiError(400, "Invalid custom team configuration");
+    }
+  }
+
   // Prepare decomposition request
   const taskAny = task as any;
   const decompositionRequest = {
@@ -481,6 +499,7 @@ export const decomposeTask = asyncHandler(async (req: Request, res: Response) =>
       name: taskAny.epic.project.name,
       description: taskAny.epic.project.description,
     },
+    team: teamMembers,
   };
 
   // Call AI service
@@ -494,7 +513,7 @@ export const decomposeTask = asyncHandler(async (req: Request, res: Response) =>
           epicId: task.epicId,
           title: subtask.title,
           description: subtask.description,
-          estimatedHours: subtask.estimatedHours,
+          storyPoints: subtask.storyPoints,
           priority: subtask.priority as any,
           status: "TODO",
           assigneeId: task.assigneeId, // Inherit assignee from parent
@@ -554,3 +573,173 @@ export const decomposeHealthCheck = asyncHandler(async (req: Request, res: Respo
   const health = await taskDecompositionService.healthCheck();
   res.json({ data: health });
 });
+
+/**
+ * AI-Assisted Task Update — proposes a revised title/description/priority/storyPoints
+ * for an existing task. Review-only: does NOT write to the database. The caller
+ * applies the suggestion via the normal PATCH /api/tasks/:id endpoint.
+ */
+export const aiUpdateTask = asyncHandler(async (req: Request, res: Response) => {
+  const id = str(req.params.id)!;
+  const { userId, instruction } = req.body;
+
+  const task = await prisma.task.findUnique({
+    where: { id },
+    include: {
+      epic: {
+        include: {
+          project: { select: { id: true, name: true, description: true } },
+        },
+      },
+    },
+  });
+
+  if (!task) {
+    throw new ApiError(404, "Task not found");
+  }
+
+  // Get API key: from user settings or environment (same resolution as epic decompose)
+  let apiKey = process.env.ZAI_API_KEY;
+
+  if (userId) {
+    const userSettings = await prisma.userSettings.findUnique({ where: { userId } });
+    if (userSettings?.anthropicApiKey) {
+      try {
+        apiKey = decrypt(userSettings.anthropicApiKey);
+      } catch (error) {
+        console.error("Failed to decrypt API key:", error);
+        throw new ApiError(500, "Failed to decrypt API key. Please re-save your settings.");
+      }
+    }
+  }
+
+  if (!apiKey) {
+    throw new ApiError(
+      400,
+      "No Z.AI API key found. Please add your API key in settings or set ZAI_API_KEY environment variable."
+    );
+  }
+
+  const baseURL = process.env.ZAI_BASE_URL || "https://api.z.ai/api/coding/paas/v4";
+  const client = new OpenAI({ apiKey, baseURL, timeout: 300000 });
+  const model = process.env.ZAI_MODEL || "glm-5-turbo";
+
+  const taskAny = task as any;
+  const prompt = buildTaskUpdatePrompt(taskAny, taskAny.epic, taskAny.epic.project, instruction);
+
+  try {
+    const startTime = Date.now();
+    const response = await client.chat.completions.create({
+      model,
+      max_tokens: 2048,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a senior project manager and technical lead. Revise a single existing task's fields. Always respond with valid JSON only.",
+        },
+        { role: "user", content: prompt },
+      ],
+    });
+
+    const decompositionTime = (Date.now() - startTime) / 1000;
+    const content = response.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error("No content in AI response");
+    }
+
+    const suggestion = parseTaskUpdateSuggestion(content);
+
+    res.json({
+      data: suggestion,
+      meta: {
+        decompositionTime,
+        modelUsed: model,
+        taskId: task.id,
+      },
+    });
+  } catch (error: any) {
+    console.error("AI task update error:", error);
+    if (error.status === 401) {
+      throw new ApiError(401, "Invalid Z.AI API key. Please check your settings.");
+    }
+    if (error.status === 429) {
+      throw new ApiError(429, "Z.AI API rate limit exceeded. Please try again later.");
+    }
+    throw new ApiError(500, `Failed to update task: ${error.message || "Unknown error"}`);
+  }
+});
+
+function buildTaskUpdatePrompt(task: any, epic: any, project: any, instruction?: string): string {
+  let context = "";
+  if (project) {
+    context += `**Project:** ${project.name}\n`;
+    if (project.description) context += `${project.description}\n`;
+    context += "\n";
+  }
+  if (epic) {
+    context += `**Epic:** ${epic.title}\n`;
+    if (epic.description) context += `${epic.description}\n`;
+    context += "\n";
+  }
+
+  return `You are revising a single existing task. Propose an improved version of its fields.
+
+${context}**Current Task:**
+Title: ${task.title}
+Description: ${task.description || "(none)"}
+Priority: ${task.priority}
+Story Points: ${task.storyPoints ?? "(unset)"}
+
+${instruction ? `**Instruction from the user:**\n${instruction}\n` : "**Instruction:** No specific instruction was given — improve clarity, completeness, and accuracy of the task based on the project/epic context.\n"}
+
+**Output Format:**
+Return ONLY a valid JSON object (no markdown, no explanation) with the revised fields:
+
+{
+  "title": "Revised, clear, specific title",
+  "description": "Revised description, including acceptance criteria where useful",
+  "priority": "HIGH",
+  "storyPoints": 5
+}
+
+Story points must be one of: 1, 2, 3, 5, 8, 13. Priority must be one of: CRITICAL, HIGH, MEDIUM, LOW.
+
+Now generate the JSON response:`;
+}
+
+function parseTaskUpdateSuggestion(content: string): {
+  title: string;
+  description: string;
+  priority: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+  storyPoints: number;
+} {
+  try {
+    let jsonStr = content.trim();
+    const jsonMatch = jsonStr.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
+    if (jsonMatch) jsonStr = jsonMatch[1];
+    if (!jsonStr.startsWith("{")) {
+      const rawMatch = jsonStr.match(/(\{[\s\S]*\})/);
+      if (rawMatch) jsonStr = rawMatch[1];
+    }
+
+    const parsed = JSON.parse(jsonStr);
+    const validPriorities = ["CRITICAL", "HIGH", "MEDIUM", "LOW"];
+    const validPoints = [1, 2, 3, 5, 8, 13];
+
+    return {
+      title: parsed.title || "Untitled Task",
+      description: parsed.description || "",
+      priority: validPriorities.includes(parsed.priority?.toUpperCase())
+        ? parsed.priority.toUpperCase()
+        : "MEDIUM",
+      storyPoints: validPoints.includes(Number(parsed.storyPoints))
+        ? Number(parsed.storyPoints)
+        : 3,
+    };
+  } catch (error) {
+    throw new Error(
+      `Failed to parse AI response: ${error instanceof Error ? error.message : "Invalid JSON"}`
+    );
+  }
+}

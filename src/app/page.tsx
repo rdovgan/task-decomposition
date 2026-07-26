@@ -290,7 +290,7 @@ export default function Home() {
 
   // ─── Results View ─────────────────────────────────────────────
   if (result) {
-    const totalHours = result.tasks.reduce((s, t) => s + t.estimatedHours, 0);
+    const totalStoryPoints = result.tasks.reduce((s, t) => s + t.storyPoints, 0);
     const specialties = [...new Set(result.tasks.map((t) => t.specialty))];
 
     return (
@@ -308,7 +308,7 @@ export default function Home() {
             <p className="mt-2 text-muted-foreground">
               {result.tasks.length} tasks generated
               {selectedOrders.size > 0 && ` · ${selectedOrders.size} selected`}
-              {result.meta?.totalEstimatedHours && ` · ${result.meta.totalEstimatedHours}h estimated`}
+              {result.meta?.totalStoryPoints && ` · ${result.meta.totalStoryPoints} pts estimated`}
               {result.meta?.decompositionTime && ` · ${result.meta.decompositionTime.toFixed(1)}s`}
             </p>
           </div>
@@ -321,7 +321,7 @@ export default function Home() {
                   const md = generateTasksMarkdown({
                     projectName: projectName || undefined,
                     tasks: tasksToExport,
-                    totalHours: tasksToExport.reduce((s, t) => s + t.estimatedHours, 0),
+                    totalStoryPoints: tasksToExport.reduce((s, t) => s + t.storyPoints, 0),
                     decompositionTime: result.meta?.decompositionTime,
                     modelUsed: result.meta?.modelUsed,
                   });
@@ -381,13 +381,13 @@ export default function Home() {
             <div className="text-2xl font-bold">{result.tasks.length}</div>
           </div>
           <div className="rounded-xl border bg-card p-4">
-            <div className="text-sm text-muted-foreground">Estimated Hours</div>
-            <div className="text-2xl font-bold">{totalHours}</div>
+            <div className="text-sm text-muted-foreground">Story Points</div>
+            <div className="text-2xl font-bold">{totalStoryPoints}</div>
           </div>
           <div className="rounded-xl border bg-card p-4">
             <div className="text-sm text-muted-foreground">Sprint Estimate</div>
-            <div className="text-2xl font-bold">{Math.ceil(totalHours / 80)} sprint{Math.ceil(totalHours / 80) !== 1 ? "s" : ""}</div>
-            <div className="text-xs text-muted-foreground">(80h/sprint)</div>
+            <div className="text-2xl font-bold">{Math.ceil(totalStoryPoints / 20)} sprint{Math.ceil(totalStoryPoints / 20) !== 1 ? "s" : ""}</div>
+            <div className="text-xs text-muted-foreground">(20 pts/sprint)</div>
           </div>
           <div className="rounded-xl border bg-card p-4">
             <div className="text-sm text-muted-foreground">Specialties</div>
@@ -436,7 +436,7 @@ export default function Home() {
                   <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
                     <span className="inline-flex items-center gap-1 rounded-full bg-info/10 px-2.5 py-0.5 text-xs font-medium text-info dark:bg-info/15">
                       <Clock className="h-3 w-3" />
-                      {task.estimatedHours}h
+                      {task.storyPoints} pts
                     </span>
                     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
                       task.priority === "CRITICAL" ? "bg-danger/10 text-danger dark:bg-danger/15" :

@@ -6,6 +6,12 @@ import type { CreateEpicInput, UpdateEpicInput } from "../lib/validations";
 import { decrypt } from "../lib/encryption";
 import { str } from "../lib/express";
 
+interface TeamMember {
+  role: "junior" | "middle" | "senior" | "lead" | "architect";
+  specialty: string;
+  count?: number;
+}
+
 export const getEpics = asyncHandler(async (req: Request, res: Response) => {
   const page = parseInt(str(req.query.page) || "1") || 1;
   const limit = parseInt(str(req.query.limit) || "10") || 10;
@@ -125,7 +131,7 @@ export const deleteEpic = asyncHandler(async (req: Request, res: Response) => {
  */
 export const aiDecomposeEpic = asyncHandler(async (req: Request, res: Response) => {
   const id = str(req.params.id)!;
-  const { userId, customPrompt } = req.body;
+  const { userId, customPrompt, teamConfigId, customTeam } = req.body;
 
   // Get the epic with project and context
   const epic = await prisma.epic.findUnique({
@@ -137,6 +143,21 @@ export const aiDecomposeEpic = asyncHandler(async (req: Request, res: Response) 
 
   if (!epic) {
     throw new ApiError(404, "Epic not found");
+  }
+
+  // Resolve team composition (used to decide whether QA tasks are appropriate)
+  let teamMembers: TeamMember[] = [];
+  if (teamConfigId) {
+    const config = await prisma.teamConfig.findUnique({ where: { id: teamConfigId } });
+    if (config) {
+      teamMembers = (config.config as any).members || [];
+    }
+  } else if (customTeam) {
+    try {
+      teamMembers = typeof customTeam === "string" ? JSON.parse(customTeam) : customTeam;
+    } catch {
+      throw new ApiError(400, "Invalid custom team configuration");
+    }
   }
 
   // Get API key: from user settings or environment
@@ -175,7 +196,7 @@ export const aiDecomposeEpic = asyncHandler(async (req: Request, res: Response) 
   const model = process.env.ZAI_MODEL || "glm-5-turbo";
 
   // Build the decomposition prompt
-  const prompt = buildDecompositionPrompt(epic, (epic as any).project, customPrompt);
+  const prompt = buildDecompositionPrompt(epic, (epic as any).project, customPrompt, teamMembers);
 
   try {
     const startTime = Date.now();
@@ -235,24 +256,32 @@ export const aiDecomposeEpic = asyncHandler(async (req: Request, res: Response) 
 /**
  * Build the prompt for Claude API
  */
-function buildDecompositionPrompt(epic: any, project: any, customPrompt?: string): string {
-  let context = "";
+function buildDecompositionPrompt(
+  epic: any,
+  project: any,
+  customPrompt?: string,
+  teamMembers: TeamMember[] = []
+): string {
+  let projectRules = "";
 
   if (project) {
-    context += `**Project Context:**\n`;
-    context += `Project: ${project.name}\n`;
+    projectRules += `**Project:** ${project.name}\n\n`;
     if (project.description) {
-      context += `Description: ${project.description}\n`;
+      projectRules += `**Project-Specific Rules (authoritative — these take precedence over the generic guidance below when they conflict):**\n${project.description}\n\n`;
     }
-    context += "\n";
   }
 
   const basePrompt =
     customPrompt || `${epic.title}\n\n${epic.description || "No description provided."}`;
 
+  const hasQA = teamMembers.some(m => m.specialty?.toLowerCase() === "qa");
+  const testingRule = hasQA
+    ? `- Testing/QA tasks ARE allowed: the team includes a QA specialist, so you may include dedicated testing tasks (test planning, writing test cases, QA verification) where they represent meaningful, distinct work.`
+    : `- Testing tasks (unit tests, integration tests, E2E tests, QA, test plans, test strategy): do NOT create separate testing tasks — instead, fold the time and effort needed to test each feature into that feature's own task description and story point estimate, since there is no QA specialist on this team.`;
+
   return `You are a senior project manager and technical lead. Your task is to break down the following epic into the essential implementation areas needed to deliver it — NOT an exhaustive checklist.
 
-${context}**Epic to Decompose:**
+${projectRules}**Epic to Decompose:**
 ${basePrompt}
 
 **Requirements:**
@@ -265,10 +294,10 @@ ${basePrompt}
 7. Include acceptance criteria where applicable
 
 **CRITICAL RULE — ONLY DEVELOPMENT TASKS:**
-You must ONLY generate tasks that are directly related to implementing the features and functionality described in the epic.
+You must ONLY generate tasks that are directly related to implementing the features and functionality described in the epic, unless a Project-Specific Rule above says otherwise.
 
 DO NOT include any of the following types of tasks:
-- Testing tasks (unit tests, integration tests, E2E tests, QA, test plans, test strategy)
+${testingRule}
 - Code review tasks (PR reviews, code review meetings, review checklists)
 - Monitoring tasks (logging, metrics, dashboards, alerts, observability)
 - Documentation tasks (technical docs, API docs, user guides, README updates)

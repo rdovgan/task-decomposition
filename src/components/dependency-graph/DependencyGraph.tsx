@@ -15,6 +15,7 @@ import ReactFlow, {
   Position,
 } from "reactflow";
 import "reactflow/dist/style.css";
+import { useRouter } from "next/navigation";
 import { Task, Dependency, TaskStatus } from "@/types";
 import { StatusBadge } from "@/components/ui/status-badge";
 
@@ -30,6 +31,7 @@ interface TaskNodeData {
 
 // Custom Task Node component
 function TaskNode({ data }: { data: TaskNodeData }) {
+  const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
   const isBlocked = data.task.status === "BLOCKED";
   const isUnblocked = !isBlocked && data.task.status !== "DONE" && data.task.status !== "CANCELLED";
@@ -42,9 +44,11 @@ function TaskNode({ data }: { data: TaskNodeData }) {
 
   return (
     <div
-      className={`px-4 py-2 shadow-md rounded-lg border-2 ${nodeColor} min-w-[200px] transition-all text-foreground`}
+      className={`px-4 py-2 shadow-md rounded-lg border-2 ${nodeColor} min-w-[200px] transition-all text-foreground cursor-pointer hover:opacity-80`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={() => router.push(`/tasks/${data.task.id}`)}
+      title="Open task"
     >
       <div className="font-bold text-sm">{data.task.title}</div>
       <div className="text-xs mt-1">

@@ -283,7 +283,10 @@ export const commentsApi = {
 
 // AI Decomposition API
 export const aiDecompositionApi = {
-  decomposeEpic: async (epicId: string, data: { userId?: string; customPrompt?: string }) => {
+  decomposeEpic: async (
+    epicId: string,
+    data: { userId?: string; customPrompt?: string; teamConfigId?: string }
+  ) => {
     const res = await api.post<{
       data: Array<{
         title: string;
@@ -298,6 +301,26 @@ export const aiDecompositionApi = {
         epicTitle: string;
       };
     }>(`/api/epics/${epicId}/ai-decompose`, data, 300000);
+    return res;
+  },
+
+  updateTask: async (
+    taskId: string,
+    data: { userId?: string; instruction?: string }
+  ) => {
+    const res = await api.post<{
+      data: {
+        title: string;
+        description: string;
+        priority: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+        storyPoints: number;
+      };
+      meta: {
+        decompositionTime: number;
+        modelUsed: string;
+        taskId: string;
+      };
+    }>(`/api/tasks/${taskId}/ai-update`, data, 300000);
     return res;
   },
 };

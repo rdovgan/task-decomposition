@@ -5,8 +5,8 @@ import { Loader2, Sparkles, CheckCircle2, AlertCircle, Download } from "lucide-r
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { PriorityBadge } from "@/components/ui/priority-badge";
-import { AITaskSuggestion, AIDecompositionResponse } from "@/types";
-import { tasksApi, ApiErrorClass } from "@/lib/api-client";
+import { AITaskSuggestion, AIDecompositionResponse, TeamConfig } from "@/types";
+import { tasksApi, teamConfigApi, ApiErrorClass } from "@/lib/api-client";
 import { generateSuggestionsMarkdown, downloadMarkdown } from "@/lib/export-md";
 import { useRouter } from "next/navigation";
 
@@ -19,7 +19,7 @@ interface AIDecompositionDialogProps {
   loading: boolean;
   error: string | null;
   meta: AIDecompositionResponse["meta"] | null;
-  onGenerate: (customPrompt?: string) => void;
+  onGenerate: (customPrompt?: string, teamConfigId?: string) => void;
 }
 
 export function AIDecompositionDialog({
@@ -40,6 +40,24 @@ export function AIDecompositionDialog({
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [teamConfigs, setTeamConfigs] = useState<TeamConfig[]>([]);
+  const [selectedTeamConfigId, setSelectedTeamConfigId] = useState<string>("");
+
+  // Load team presets so the user can tell the AI what team is doing the work
+  // (affects whether QA/testing tasks are generated separately)
+  useEffect(() => {
+    if (!open) return;
+    teamConfigApi
+      .list()
+      .then(configs => {
+        setTeamConfigs(configs);
+        const defaultConfig = configs.find(c => c.isDefault);
+        if (defaultConfig) setSelectedTeamConfigId(defaultConfig.id);
+      })
+      .catch(() => {
+        // Team presets are optional context for the AI call — silently ignore load failures
+      });
+  }, [open]);
 
   // Sync local editable copy whenever a new suggestions array arrives from the API
   useEffect(() => {
@@ -58,7 +76,7 @@ export function AIDecompositionDialog({
     setEditedSuggestions([]);
     setSelectedIndices(new Set());
     setCreateError(null);
-    onGenerate(customPrompt || undefined);
+    onGenerate(customPrompt || undefined, selectedTeamConfigId || undefined);
   };
 
   const toggleSelected = (index: number) => {
@@ -187,6 +205,32 @@ export function AIDecompositionDialog({
           <div className="text-sm font-medium">Decomposing Epic</div>
           <div className="mt-1 text-lg font-semibold">{epicTitle}</div>
         </div>
+
+        {/* Team Preset */}
+        {!loading && !suggestions && teamConfigs.length > 0 && (
+          <div className="space-y-1">
+            <label htmlFor="team-config-select" className="text-sm font-medium">
+              Team (Optional)
+            </label>
+            <select
+              id="team-config-select"
+              value={selectedTeamConfigId}
+              onChange={e => setSelectedTeamConfigId(e.target.value)}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <option value="">No team specified</option>
+              {teamConfigs.map(config => (
+                <option key={config.id} value={config.id}>
+                  {config.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground">
+              If the team has a QA member, testing tasks may be suggested separately; otherwise
+              testing time is folded into each dev task.
+            </p>
+          </div>
+        )}
 
         {/* Custom Prompt Input */}
         {!loading && !suggestions && (

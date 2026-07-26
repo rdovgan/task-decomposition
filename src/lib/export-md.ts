@@ -6,11 +6,11 @@ import { DecomposeTask, Task, Dependency } from "@/types";
 export function generateTasksMarkdown(params: {
   projectName?: string;
   tasks: DecomposeTask[];
-  totalHours?: number;
+  totalStoryPoints?: number;
   decompositionTime?: number;
   modelUsed?: string;
 }): string {
-  const { projectName, tasks, totalHours, decompositionTime, modelUsed } = params;
+  const { projectName, tasks, totalStoryPoints, decompositionTime, modelUsed } = params;
 
   const lines: string[] = [];
 
@@ -19,12 +19,12 @@ export function generateTasksMarkdown(params: {
   lines.push("");
 
   // Summary
-  const total = totalHours || tasks.reduce((s, t) => s + t.estimatedHours, 0);
+  const total = totalStoryPoints || tasks.reduce((s, t) => s + t.storyPoints, 0);
   lines.push("## Summary");
   lines.push("");
   lines.push(`- **Total Tasks:** ${tasks.length}`);
-  lines.push(`- **Estimated Hours:** ${total}h`);
-  lines.push(`- **Sprint Estimate:** ${Math.ceil(total / 80)} sprint${Math.ceil(total / 80) !== 1 ? "s" : ""} (80h/sprint)`);
+  lines.push(`- **Total Story Points:** ${total}`);
+  lines.push(`- **Sprint Estimate:** ${Math.ceil(total / 20)} sprint${Math.ceil(total / 20) !== 1 ? "s" : ""} (20 pts/sprint)`);
   if (decompositionTime) {
     lines.push(`- **Decomposition Time:** ${decompositionTime.toFixed(1)}s`);
   }
@@ -43,11 +43,11 @@ export function generateTasksMarkdown(params: {
 
   lines.push("## Priority Breakdown");
   lines.push("");
-  lines.push("| Priority | Count | Hours |");
-  lines.push("|----------|-------|-------|");
+  lines.push("| Priority | Count | Points |");
+  lines.push("|----------|-------|--------|");
   for (const [p, ts] of Object.entries(byPriority)) {
     if (ts.length > 0) {
-      lines.push(`| ${p} | ${ts.length} | ${ts.reduce((s, t) => s + t.estimatedHours, 0)}h |`);
+      lines.push(`| ${p} | ${ts.length} | ${ts.reduce((s, t) => s + t.storyPoints, 0)} |`);
     }
   }
   lines.push("");
@@ -57,12 +57,12 @@ export function generateTasksMarkdown(params: {
   if (specialties.length > 1) {
     lines.push("## Specialty Breakdown");
     lines.push("");
-    lines.push("| Specialty | Tasks | Hours |");
-    lines.push("|-----------|-------|-------|");
+    lines.push("| Specialty | Tasks | Points |");
+    lines.push("|-----------|-------|--------|");
     for (const spec of specialties) {
       const specTasks = tasks.filter((t) => t.specialty === spec);
       lines.push(
-        `| ${spec} | ${specTasks.length} | ${specTasks.reduce((s, t) => s + t.estimatedHours, 0)}h |`
+        `| ${spec} | ${specTasks.length} | ${specTasks.reduce((s, t) => s + t.storyPoints, 0)} |`
       );
     }
     lines.push("");
@@ -78,7 +78,7 @@ export function generateTasksMarkdown(params: {
     lines.push(task.description);
     lines.push("");
     lines.push(`- **Priority:** ${task.priority}`);
-    lines.push(`- **Estimated Hours:** ${task.estimatedHours}h`);
+    lines.push(`- **Story Points:** ${task.storyPoints}`);
     lines.push(`- **Specialty:** ${task.specialty}`);
     if (task.dependencies.length > 0) {
       lines.push(`- **Dependencies:** Task ${task.dependencies.join(", ")}`);
@@ -202,21 +202,21 @@ export function generateEpicTasksMarkdown(params: {
   lines.push("");
   lines.push(`- **Total Tasks:** ${tasks.length}`);
   lines.push(`- **Done:** ${doneTasks} / ${tasks.length} (${tasks.length > 0 ? Math.round((doneTasks / tasks.length) * 100) : 0}%)`);
-  if (totalHours > 0) lines.push(`- **Estimated Hours:** ${totalHours}h`);
   if (totalPoints > 0) lines.push(`- **Story Points:** ${totalPoints}`);
+  if (totalHours > 0) lines.push(`- **Estimated Hours:** ${totalHours}h`);
   lines.push("");
 
   // Status breakdown
   const statuses = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE", "BLOCKED", "CANCELLED"] as const;
   lines.push("## By Status");
   lines.push("");
-  lines.push("| Status | Tasks | Hours | Points |");
-  lines.push("|--------|-------|-------|--------|");
+  lines.push("| Status | Tasks | Points | Hours |");
+  lines.push("|--------|-------|--------|-------|");
   for (const status of statuses) {
     const ts = tasks.filter((t) => t.status === status);
     if (ts.length > 0) {
       lines.push(
-        `| ${status.replace(/_/g, " ")} | ${ts.length} | ${ts.reduce((s, t) => s + (t.estimatedHours || 0), 0)}h | ${ts.reduce((s, t) => s + (t.storyPoints || 0), 0)} |`
+        `| ${status.replace(/_/g, " ")} | ${ts.length} | ${ts.reduce((s, t) => s + (t.storyPoints || 0), 0)} | ${ts.reduce((s, t) => s + (t.estimatedHours || 0), 0)}h |`
       );
     }
   }
@@ -249,9 +249,9 @@ export function generateEpicTasksMarkdown(params: {
     }
     lines.push(`- **Status:** ${task.status.replace(/_/g, " ")}`);
     lines.push(`- **Priority:** ${task.priority}`);
+    if (task.storyPoints) lines.push(`- **Story Points:** ${task.storyPoints}`);
     if (task.estimatedHours) lines.push(`- **Estimated Hours:** ${task.estimatedHours}h`);
     if (task.actualHours) lines.push(`- **Actual Hours:** ${task.actualHours}h`);
-    if (task.storyPoints) lines.push(`- **Story Points:** ${task.storyPoints}`);
     if (task.assignee?.name) lines.push(`- **Assignee:** ${task.assignee.name}`);
     if (task.dueDate) lines.push(`- **Due Date:** ${new Date(task.dueDate).toLocaleDateString()}`);
 

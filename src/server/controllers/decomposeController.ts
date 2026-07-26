@@ -37,7 +37,7 @@ interface TeamMember {
 interface TaskSuggestion {
   title: string;
   description: string;
-  estimatedHours: number;
+  storyPoints: number;
   priority: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
   specialty: string;
   suggestedOrder: number;
@@ -155,7 +155,7 @@ export const quickDecompose = asyncHandler(async (req: Request, res: Response) =
       meta: {
         decompositionTime,
         modelUsed: model,
-        totalEstimatedHours: tasks.reduce((sum, t) => sum + t.estimatedHours, 0),
+        totalStoryPoints: tasks.reduce((sum, t) => sum + t.storyPoints, 0),
       },
     });
   } catch (error: any) {
@@ -239,7 +239,7 @@ export const decomposePdfPublic = asyncHandler(async (req: Request, res: Respons
       tasks: tasks.map(t => ({
         title: t.title,
         description: t.description,
-        estimatedHours: t.estimatedHours,
+        storyPoints: t.storyPoints,
         priority: t.priority,
         specialty: t.specialty,
         order: t.suggestedOrder,
@@ -248,7 +248,7 @@ export const decomposePdfPublic = asyncHandler(async (req: Request, res: Respons
       meta: {
         decompositionTime,
         modelUsed: model,
-        totalEstimatedHours: tasks.reduce((sum, t) => sum + t.estimatedHours, 0),
+        totalStoryPoints: tasks.reduce((sum, t) => sum + t.storyPoints, 0),
       },
     });
   } catch (error: any) {
@@ -334,7 +334,7 @@ export const textDecompose = asyncHandler(async (req: Request, res: Response) =>
       meta: {
         decompositionTime,
         modelUsed: model,
-        totalEstimatedHours: tasks.reduce((sum, t) => sum + t.estimatedHours, 0),
+        totalStoryPoints: tasks.reduce((sum, t) => sum + t.storyPoints, 0),
       },
     });
   } catch (error: any) {
@@ -404,7 +404,7 @@ export const saveDecomposition = asyncHandler(async (req: Request, res: Response
         epicId: epic.id,
         title: task.title,
         description: task.description,
-        estimatedHours: task.estimatedHours,
+        storyPoints: task.storyPoints,
         priority: task.priority,
         status: "TODO",
       },
@@ -533,13 +533,17 @@ ${teamDescription}
 **Available Specialties:** ${specialties.join(", ")}
 
 **Estimation Guidelines:**
-- Junior developers complete tasks ~2x slower than senior
-- Adjust hours based on team seniority level
+- Story points reflect complexity/effort, not raw hours — but team seniority still affects task granularity
 - Assign tasks to appropriate specialties
-- For junior-heavy teams: add buffer time and more granular subtasks
-- For senior-heavy teams: tasks can be more complex with fewer subtasks
+- For junior-heavy teams: add buffer to estimates and prefer more, smaller tasks
+- For senior-heavy teams: tasks can be more complex with fewer, larger-pointed tasks
 `;
   }
+
+  const hasQA = teamMembers.some((m) => m.specialty?.toLowerCase() === "qa");
+  const testingRule = hasQA
+    ? `- Testing/QA tasks ARE allowed: the team includes a QA specialist, so you may include dedicated testing tasks (assigned specialty "qa") where they represent meaningful, distinct work.`
+    : `- Testing tasks (unit tests, integration tests, E2E tests, QA, test plans, test strategy): do NOT create separate testing tasks — instead, fold the time/effort needed to test each feature into that feature's own task description and story point estimate, since there is no QA specialist on this team.`;
 
   return `Analyze the following requirements document and break it down into a comprehensive, well-estimated task list.
 
@@ -557,7 +561,7 @@ ${requirementsText}
 4. For each task, provide:
    - Clear, specific title
    - Detailed description with acceptance criteria
-   - Realistic time estimate in hours (adjusted for team seniority)
+   - Story point estimate (1, 2, 3, 5, 8, 13 — Fibonacci) based on complexity, adjusted for team seniority
    - Priority based on business value and dependencies
    - Which specialty should handle it
    - Dependencies on other tasks (by suggestedOrder number)
@@ -567,7 +571,7 @@ ${requirementsText}
 You must ONLY generate tasks that are directly related to implementing the features and functionality described in the requirements document.
 
 DO NOT include any of the following types of tasks:
-- Testing tasks (unit tests, integration tests, E2E tests, QA, test plans, test strategy)
+${testingRule}
 - Code review tasks (PR reviews, code review meetings, review checklists)
 - Monitoring tasks (logging, metrics, dashboards, alerts, observability)
 - Documentation tasks (technical docs, API docs, user guides, README updates)
@@ -587,7 +591,7 @@ Return ONLY valid JSON (no markdown fences, no explanation):
     {
       "title": "Task title",
       "description": "What needs to be done, including acceptance criteria",
-      "estimatedHours": 8,
+      "storyPoints": 5,
       "priority": "HIGH",
       "specialty": "backend",
       "suggestedOrder": 1,
@@ -597,6 +601,12 @@ Return ONLY valid JSON (no markdown fences, no explanation):
 }
 
 Now generate the JSON response:`;
+}
+
+const VALID_STORY_POINTS = [1, 2, 3, 5, 8, 13];
+function validateStoryPoints(points: any): number {
+  const normalized = Number(points);
+  return VALID_STORY_POINTS.includes(normalized) ? normalized : 3;
 }
 
 function parseTaskSuggestions(content: string): TaskSuggestion[] {
@@ -619,7 +629,7 @@ function parseTaskSuggestions(content: string): TaskSuggestion[] {
     return parsed.tasks.map((t: any, i: number) => ({
       title: t.title || `Task ${i + 1}`,
       description: t.description || "",
-      estimatedHours: Number(t.estimatedHours) || 4,
+      storyPoints: validateStoryPoints(t.storyPoints),
       priority: validPriorities.includes(t.priority?.toUpperCase()) ? t.priority.toUpperCase() : "MEDIUM",
       specialty: t.specialty || "general",
       suggestedOrder: Number(t.suggestedOrder) || i + 1,
