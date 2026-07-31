@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Edit, Trash2, Plus, Sparkles, Calendar, Download } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Plus, Sparkles, Calendar, Download, Send } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PriorityBadge } from "@/components/ui/priority-badge";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { AIDecompositionDialog } from "@/components/ai/AIDecompositionDialog";
 import { TaskCreateModal } from "@/components/tasks/TaskCreateModal";
 import { DependencyGraph } from "@/components/dependency-graph";
+import { SendToJiraDialog } from "@/components/jira/SendToJiraDialog";
 import {
   Epic,
   Task,
@@ -50,6 +51,7 @@ export default function EpicDetailPage({ params }: { params: Promise<{ id: strin
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
   const [bulkStatus, setBulkStatus] = useState<TaskStatus | "">("");
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  const [jiraDialogOpen, setJiraDialogOpen] = useState(false);
 
   // Sorting state
   const [sortKey, setSortKey] = useState<string>("title");
@@ -227,6 +229,14 @@ export default function EpicDetailPage({ params }: { params: Promise<{ id: strin
     } finally {
       setBulkActionLoading(false);
     }
+  };
+
+  const handleJiraDialogClose = async () => {
+    setJiraDialogOpen(false);
+    // Refresh so any newly-created Jira TaskLinks show up
+    const tasksData = await tasksApi.list({ epicId: id, limit: 100 });
+    setTasks(tasksData.data);
+    setSelectedTaskIds(new Set());
   };
 
   const handleBulkDelete = async () => {
@@ -494,6 +504,15 @@ export default function EpicDetailPage({ params }: { params: Promise<{ id: strin
                 </Button>
                 <Button
                   size="sm"
+                  variant="outline"
+                  onClick={() => setJiraDialogOpen(true)}
+                  disabled={bulkActionLoading}
+                >
+                  <Send className="h-4 w-4 mr-1" />
+                  Send to Jira
+                </Button>
+                <Button
+                  size="sm"
                   variant="destructive"
                   onClick={handleBulkDelete}
                   disabled={bulkActionLoading}
@@ -559,6 +578,23 @@ export default function EpicDetailPage({ params }: { params: Promise<{ id: strin
         epicId={epic.id}
         epic={epic}
         users={users}
+      />
+
+      {/* Send to Jira Dialog */}
+      <SendToJiraDialog
+        open={jiraDialogOpen}
+        onClose={handleJiraDialogClose}
+        tasks={tasks
+          .filter(t => selectedTaskIds.has(t.id))
+          .map(t => ({
+            taskId: t.id,
+            title: t.title,
+            description: t.description ?? undefined,
+            storyPoints: t.storyPoints ?? undefined,
+            priority: t.priority,
+          }))}
+        suggestedEpicTitle={epic.title}
+        suggestedEpicDescription={epic.description ?? undefined}
       />
     </div>
   );

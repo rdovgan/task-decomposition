@@ -55,7 +55,11 @@ services:
       PORT: 3001
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-4-6}
-      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:3001,https://task.dovg.cloud,http://task.dovg.cloud
+      ZAI_API_KEY: ${ZAI_API_KEY:-}
+      ZAI_BASE_URL: ${ZAI_BASE_URL:-https://api.z.ai/api/coding/paas/v4}
+      ZAI_MODEL: ${ZAI_MODEL:-glm-5-turbo}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:3001,https://task.dovg.cloud,http://task.dovg.cloud,https://codereview.mybookingpal.com
       JWT_SECRET: ${JWT_SECRET:-dev-secret-key-change-in-production}
     depends_on:
       postgres:

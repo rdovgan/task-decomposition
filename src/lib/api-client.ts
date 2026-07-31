@@ -17,6 +17,11 @@ import {
   TeamConfig,
   TeamMember,
   DecomposeTask,
+  JiraConnectionStatus,
+  JiraProject,
+  JiraIssueType,
+  JiraCreateIssueItem,
+  JiraCreateIssuesResponse,
 } from "@/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -374,6 +379,47 @@ export const userSettingsApi = {
         message: string;
       };
     }>(`/api/user-settings/validate-api-key`, { apiKey });
+    return res.data;
+  },
+};
+
+// Jira API
+export const jiraApi = {
+  get: async (userId: string) => {
+    const res = await api.get<{ data: JiraConnectionStatus }>(`/api/jira/${userId}`);
+    return res.data;
+  },
+
+  update: async (userId: string, data: { siteUrl: string; email: string; apiToken: string }) => {
+    const res = await api.put<{ data: JiraConnectionStatus }>(`/api/jira/${userId}`, data);
+    return res.data;
+  },
+
+  deleteConnection: (userId: string) => api.delete<void>(`/api/jira/${userId}`),
+
+  listProjects: async (userId: string) => {
+    const res = await api.get<{ data: JiraProject[] }>(`/api/jira/${userId}/projects`);
+    return res.data;
+  },
+
+  listIssueTypes: async (userId: string, projectKey: string) => {
+    const res = await api.get<{ data: JiraIssueType[] }>(
+      `/api/jira/${userId}/projects/${projectKey}/issue-types`
+    );
+    return res.data;
+  },
+
+  createIssues: async (
+    userId: string,
+    data: {
+      projectKey: string;
+      issueTypeName: string;
+      epicTitle: string;
+      epicDescription?: string;
+      tasks: JiraCreateIssueItem[];
+    }
+  ) => {
+    const res = await api.post<{ data: JiraCreateIssuesResponse }>(`/api/jira/${userId}/issues`, data);
     return res.data;
   },
 };

@@ -284,3 +284,50 @@ export interface AIDecompositionResponse {
     epicTitle: string;
   };
 }
+
+// Jira integration
+export interface JiraConnectionStatus {
+  connected: boolean;
+  siteUrl: string | null;
+  email: string | null;
+}
+
+export interface JiraProject {
+  id: string;
+  key: string;
+  name: string;
+}
+
+export interface JiraIssueType {
+  id: string;
+  name: string;
+}
+
+export interface JiraCreateIssueItem {
+  taskId?: string;
+  title: string;
+  description?: string;
+  storyPoints?: number;
+  priority?: Priority;
+}
+
+export interface JiraCreateIssueResult {
+  taskId?: string;
+  title: string;
+  success: boolean;
+  issueKey?: string;
+  issueUrl?: string;
+  error?: string;
+}
+
+export interface JiraEpicResult {
+  success: boolean;
+  issueKey?: string;
+  issueUrl?: string;
+  error?: string;
+}
+
+export interface JiraCreateIssuesResponse {
+  epic: JiraEpicResult;
+  tasks: JiraCreateIssueResult[];
+}

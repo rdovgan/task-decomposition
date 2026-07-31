@@ -10,6 +10,9 @@
 !.yarn/releases
 !.yarn/versions
 
+# local docker overrides
+docker-compose.override.yml
+
 # testing
 /coverage
 

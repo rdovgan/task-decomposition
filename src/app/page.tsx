@@ -23,6 +23,7 @@ import {
   FolderKanban,
   Zap,
   Download,
+  Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/contexts/AppContext";
@@ -38,6 +39,7 @@ import {
   QuickDecomposeResponse,
 } from "@/types";
 import { generateTasksMarkdown, downloadMarkdown } from "@/lib/export-md";
+import { SendToJiraDialog } from "@/components/jira/SendToJiraDialog";
 
 const SPECIALTIES = [
   "frontend",
@@ -88,6 +90,7 @@ export default function Home() {
   const [selectedOrders, setSelectedOrders] = useState<Set<number>>(new Set());
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [jiraDialogOpen, setJiraDialogOpen] = useState(false);
 
   // Stats
   const [mounted, setMounted] = useState(false);
@@ -369,6 +372,14 @@ export default function Home() {
                   </>
                 )}
               </Button>
+              <Button
+                variant="outline"
+                onClick={() => setJiraDialogOpen(true)}
+                className="w-full sm:w-auto"
+              >
+                <Send className="mr-2 h-4 w-4" />
+                Send {selectedOrders.size > 0 ? selectedOrders.size : result.tasks.length} to Jira
+              </Button>
             </div>
             {saveError && <p className="text-xs text-destructive">{saveError}</p>}
           </div>
@@ -461,6 +472,19 @@ export default function Home() {
             );
           })}
         </div>
+
+        <SendToJiraDialog
+          open={jiraDialogOpen}
+          onClose={() => setJiraDialogOpen(false)}
+          tasks={getTasksToUse().map(t => ({
+            title: t.title,
+            description: t.description,
+            storyPoints: t.storyPoints,
+            priority: t.priority,
+          }))}
+          suggestedEpicTitle={projectName || "Requirements Decomposition"}
+          suggestedEpicDescription={inputMode === "text" ? textInput : undefined}
+        />
       </div>
     );
   }

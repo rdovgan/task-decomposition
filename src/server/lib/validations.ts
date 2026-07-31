@@ -85,6 +85,31 @@ export const updateCommentSchema = z.object({
   content: z.string().min(1, "Comment content is required").max(2000, "Comment too long"),
 });
 
+// Jira integration schemas
+export const jiraConnectionSchema = z.object({
+  siteUrl: z.string().url("Invalid Jira site URL"),
+  email: z.string().email("Invalid email format"),
+  apiToken: z.string().min(1, "API token is required"),
+});
+
+export const createJiraIssuesSchema = z.object({
+  projectKey: z.string().min(1, "Project key is required"),
+  issueTypeName: z.string().min(1, "Issue type is required"),
+  epicTitle: z.string().min(1, "Epic title is required").max(200, "Epic title too long"),
+  epicDescription: z.string().max(2000, "Epic description too long").optional(),
+  tasks: z
+    .array(
+      z.object({
+        taskId: z.string().optional(),
+        title: z.string().min(1, "Task title is required"),
+        description: z.string().optional(),
+        storyPoints: z.number().optional(),
+        priority: z.enum(["CRITICAL", "HIGH", "MEDIUM", "LOW"]).optional(),
+      })
+    )
+    .min(1, "At least one task is required"),
+});
+
 // Query parameter schemas
 export const paginationSchema = z.object({
   page: z
@@ -138,3 +163,5 @@ export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
 export type CreateDependencyInput = z.infer<typeof createDependencySchema>;
 export type CreateTaskLinkInput = z.infer<typeof createTaskLinkSchema>;
 export type CreateCommentInput = z.infer<typeof createCommentSchema>;
+export type JiraConnectionInput = z.infer<typeof jiraConnectionSchema>;
+export type CreateJiraIssuesInput = z.infer<typeof createJiraIssuesSchema>;

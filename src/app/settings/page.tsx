@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Key, Loader2, CheckCircle2, AlertCircle, Eye, EyeOff, Trash2 } from "lucide-react";
+import { Key, Loader2, CheckCircle2, AlertCircle, Eye, EyeOff, Trash2, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { userSettingsApi, ApiErrorClass } from "@/lib/api-client";
+import { userSettingsApi, jiraApi, ApiErrorClass } from "@/lib/api-client";
+import { JiraConnectionStatus } from "@/types";
 
 // For demo purposes, use a hardcoded user ID
 // In production, this would come from authentication
@@ -18,6 +19,16 @@ export default function SettingsPage() {
   const [validating, setValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // Jira connection state
+  const [jiraSiteUrl, setJiraSiteUrl] = useState("");
+  const [jiraEmail, setJiraEmail] = useState("");
+  const [jiraApiToken, setJiraApiToken] = useState("");
+  const [showJiraToken, setShowJiraToken] = useState(false);
+  const [jiraStatus, setJiraStatus] = useState<JiraConnectionStatus | null>(null);
+  const [jiraSaving, setJiraSaving] = useState(false);
+  const [jiraError, setJiraError] = useState<string | null>(null);
+  const [jiraSuccess, setJiraSuccess] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -36,6 +47,68 @@ export default function SettingsPage() {
       }
     } finally {
       setLoading(false);
+    }
+
+    try {
+      const status = await jiraApi.get(DEMO_USER_ID);
+      setJiraStatus(status);
+    } catch {
+      // Jira connection is optional; ignore load failures here
+    }
+  };
+
+  const handleSaveJira = async () => {
+    if (!jiraSiteUrl.trim() || !jiraEmail.trim() || !jiraApiToken.trim()) {
+      setJiraError("Please fill in the site URL, email, and API token");
+      return;
+    }
+
+    setJiraSaving(true);
+    setJiraError(null);
+    setJiraSuccess(false);
+
+    try {
+      const status = await jiraApi.update(DEMO_USER_ID, {
+        siteUrl: jiraSiteUrl.trim(),
+        email: jiraEmail.trim(),
+        apiToken: jiraApiToken.trim(),
+      });
+      setJiraStatus(status);
+      setJiraApiToken("");
+      setJiraSuccess(true);
+      setTimeout(() => setJiraSuccess(false), 3000);
+    } catch (err) {
+      if (err instanceof ApiErrorClass) {
+        setJiraError(err.message);
+      } else {
+        setJiraError("Failed to connect to Jira");
+      }
+    } finally {
+      setJiraSaving(false);
+    }
+  };
+
+  const handleDeleteJira = async () => {
+    if (!confirm("Are you sure you want to disconnect Jira?")) {
+      return;
+    }
+
+    setJiraSaving(true);
+    setJiraError(null);
+
+    try {
+      await jiraApi.deleteConnection(DEMO_USER_ID);
+      setJiraStatus({ connected: false, siteUrl: null, email: null });
+      setJiraSiteUrl("");
+      setJiraEmail("");
+    } catch (err) {
+      if (err instanceof ApiErrorClass) {
+        setJiraError(err.message);
+      } else {
+        setJiraError("Failed to disconnect Jira");
+      }
+    } finally {
+      setJiraSaving(false);
     }
   };
 
@@ -259,12 +332,135 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Additional Settings Sections */}
+        {/* Jira Integration Section */}
         <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <h2 className="text-lg font-semibold">Additional Settings</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            More settings will be added here in future updates.
-          </p>
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-3">
+              <div className="rounded-lg bg-primary/10 p-2">
+                <Link2 className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold">Jira Integration</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Connect your Jira account to send decomposed tasks to Jira as issues.
+                </p>
+              </div>
+            </div>
+            {jiraStatus?.connected && (
+              <Button variant="ghost" size="icon" onClick={handleDeleteJira} disabled={jiraSaving}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {/* Current Connection Status */}
+            {jiraStatus?.connected && (
+              <div className="rounded-lg bg-muted p-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  <span className="font-medium">
+                    Connected as {jiraStatus.email} to {jiraStatus.siteUrl}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Site URL */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Jira Site URL</label>
+              <input
+                type="text"
+                value={jiraSiteUrl}
+                onChange={e => setJiraSiteUrl(e.target.value)}
+                placeholder={jiraStatus?.siteUrl || "https://your-domain.atlassian.net"}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+            </div>
+
+            {/* Email */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Email</label>
+              <input
+                type="email"
+                value={jiraEmail}
+                onChange={e => setJiraEmail(e.target.value)}
+                placeholder={jiraStatus?.email || "you@example.com"}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+            </div>
+
+            {/* API Token */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">API Token</label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type={showJiraToken ? "text" : "password"}
+                    value={jiraApiToken}
+                    onChange={e => setJiraApiToken(e.target.value)}
+                    placeholder={jiraStatus?.connected ? "••••••••••••" : "Your Jira API token"}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm pr-10 ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowJiraToken(!showJiraToken)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showJiraToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                <Button onClick={handleSaveJira} disabled={jiraSaving}>
+                  {jiraSaving ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Connecting...
+                    </>
+                  ) : jiraStatus?.connected ? (
+                    "Update"
+                  ) : (
+                    "Connect"
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Success Message */}
+            {jiraSuccess && (
+              <div className="rounded-lg border border-success/40 bg-success/10 p-3">
+                <div className="flex items-center gap-2 text-sm text-success">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span className="font-medium">Jira connected successfully</span>
+                </div>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {jiraError && (
+              <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3">
+                <div className="flex items-start gap-2 text-sm text-destructive">
+                  <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                  <span>{jiraError}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Help Text */}
+            <div className="rounded-lg border border-info/40 bg-info/10 p-3">
+              <p className="text-sm text-info">
+                <span className="font-semibold">Get your API token:</span>{" "}
+                <a
+                  href="https://id.atlassian.com/manage-profile/security/api-tokens"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:no-underline"
+                >
+                  Atlassian Account Settings
+                </a>
+                . Your token and email are stored encrypted.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

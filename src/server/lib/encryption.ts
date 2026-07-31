@@ -8,6 +8,11 @@ const TAG_LENGTH = 16;
 const TAG_POSITION = SALT_LENGTH + IV_LENGTH;
 const ENCRYPTED_POSITION = TAG_POSITION + TAG_LENGTH;
 
+// Cached fallback key so repeated calls within the same process stay
+// consistent (a fresh random key per call would make encrypt/decrypt
+// round-trips fail with a GCM auth-tag mismatch).
+let fallbackKey: Buffer | null = null;
+
 /**
  * Get encryption key from environment or generate a new one
  * In production, this should be stored securely (e.g., AWS KMS, HashiCorp Vault)
@@ -16,9 +21,13 @@ function getEncryptionKey(): Buffer {
   const key = process.env.ENCRYPTION_KEY;
 
   if (!key) {
-    // For development, generate a key (not secure for production!)
-    console.warn("⚠️  No ENCRYPTION_KEY set. Using generated key. DO NOT use in production!");
-    return crypto.randomBytes(KEY_LENGTH);
+    // For development, generate a key once per process (not secure for production,
+    // and won't survive a restart!)
+    if (!fallbackKey) {
+      console.warn("⚠️  No ENCRYPTION_KEY set. Using generated key. DO NOT use in production!");
+      fallbackKey = crypto.randomBytes(KEY_LENGTH);
+    }
+    return fallbackKey;
   }
 
   // Derive a 32-byte key from the environment variable
