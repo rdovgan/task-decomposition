@@ -12,6 +12,7 @@ import { AIDecompositionDialog } from "@/components/ai/AIDecompositionDialog";
 import { TaskCreateModal } from "@/components/tasks/TaskCreateModal";
 import { DependencyGraph } from "@/components/dependency-graph";
 import { SendToJiraDialog } from "@/components/jira/SendToJiraDialog";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Epic,
   Task,
@@ -35,6 +36,7 @@ import { generateEpicTasksMarkdown, downloadMarkdown } from "@/lib/export-md";
 export default function EpicDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const { user } = useAuth();
   const [epic, setEpic] = useState<Epic | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [dependencies, setDependencies] = useState<Dependency[]>([]);
@@ -136,7 +138,7 @@ export default function EpicDetailPage({ params }: { params: Promise<{ id: strin
 
     try {
       const response = await aiDecompositionApi.decomposeEpic(id, {
-        userId: "demo-user-id", // In production, get from auth
+        userId: user?.id,
         customPrompt,
         teamConfigId,
       });

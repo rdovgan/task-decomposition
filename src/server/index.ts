@@ -1,5 +1,6 @@
 import express, { type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import apiRoutes from "./api";
 import { errorHandler } from "./middleware/errorHandler";
@@ -20,6 +21,7 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // Request logging
 app.use(logger);

@@ -1,16 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Key, Loader2, CheckCircle2, AlertCircle, Eye, EyeOff, Trash2, Link2 } from "lucide-react";
+import Link from "next/link";
+import { Key, Loader2, CheckCircle2, AlertCircle, Eye, EyeOff, Trash2, Link2, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { userSettingsApi, jiraApi, ApiErrorClass } from "@/lib/api-client";
 import { JiraConnectionStatus } from "@/types";
-
-// For demo purposes, use a hardcoded user ID
-// In production, this would come from authentication
-const DEMO_USER_ID = "demo-user-id";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function SettingsPage() {
+  const { user, loading: authLoading } = useAuth();
   const [apiKey, setApiKey] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
   const [hasStoredKey, setHasStoredKey] = useState(false);
@@ -31,15 +30,21 @@ export default function SettingsPage() {
   const [jiraSuccess, setJiraSuccess] = useState(false);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     loadSettings();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, user]);
 
   const loadSettings = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await userSettingsApi.get(DEMO_USER_ID);
+      const response = await userSettingsApi.get();
       setHasStoredKey(response.hasApiKey);
     } catch (err) {
       if (err instanceof ApiErrorClass) {
@@ -50,7 +55,7 @@ export default function SettingsPage() {
     }
 
     try {
-      const status = await jiraApi.get(DEMO_USER_ID);
+      const status = await jiraApi.get();
       setJiraStatus(status);
     } catch {
       // Jira connection is optional; ignore load failures here
@@ -68,7 +73,7 @@ export default function SettingsPage() {
     setJiraSuccess(false);
 
     try {
-      const status = await jiraApi.update(DEMO_USER_ID, {
+      const status = await jiraApi.update({
         siteUrl: jiraSiteUrl.trim(),
         email: jiraEmail.trim(),
         apiToken: jiraApiToken.trim(),
@@ -97,7 +102,7 @@ export default function SettingsPage() {
     setJiraError(null);
 
     try {
-      await jiraApi.deleteConnection(DEMO_USER_ID);
+      await jiraApi.deleteConnection();
       setJiraStatus({ connected: false, siteUrl: null, email: null });
       setJiraSiteUrl("");
       setJiraEmail("");
@@ -152,7 +157,7 @@ export default function SettingsPage() {
     setSuccess(false);
 
     try {
-      await userSettingsApi.update(DEMO_USER_ID, { anthropicApiKey: apiKey.trim() });
+      await userSettingsApi.update({ anthropicApiKey: apiKey.trim() });
       setHasStoredKey(true);
       setSuccess(true);
       setApiKey("");
@@ -177,7 +182,7 @@ export default function SettingsPage() {
     setError(null);
 
     try {
-      await userSettingsApi.deleteApiKey(DEMO_USER_ID);
+      await userSettingsApi.deleteApiKey();
       setHasStoredKey(false);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
@@ -192,11 +197,36 @@ export default function SettingsPage() {
     }
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="container mx-auto py-8 px-4">
         <div className="flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="mx-auto max-w-3xl px-6 py-10">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+          <p className="mt-2 text-muted-foreground">Manage your application settings and API keys</p>
+        </div>
+        <div className="flex flex-col items-center gap-4 rounded-lg border bg-card p-10 text-center shadow-sm">
+          <div className="rounded-lg bg-primary/10 p-3">
+            <LogIn className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold">Log in to manage your settings</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Your Anthropic API key and Jira connection are personal to your account.
+            </p>
+          </div>
+          <Link href="/login?redirect=/settings">
+            <Button>Log In</Button>
+          </Link>
         </div>
       </div>
     );

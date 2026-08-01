@@ -1,4 +1,5 @@
 import { Router } from "express";
+import authRoutes from "./auth";
 import projectRoutes from "./projects";
 import epicRoutes from "./epics";
 import taskRoutes from "./tasks";
@@ -10,6 +11,7 @@ import v1Routes from "./v1";
 
 const router = Router();
 
+router.use("/auth", authRoutes);
 router.use("/projects", projectRoutes);
 router.use("/epics", epicRoutes);
 router.use("/tasks", taskRoutes);

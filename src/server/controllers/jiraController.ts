@@ -24,7 +24,7 @@ async function getCredentialsOrThrow(userId: string): Promise<JiraCredentials> {
  * Get Jira connection status
  */
 export const getJiraConnection = asyncHandler(async (req: Request, res: Response) => {
-  const userId = str(req.params.userId)!;
+  const userId = req.userId!;
 
   const settings = await prisma.userSettings.findUnique({ where: { userId } });
 
@@ -41,7 +41,7 @@ export const getJiraConnection = asyncHandler(async (req: Request, res: Response
  * Save (and validate) Jira connection credentials
  */
 export const updateJiraConnection = asyncHandler(async (req: Request, res: Response) => {
-  const userId = str(req.params.userId)!;
+  const userId = req.userId!;
   const { siteUrl, email, apiToken } = req.body;
 
   try {
@@ -74,7 +74,7 @@ export const updateJiraConnection = asyncHandler(async (req: Request, res: Respo
  * Remove Jira connection
  */
 export const deleteJiraConnection = asyncHandler(async (req: Request, res: Response) => {
-  const userId = str(req.params.userId)!;
+  const userId = req.userId!;
 
   await prisma.userSettings.update({
     where: { userId },
@@ -88,7 +88,7 @@ export const deleteJiraConnection = asyncHandler(async (req: Request, res: Respo
  * List Jira projects visible to the connected account
  */
 export const listJiraProjects = asyncHandler(async (req: Request, res: Response) => {
-  const userId = str(req.params.userId)!;
+  const userId = req.userId!;
   const credentials = await getCredentialsOrThrow(userId);
 
   try {
@@ -104,7 +104,7 @@ export const listJiraProjects = asyncHandler(async (req: Request, res: Response)
  * List issue types available for a Jira project
  */
 export const listJiraIssueTypes = asyncHandler(async (req: Request, res: Response) => {
-  const userId = str(req.params.userId)!;
+  const userId = req.userId!;
   const projectKey = str(req.params.projectKey)!;
   const credentials = await getCredentialsOrThrow(userId);
 
@@ -130,7 +130,7 @@ export const listJiraIssueTypes = asyncHandler(async (req: Request, res: Respons
  * failure is surfaced so the UI can warn the user.
  */
 export const createJiraIssues = asyncHandler(async (req: Request, res: Response) => {
-  const userId = str(req.params.userId)!;
+  const userId = req.userId!;
   const { projectKey, issueTypeName, epicTitle, epicDescription, tasks } = req.body;
   const credentials = await getCredentialsOrThrow(userId);
 

@@ -6,6 +6,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Task } from "@/types";
 import { aiDecompositionApi, tasksApi, ApiErrorClass } from "@/lib/api-client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface AITaskUpdateDialogProps {
   open: boolean;
@@ -22,6 +23,7 @@ interface Suggestion {
 }
 
 export function AITaskUpdateDialog({ open, onClose, task, onApplied }: AITaskUpdateDialogProps) {
+  const { user } = useAuth();
   const [instruction, setInstruction] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +49,7 @@ export function AITaskUpdateDialog({ open, onClose, task, onApplied }: AITaskUpd
     setSuggestion(null);
     try {
       const response = await aiDecompositionApi.updateTask(task.id, {
-        userId: "demo-user-id", // In production, get from auth
+        userId: user?.id,
         instruction: instruction || undefined,
       });
       setSuggestion(response.data);

@@ -5,6 +5,7 @@ import { Loader2, CheckCircle2, XCircle, AlertCircle, ExternalLink } from "lucid
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { jiraApi, ApiErrorClass } from "@/lib/api-client";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   JiraConnectionStatus,
   JiraProject,
@@ -12,9 +13,6 @@ import {
   JiraCreateIssueItem,
   JiraCreateIssuesResponse,
 } from "@/types";
-
-// In production, get from auth
-const DEMO_USER_ID = "demo-user-id";
 
 interface SendToJiraDialogProps {
   open: boolean;
@@ -33,6 +31,7 @@ export function SendToJiraDialog({
   suggestedEpicDescription,
   onSent,
 }: SendToJiraDialogProps) {
+  const { user } = useAuth();
   const [checkingConnection, setCheckingConnection] = useState(true);
   const [connection, setConnection] = useState<JiraConnectionStatus | null>(null);
   const [projects, setProjects] = useState<JiraProject[]>([]);
@@ -59,16 +58,23 @@ export function SendToJiraDialog({
     setIssueTypes([]);
     setEpicTitle(suggestedEpicTitle || "");
     setEpicDescription(suggestedEpicDescription || "");
+
+    if (!user) {
+      setConnection({ connected: false, siteUrl: null, email: null });
+      setCheckingConnection(false);
+      return;
+    }
+
     setCheckingConnection(true);
 
     jiraApi
-      .get(DEMO_USER_ID)
+      .get()
       .then(status => {
         setConnection(status);
         if (status.connected) {
           setLoadingProjects(true);
           return jiraApi
-            .listProjects(DEMO_USER_ID)
+            .listProjects()
             .then(setProjects)
             .catch(() => setError("Failed to load Jira projects"))
             .finally(() => setLoadingProjects(false));
@@ -77,7 +83,7 @@ export function SendToJiraDialog({
       .catch(() => setConnection({ connected: false, siteUrl: null, email: null }))
       .finally(() => setCheckingConnection(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open, user]);
 
   useEffect(() => {
     if (!selectedProjectKey) {
@@ -88,7 +94,7 @@ export function SendToJiraDialog({
     setLoadingIssueTypes(true);
     setSelectedIssueType("");
     jiraApi
-      .listIssueTypes(DEMO_USER_ID, selectedProjectKey)
+      .listIssueTypes(selectedProjectKey)
       .then(types => {
         setIssueTypes(types);
         const defaultType = types.find(t => t.name === "Task") || types[0];
@@ -105,7 +111,7 @@ export function SendToJiraDialog({
     setError(null);
 
     try {
-      const created = await jiraApi.createIssues(DEMO_USER_ID, {
+      const created = await jiraApi.createIssues({
         projectKey: selectedProjectKey,
         issueTypeName: selectedIssueType,
         epicTitle: epicTitle.trim(),
@@ -136,7 +142,20 @@ export function SendToJiraDialog({
           </div>
         )}
 
-        {!checkingConnection && !connection?.connected && (
+        {!checkingConnection && !user && (
+          <div className="flex flex-col items-center gap-3 py-8 text-center">
+            <AlertCircle className="h-8 w-8 text-muted-foreground" />
+            <p className="text-muted-foreground">
+              Log in to connect Jira and send tasks — your Jira connection is personal to your
+              account.
+            </p>
+            <a href="/login?redirect=/settings">
+              <Button variant="outline">Log In</Button>
+            </a>
+          </div>
+        )}
+
+        {!checkingConnection && user && !connection?.connected && (
           <div className="flex flex-col items-center gap-3 py-8 text-center">
             <AlertCircle className="h-8 w-8 text-muted-foreground" />
             <p className="text-muted-foreground">

@@ -22,6 +22,7 @@ import {
   JiraIssueType,
   JiraCreateIssueItem,
   JiraCreateIssuesResponse,
+  AuthUser,
 } from "@/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -68,6 +69,7 @@ const api = {
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
     });
     return handleResponse<T>(response);
   },
@@ -83,6 +85,7 @@ const api = {
         },
         body: JSON.stringify(data),
         signal: controller.signal,
+        credentials: "include",
       });
       return handleResponse<T>(response);
     } finally {
@@ -97,6 +100,7 @@ const api = {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
+      credentials: "include",
     });
     return handleResponse<T>(response);
   },
@@ -107,6 +111,7 @@ const api = {
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
     });
     return handleResponse<T>(response);
   },
@@ -118,6 +123,7 @@ const api = {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
+      credentials: "include",
     });
     return handleResponse<T>(response);
   },
@@ -345,7 +351,7 @@ export const usersApi = {
 
 // User Settings API
 export const userSettingsApi = {
-  get: async (userId: string) => {
+  get: async () => {
     const res = await api.get<{
       data: {
         id: string | null;
@@ -354,11 +360,11 @@ export const userSettingsApi = {
         createdAt?: string;
         updatedAt?: string;
       };
-    }>(`/api/user-settings/${userId}`);
+    }>(`/api/user-settings`);
     return res.data;
   },
 
-  update: async (userId: string, data: { anthropicApiKey: string }) => {
+  update: async (data: { anthropicApiKey: string }) => {
     const res = await api.put<{
       data: {
         id: string;
@@ -366,11 +372,11 @@ export const userSettingsApi = {
         hasApiKey: true;
         updatedAt: string;
       };
-    }>(`/api/user-settings/${userId}`, data);
+    }>(`/api/user-settings`, data);
     return res.data;
   },
 
-  deleteApiKey: (userId: string) => api.delete<void>(`/api/user-settings/${userId}/api-key`),
+  deleteApiKey: () => api.delete<void>(`/api/user-settings/api-key`),
 
   validateApiKey: async (apiKey: string) => {
     const res = await api.post<{
@@ -385,41 +391,56 @@ export const userSettingsApi = {
 
 // Jira API
 export const jiraApi = {
-  get: async (userId: string) => {
-    const res = await api.get<{ data: JiraConnectionStatus }>(`/api/jira/${userId}`);
+  get: async () => {
+    const res = await api.get<{ data: JiraConnectionStatus }>(`/api/jira`);
     return res.data;
   },
 
-  update: async (userId: string, data: { siteUrl: string; email: string; apiToken: string }) => {
-    const res = await api.put<{ data: JiraConnectionStatus }>(`/api/jira/${userId}`, data);
+  update: async (data: { siteUrl: string; email: string; apiToken: string }) => {
+    const res = await api.put<{ data: JiraConnectionStatus }>(`/api/jira`, data);
     return res.data;
   },
 
-  deleteConnection: (userId: string) => api.delete<void>(`/api/jira/${userId}`),
+  deleteConnection: () => api.delete<void>(`/api/jira`),
 
-  listProjects: async (userId: string) => {
-    const res = await api.get<{ data: JiraProject[] }>(`/api/jira/${userId}/projects`);
+  listProjects: async () => {
+    const res = await api.get<{ data: JiraProject[] }>(`/api/jira/projects`);
     return res.data;
   },
 
-  listIssueTypes: async (userId: string, projectKey: string) => {
-    const res = await api.get<{ data: JiraIssueType[] }>(
-      `/api/jira/${userId}/projects/${projectKey}/issue-types`
-    );
+  listIssueTypes: async (projectKey: string) => {
+    const res = await api.get<{ data: JiraIssueType[] }>(`/api/jira/projects/${projectKey}/issue-types`);
     return res.data;
   },
 
-  createIssues: async (
-    userId: string,
-    data: {
-      projectKey: string;
-      issueTypeName: string;
-      epicTitle: string;
-      epicDescription?: string;
-      tasks: JiraCreateIssueItem[];
-    }
-  ) => {
-    const res = await api.post<{ data: JiraCreateIssuesResponse }>(`/api/jira/${userId}/issues`, data);
+  createIssues: async (data: {
+    projectKey: string;
+    issueTypeName: string;
+    epicTitle: string;
+    epicDescription?: string;
+    tasks: JiraCreateIssueItem[];
+  }) => {
+    const res = await api.post<{ data: JiraCreateIssuesResponse }>(`/api/jira/issues`, data);
+    return res.data;
+  },
+};
+
+// Auth API
+export const authApi = {
+  signup: async (data: { email: string; name: string; password: string }) => {
+    const res = await api.post<{ data: AuthUser }>(`/api/auth/signup`, data);
+    return res.data;
+  },
+
+  login: async (data: { email: string; password: string }) => {
+    const res = await api.post<{ data: AuthUser }>(`/api/auth/login`, data);
+    return res.data;
+  },
+
+  logout: () => api.post<void>(`/api/auth/logout`, {}),
+
+  me: async () => {
+    const res = await api.get<{ data: AuthUser }>(`/api/auth/me`);
     return res.data;
   },
 };

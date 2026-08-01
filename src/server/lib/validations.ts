@@ -85,6 +85,18 @@ export const updateCommentSchema = z.object({
   content: z.string().min(1, "Comment content is required").max(2000, "Comment too long"),
 });
 
+// Auth schemas
+export const signupSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  name: z.string().min(1, "Name is required").max(100, "Name too long"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+export const loginSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(1, "Password is required"),
+});
+
 // Jira integration schemas
 export const jiraConnectionSchema = z.object({
   siteUrl: z.string().url("Invalid Jira site URL"),

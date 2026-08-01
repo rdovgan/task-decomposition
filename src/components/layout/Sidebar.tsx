@@ -11,11 +11,14 @@ import {
   Sparkles,
   Users,
   X,
+  LogIn,
+  LogOut,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 const navItems = [
@@ -30,6 +33,7 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const { collapsed, toggleCollapsed, mounted, mobileOpen, setMobileOpen } = useSidebar();
+  const { user, loading: authLoading, logout } = useAuth();
 
   if (!mounted) return null;
 
@@ -111,8 +115,35 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Theme + Collapse */}
+      {/* Auth + Theme + Collapse */}
       <div className="space-y-2 border-t border-sidebar-border p-2.5">
+        {!authLoading &&
+          (user ? (
+            <button
+              onClick={logout}
+              className={cn(
+                "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/65 transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+                collapsed && "md:justify-center md:px-2"
+              )}
+              title={collapsed ? `Log out (${user.name})` : undefined}
+            >
+              <LogOut className="h-4 w-4 shrink-0 text-sidebar-foreground/45" />
+              <span className={cn("truncate", collapsed && "md:hidden")}>{user.name}</span>
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              onClick={() => setMobileOpen(false)}
+              className={cn(
+                "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/65 transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+                collapsed && "md:justify-center md:px-2"
+              )}
+              title={collapsed ? "Sign In" : undefined}
+            >
+              <LogIn className="h-4 w-4 shrink-0 text-sidebar-foreground/45" />
+              <span className={cn("truncate", collapsed && "md:hidden")}>Sign In</span>
+            </Link>
+          ))}
         <ThemeToggle collapsed={collapsed} />
         <button
           onClick={toggleCollapsed}

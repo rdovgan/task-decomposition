@@ -3,6 +3,7 @@ import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "@/contexts/AppContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToastProvider } from "@/components/ui/toast";
 import { AppShell } from "@/components/layout/AppShell";
@@ -50,11 +51,13 @@ export default function RootLayout({
           {NO_FLASH_THEME_SCRIPT}
         </Script>
         <ThemeProvider>
-          <AppProvider>
-            <ToastProvider>
-              <AppShell>{children}</AppShell>
-            </ToastProvider>
-          </AppProvider>
+          <AuthProvider>
+            <AppProvider>
+              <ToastProvider>
+                <AppShell>{children}</AppShell>
+              </ToastProvider>
+            </AppProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

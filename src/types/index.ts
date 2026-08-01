@@ -331,3 +331,11 @@ export interface JiraCreateIssuesResponse {
   epic: JiraEpicResult;
   tasks: JiraCreateIssueResult[];
 }
+
+// Auth
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+}

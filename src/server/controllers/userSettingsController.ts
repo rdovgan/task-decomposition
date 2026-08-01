@@ -3,13 +3,12 @@ import OpenAI from "openai";
 import prisma from "../lib/prisma";
 import { asyncHandler, ApiError } from "../middleware/errorHandler";
 import { encrypt, decrypt } from "../lib/encryption";
-import { str } from "../lib/express";
 
 /**
  * Get user settings
  */
 export const getUserSettings = asyncHandler(async (req: Request, res: Response) => {
-  const userId = str(req.params.userId)!;
+  const userId = req.userId!;
 
   const settings = await prisma.userSettings.findUnique({
     where: { userId },
@@ -41,7 +40,7 @@ export const getUserSettings = asyncHandler(async (req: Request, res: Response) 
  * Update user settings (API key)
  */
 export const updateUserSettings = asyncHandler(async (req: Request, res: Response) => {
-  const userId = str(req.params.userId)!;
+  const userId = req.userId!;
   const { anthropicApiKey } = req.body;
 
   if (!anthropicApiKey) {
@@ -100,7 +99,7 @@ export const updateUserSettings = asyncHandler(async (req: Request, res: Respons
  * Delete API key from user settings
  */
 export const deleteApiKey = asyncHandler(async (req: Request, res: Response) => {
-  const userId = str(req.params.userId)!;
+  const userId = req.userId!;
 
   await prisma.userSettings.update({
     where: { userId },
