@@ -22,6 +22,22 @@ async function main() {
 
   console.log("✅ Created admin user:", admin.email);
 
+  // Placeholder user the frontend uses everywhere until real auth exists
+  // (e.g. Settings page, AI task-update dialog). UserSettings (API keys,
+  // Jira connection) has a required FK to a User row, so this must exist.
+  await prisma.user.upsert({
+    where: { id: "demo-user-id" },
+    update: {},
+    create: {
+      id: "demo-user-id",
+      email: "demo@example.com",
+      name: "Demo User",
+      role: "ADMIN",
+    },
+  });
+
+  console.log("✅ Created demo user (demo-user-id)");
+
   // Create a sample project
   const project = await prisma.project.upsert({
     where: { id: "sample-project" },

@@ -28,6 +28,24 @@ else
 fi
 npx prisma generate
 
+echo "🌱 Ensuring placeholder demo user exists..."
+# There's no real auth yet, so the frontend hardcodes "demo-user-id"
+# everywhere (Settings page, task dialogs, etc.). UserSettings (API keys,
+# Jira connection) has a required FK to a User row, so this must exist on
+# every environment, not just ones where someone remembered to run the seed.
+node -e "
+const { PrismaClient } = require('@prisma/client');
+const { PrismaPg } = require('@prisma/adapter-pg');
+const { Pool } = require('pg');
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
+prisma.user.upsert({
+  where: { id: 'demo-user-id' },
+  update: {},
+  create: { id: 'demo-user-id', email: 'demo@example.com', name: 'Demo User', role: 'ADMIN' },
+}).then(() => prisma.\$disconnect());
+"
+
 echo "✅ Database ready!"
 
 # Execute the main command
