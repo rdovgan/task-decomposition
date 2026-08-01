@@ -1,6 +1,17 @@
 #!/bin/sh
 set -e
 
+if [ "$NODE_ENV" = "development" ]; then
+  echo "📦 Syncing node_modules with package.json..."
+  # The dev containers bind-mount source code but keep node_modules in a
+  # named volume (so host/container native builds don't clash). That volume
+  # persists across image rebuilds, so a plain rebuild silently keeps stale
+  # deps — `npm install` here is a fast no-op when nothing changed, and
+  # picks up new/updated packages otherwise. Production/staging images bake
+  # node_modules in at build time (no volume), so this only runs in dev.
+  npm install --no-audit --no-fund
+fi
+
 echo "⏳ Waiting for PostgreSQL to be ready..."
 
 # Wait for PostgreSQL
