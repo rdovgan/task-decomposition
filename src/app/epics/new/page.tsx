@@ -6,6 +6,9 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { CreateEpicRequest, EpicStatus, Priority } from "@/types";
 import { ApiErrorClass } from "@/lib/api-client";
 
@@ -74,12 +77,12 @@ function NewEpicForm() {
           <label htmlFor="projectId" className="block text-sm font-medium mb-2">
             Project <span className="text-destructive">*</span>
           </label>
-          <select
+          <Select
             id="projectId"
             required
             value={formData.projectId}
             onChange={e => setFormData({ ...formData, projectId: e.target.value })}
-            className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full"
           >
             <option value="">Select a project</option>
             {projects.map(project => (
@@ -87,20 +90,20 @@ function NewEpicForm() {
                 {project.name}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
 
         <div>
           <label htmlFor="title" className="block text-sm font-medium mb-2">
             Epic Title <span className="text-destructive">*</span>
           </label>
-          <input
+          <Input
             type="text"
             id="title"
             required
             value={formData.title}
             onChange={e => setFormData({ ...formData, title: e.target.value })}
-            className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full"
             placeholder="User Authentication"
           />
         </div>
@@ -109,12 +112,12 @@ function NewEpicForm() {
           <label htmlFor="description" className="block text-sm font-medium mb-2">
             Description
           </label>
-          <textarea
+          <Textarea
             id="description"
             rows={4}
             value={formData.description}
             onChange={e => setFormData({ ...formData, description: e.target.value })}
-            className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full"
             placeholder="A detailed description of the epic..."
           />
         </div>
@@ -123,17 +126,17 @@ function NewEpicForm() {
           <label htmlFor="priority" className="block text-sm font-medium mb-2">
             Priority
           </label>
-          <select
+          <Select
             id="priority"
             value={formData.priority}
             onChange={e => setFormData({ ...formData, priority: e.target.value as Priority })}
-            className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full"
           >
             <option value="CRITICAL">Critical</option>
             <option value="HIGH">High</option>
             <option value="MEDIUM">Medium</option>
             <option value="LOW">Low</option>
-          </select>
+          </Select>
         </div>
 
         <div className="flex gap-4">

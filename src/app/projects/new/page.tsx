@@ -6,6 +6,9 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { UserSelectDropdown } from "@/components/users/UserSelectDropdown";
 import { CreateProjectRequest, ProjectStatus } from "@/types";
 import { projectsApi, ApiErrorClass } from "@/lib/api-client";
@@ -76,13 +79,13 @@ export default function NewProjectPage() {
           <label htmlFor="name" className="block text-sm font-medium mb-2">
             Project Name <span className="text-destructive">*</span>
           </label>
-          <input
+          <Input
             type="text"
             id="name"
             required
             value={formData.name}
             onChange={e => setFormData({ ...formData, name: e.target.value })}
-            className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full"
             placeholder="My Awesome Project"
           />
         </div>
@@ -91,12 +94,12 @@ export default function NewProjectPage() {
           <label htmlFor="description" className="block text-sm font-medium mb-2">
             Description
           </label>
-          <textarea
+          <Textarea
             id="description"
             rows={4}
             value={formData.description}
             onChange={e => setFormData({ ...formData, description: e.target.value })}
-            className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full"
             placeholder="A brief description of the project..."
           />
         </div>
@@ -122,16 +125,16 @@ export default function NewProjectPage() {
           <label htmlFor="status" className="block text-sm font-medium mb-2">
             Status
           </label>
-          <select
+          <Select
             id="status"
             value={formData.status}
             onChange={e => setFormData({ ...formData, status: e.target.value as ProjectStatus })}
-            className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full"
           >
             <option value="ACTIVE">Active</option>
             <option value="ON_HOLD">On Hold</option>
             <option value="ARCHIVED">Archived</option>
-          </select>
+          </Select>
         </div>
 
         <div className="flex gap-4">

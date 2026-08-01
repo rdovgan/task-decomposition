@@ -9,6 +9,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PriorityBadge } from "@/components/ui/priority-badge";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { Epic, EpicStatus, Priority } from "@/types";
 
 export default function EpicsPage() {
@@ -108,31 +109,33 @@ export default function EpicsPage() {
         <div className="flex flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Status:</span>
-            <select
+            <Select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              size="sm"
+              className="w-auto"
             >
               <option value="">All</option>
               <option value="BACKLOG">Backlog</option>
               <option value="IN_PROGRESS">In Progress</option>
               <option value="IN_REVIEW">In Review</option>
               <option value="DONE">Done</option>
-            </select>
+            </Select>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Priority:</span>
-            <select
+            <Select
               value={priorityFilter}
               onChange={e => setPriorityFilter(e.target.value)}
-              className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              size="sm"
+              className="w-auto"
             >
               <option value="">All</option>
               <option value="CRITICAL">Critical</option>
               <option value="HIGH">High</option>
               <option value="MEDIUM">Medium</option>
               <option value="LOW">Low</option>
-            </select>
+            </Select>
           </div>
         </div>
       </div>

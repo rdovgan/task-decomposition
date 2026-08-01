@@ -8,6 +8,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PriorityBadge } from "@/components/ui/priority-badge";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { AIDecompositionDialog } from "@/components/ai/AIDecompositionDialog";
 import { TaskCreateModal } from "@/components/tasks/TaskCreateModal";
 import { DependencyGraph } from "@/components/dependency-graph";
@@ -303,11 +304,10 @@ export default function EpicDetailPage({ params }: { params: Promise<{ id: strin
       render: (value: unknown, row: Record<string, unknown>) => {
         const task = row as unknown as Task;
         return (
-          <select
+          <Select
             value={task.status}
             onChange={e => handleStatusChange(task.id, e.target.value as TaskStatus)}
             onClick={e => e.stopPropagation()}
-            className="h-8 rounded-md border border-input bg-background px-2 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="TODO">To Do</option>
             <option value="IN_PROGRESS">In Progress</option>
@@ -315,7 +315,7 @@ export default function EpicDetailPage({ params }: { params: Promise<{ id: strin
             <option value="DONE">Done</option>
             <option value="BLOCKED">Blocked</option>
             <option value="CANCELLED">Cancelled</option>
-          </select>
+          </Select>
         );
       },
     },
@@ -502,10 +502,11 @@ export default function EpicDetailPage({ params }: { params: Promise<{ id: strin
                 {selectedTaskIds.size} task{selectedTaskIds.size !== 1 ? "s" : ""} selected
               </span>
               <div className="flex items-center gap-3">
-                <select
+                <Select
                   value={bulkStatus}
                   onChange={e => setBulkStatus(e.target.value as TaskStatus | "")}
-                  className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  size="sm"
+                  className="w-auto"
                   disabled={bulkActionLoading}
                 >
                   <option value="">Change status...</option>
@@ -515,7 +516,7 @@ export default function EpicDetailPage({ params }: { params: Promise<{ id: strin
                   <option value="DONE">Done</option>
                   <option value="BLOCKED">Blocked</option>
                   <option value="CANCELLED">Cancelled</option>
-                </select>
+                </Select>
                 <Button
                   size="sm"
                   onClick={handleBulkStatusUpdate}

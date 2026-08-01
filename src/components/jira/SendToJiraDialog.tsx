@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { Loader2, CheckCircle2, XCircle, AlertCircle, ExternalLink } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { jiraApi, ApiErrorClass } from "@/lib/api-client";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -177,11 +180,11 @@ export function SendToJiraDialog({
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Jira Project</label>
-              <select
+              <Select
                 value={selectedProjectKey}
                 onChange={e => setSelectedProjectKey(e.target.value)}
                 disabled={loadingProjects}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full"
               >
                 <option value="">
                   {loadingProjects ? "Loading projects..." : "Select a project"}
@@ -191,38 +194,38 @@ export function SendToJiraDialog({
                     {project.name} ({project.key})
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Epic Title</label>
-              <input
+              <Input
                 type="text"
                 value={epicTitle}
                 onChange={e => setEpicTitle(e.target.value)}
                 placeholder="e.g. Requirements Decomposition"
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full"
               />
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Epic Description (optional)</label>
-              <textarea
+              <Textarea
                 value={epicDescription}
                 onChange={e => setEpicDescription(e.target.value)}
                 rows={3}
                 placeholder="Context from the decomposition input..."
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full"
               />
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Issue Type (for tasks)</label>
-              <select
+              <Select
                 value={selectedIssueType}
                 onChange={e => setSelectedIssueType(e.target.value)}
                 disabled={!selectedProjectKey || loadingIssueTypes}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full"
               >
                 <option value="">
                   {loadingIssueTypes ? "Loading issue types..." : "Select an issue type"}
@@ -234,7 +237,7 @@ export function SendToJiraDialog({
                       {type.name}
                     </option>
                   ))}
-              </select>
+              </Select>
             </div>
 
             {error && (

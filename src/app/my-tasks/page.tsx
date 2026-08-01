@@ -19,6 +19,8 @@ import {
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PriorityBadge } from "@/components/ui/priority-badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { Task, Epic, TaskStatus, Priority, User } from "@/types";
 import { tasksApi, epicsApi, usersApi, ApiErrorClass } from "@/lib/api-client";
 import { KanbanBoard } from "@/components/tasks/KanbanBoard";
@@ -433,20 +435,19 @@ export default function MyTasksPage() {
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
+            <Input
               type="text"
               value={filters.searchQuery}
               onChange={e => setFilters(prev => ({ ...prev, searchQuery: e.target.value }))}
               placeholder="Search tasks..."
-              className="w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full pl-9"
             />
           </div>
 
           {/* Epic Filter */}
-          <select
+          <Select
             value={filters.epicId}
             onChange={e => setFilters(prev => ({ ...prev, epicId: e.target.value }))}
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="">All Epics</option>
             {epics.map(epic => (
@@ -454,20 +455,19 @@ export default function MyTasksPage() {
                 {epic.title}
               </option>
             ))}
-          </select>
+          </Select>
 
           {/* Priority Filter */}
-          <select
+          <Select
             value={filters.priority}
             onChange={e => setFilters(prev => ({ ...prev, priority: e.target.value }))}
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="">All Priorities</option>
             <option value="CRITICAL">Critical</option>
             <option value="HIGH">High</option>
             <option value="MEDIUM">Medium</option>
             <option value="LOW">Low</option>
-          </select>
+          </Select>
 
           {/* Status Filter */}
           <div className="flex flex-wrap gap-2">
@@ -596,14 +596,15 @@ export default function MyTasksPage() {
 
                           {/* Inline Status Change */}
                           <div className="mt-3 pt-2 border-t border-border/40">
-                            <select
+                            <Select
                               value={task.status}
                               onChange={e => {
                                 e.stopPropagation();
                                 handleStatusChange(task.id, e.target.value as TaskStatus);
                               }}
                               onClick={e => e.stopPropagation()}
-                              className="w-full rounded-md border border-input bg-background px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              size="sm"
+                              className="w-full"
                             >
                               <option value="TODO">To Do</option>
                               <option value="IN_PROGRESS">In Progress</option>
@@ -611,7 +612,7 @@ export default function MyTasksPage() {
                               <option value="DONE">Done</option>
                               <option value="BLOCKED">Blocked</option>
                               <option value="CANCELLED">Cancelled</option>
-                            </select>
+                            </Select>
                           </div>
                         </Link>
                       );

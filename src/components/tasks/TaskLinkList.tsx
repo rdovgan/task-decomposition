@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { TaskLink, LinkType } from "@/types";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { ExternalLink, Plus, Trash2 } from "lucide-react";
 
 interface TaskLinkListProps {
@@ -101,13 +103,13 @@ export function TaskLinkList({ links, onDelete, onCreate }: TaskLinkListProps) {
             <label htmlFor="url" className="block text-sm font-medium mb-1">
               URL <span className="text-destructive">*</span>
             </label>
-            <input
+            <Input
               type="url"
               id="url"
               required
               value={newLink.url}
               onChange={e => setNewLink({ ...newLink, url: e.target.value })}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full"
               placeholder="https://..."
             />
           </div>
@@ -116,12 +118,12 @@ export function TaskLinkList({ links, onDelete, onCreate }: TaskLinkListProps) {
             <label htmlFor="title" className="block text-sm font-medium mb-1">
               Title
             </label>
-            <input
+            <Input
               type="text"
               id="title"
               value={newLink.title}
               onChange={e => setNewLink({ ...newLink, title: e.target.value })}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full"
               placeholder="Link title (optional)"
             />
           </div>
@@ -130,18 +132,18 @@ export function TaskLinkList({ links, onDelete, onCreate }: TaskLinkListProps) {
             <label htmlFor="linkType" className="block text-sm font-medium mb-1">
               Type
             </label>
-            <select
+            <Select
               id="linkType"
               value={newLink.linkType}
               onChange={e => setNewLink({ ...newLink, linkType: e.target.value as LinkType })}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full"
             >
               {Object.entries(linkTypeLabels).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div className="flex gap-2">

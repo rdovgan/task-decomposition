@@ -26,6 +26,9 @@ import {
   Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useApp } from "@/contexts/AppContext";
 import {
   decomposeApi,
@@ -340,10 +343,10 @@ export default function Home() {
               </Button>
             </div>
             <div className="flex flex-wrap items-center justify-end gap-2">
-              <select
+              <Select
                 value={selectedProjectId}
                 onChange={(e) => setSelectedProjectId(e.target.value)}
-                className="w-full min-w-[9rem] rounded-lg border border-input bg-background px-2 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-36"
+                className="w-full min-w-[9rem] sm:w-36"
               >
                 <option value="">New project</option>
                 {projects.map((project) => (
@@ -351,13 +354,13 @@ export default function Home() {
                     {project.name}
                   </option>
                 ))}
-              </select>
-              <input
+              </Select>
+              <Input
                 type="text"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
                 placeholder={selectedProjectId ? "Epic title" : "Project name"}
-                className="w-full min-w-[11rem] rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-44"
+                className="w-full min-w-[11rem] sm:w-44"
               />
               <Button onClick={handleSaveToBoard} disabled={saving} className="w-full sm:w-auto">
                 {saving ? (
@@ -585,11 +588,11 @@ export default function Home() {
               </div>
             </>
           ) : (
-            <textarea
+            <Textarea
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
               placeholder="Paste your requirements, user stories, or specification here..."
-              className="min-h-[200px] w-full rounded-xl border border-input bg-background px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="min-h-[200px] w-full rounded-xl px-4 py-3"
             />
           )}
 
@@ -598,10 +601,10 @@ export default function Home() {
             <label className="block text-sm font-medium mb-1.5">
               Project <span className="text-muted-foreground font-normal">(optional — auto-saves results)</span>
             </label>
-            <select
+            <Select
               value={selectedProjectId}
               onChange={(e) => setSelectedProjectId(e.target.value)}
-              className="mb-2 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="mb-2 h-11 w-full px-4 text-sm"
             >
               <option value="">+ Create new project</option>
               {projects.map((project) => (
@@ -609,13 +612,13 @@ export default function Home() {
                   {project.name}
                 </option>
               ))}
-            </select>
-            <input
+            </Select>
+            <Input
               type="text"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
               placeholder={selectedProjectId ? "e.g. Sprint 3 Backend Work (epic title)" : "e.g. E-Commerce Platform v2"}
-              className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="h-11 w-full px-4"
             />
           </div>
         </div>
@@ -684,31 +687,31 @@ export default function Home() {
 
                   {customTeam.map((member, i) => (
                     <div key={i} className="mb-2 flex items-center gap-2">
-                      <select
+                      <Select
                         value={member.role}
                         onChange={(e) => updateTeamMember(i, "role", e.target.value)}
-                        className="rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+                        className="w-auto"
                       >
                         {ROLES.map((r) => (
                           <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
                         ))}
-                      </select>
-                      <select
+                      </Select>
+                      <Select
                         value={member.specialty}
                         onChange={(e) => updateTeamMember(i, "specialty", e.target.value)}
-                        className="rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+                        className="w-auto"
                       >
                         {SPECIALTIES.map((s) => (
                           <option key={s} value={s}>{s.toUpperCase()}</option>
                         ))}
-                      </select>
-                      <input
+                      </Select>
+                      <Input
                         type="number"
                         min={1}
                         max={20}
                         value={member.count || 1}
                         onChange={(e) => updateTeamMember(i, "count", parseInt(e.target.value) || 1)}
-                        className="w-16 rounded-md border border-input bg-background px-2 py-1.5 text-sm text-center"
+                        className="w-16 text-center"
                         title="Count"
                       />
                       <button onClick={() => removeTeamMember(i)} className="p-1.5 text-muted-foreground hover:text-destructive">
@@ -723,19 +726,19 @@ export default function Home() {
 
                   {showTeamConfigManager && customTeam.length > 0 && (
                     <div className="mt-3 rounded-lg border bg-muted/30 p-3 space-y-2">
-                      <input
+                      <Input
                         type="text"
                         value={newConfigName}
                         onChange={(e) => setNewConfigName(e.target.value)}
                         placeholder="Preset name (e.g. 'Mobile Team')"
-                        className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm"
+                        className="w-full"
                       />
-                      <input
+                      <Input
                         type="text"
                         value={newConfigDesc}
                         onChange={(e) => setNewConfigDesc(e.target.value)}
                         placeholder="Description (optional)"
-                        className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm"
+                        className="w-full"
                       />
                       <Button size="sm" onClick={handleSaveTeamConfig} disabled={!newConfigName}>
                         Save Preset
@@ -750,31 +753,31 @@ export default function Home() {
                 <div>
                   {customTeam.map((member, i) => (
                     <div key={i} className="mb-2 flex items-center gap-2">
-                      <select
+                      <Select
                         value={member.role}
                         onChange={(e) => updateTeamMember(i, "role", e.target.value)}
-                        className="rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+                        className="w-auto"
                       >
                         {ROLES.map((r) => (
                           <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
                         ))}
-                      </select>
-                      <select
+                      </Select>
+                      <Select
                         value={member.specialty}
                         onChange={(e) => updateTeamMember(i, "specialty", e.target.value)}
-                        className="rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+                        className="w-auto"
                       >
                         {SPECIALTIES.map((s) => (
                           <option key={s} value={s}>{s.toUpperCase()}</option>
                         ))}
-                      </select>
-                      <input
+                      </Select>
+                      <Input
                         type="number"
                         min={1}
                         max={20}
                         value={member.count || 1}
                         onChange={(e) => updateTeamMember(i, "count", parseInt(e.target.value) || 1)}
-                        className="w-16 rounded-md border border-input bg-background px-2 py-1.5 text-sm text-center"
+                        className="w-16 text-center"
                       />
                       <button onClick={() => removeTeamMember(i)} className="p-1.5 text-muted-foreground hover:text-destructive">
                         <Trash2 className="h-4 w-4" />
@@ -795,12 +798,12 @@ export default function Home() {
                       </button>
                       {showTeamConfigManager && (
                         <div className="mt-2 rounded-lg border bg-muted/30 p-3 space-y-2">
-                          <input
+                          <Input
                             type="text"
                             value={newConfigName}
                             onChange={(e) => setNewConfigName(e.target.value)}
                             placeholder="Preset name"
-                            className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm"
+                            className="w-full"
                           />
                           <Button size="sm" onClick={handleSaveTeamConfig} disabled={!newConfigName}>
                             Save Preset

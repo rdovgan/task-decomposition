@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2, AlertCircle, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { ApiErrorClass } from "@/lib/api-client";
 
@@ -55,35 +56,38 @@ export default function SignupPage() {
       <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border bg-card p-6 shadow-sm">
         <div className="space-y-2">
           <label className="text-sm font-medium">Name</label>
-          <input
+          <Input
             type="text"
             required
+            size="lg"
             value={name}
             onChange={e => setName(e.target.value)}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="w-full"
           />
         </div>
 
         <div className="space-y-2">
           <label className="text-sm font-medium">Email</label>
-          <input
+          <Input
             type="email"
             required
+            size="lg"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="w-full"
           />
         </div>
 
         <div className="space-y-2">
           <label className="text-sm font-medium">Password</label>
-          <input
+          <Input
             type="password"
             required
             minLength={8}
+            size="lg"
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="w-full"
           />
           <p className="text-xs text-muted-foreground">At least 8 characters.</p>
         </div>
@@ -97,7 +101,7 @@ export default function SignupPage() {
           </div>
         )}
 
-        <Button type="submit" disabled={submitting} className="w-full">
+        <Button type="submit" size="lg" disabled={submitting} className="w-full">
           {submitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

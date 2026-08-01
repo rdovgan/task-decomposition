@@ -4,6 +4,9 @@ import { useState } from "react";
 import { Loader2, Sparkles, AlertCircle } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Task } from "@/types";
 import { aiDecompositionApi, tasksApi, ApiErrorClass } from "@/lib/api-client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -120,11 +123,11 @@ export function AITaskUpdateDialog({ open, onClose, task, onApplied }: AITaskUpd
         {!suggestion && (
           <div className="space-y-2">
             <label className="text-sm font-medium">Instruction (Optional)</label>
-            <textarea
+            <Textarea
               value={instruction}
               onChange={e => setInstruction(e.target.value)}
               placeholder="e.g. 'Tighten the scope to just the API changes' or leave blank to let the AI improve clarity and estimate"
-              className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="min-h-[100px] w-full"
             />
           </div>
         )}
@@ -149,52 +152,54 @@ export function AITaskUpdateDialog({ open, onClose, task, onApplied }: AITaskUpd
           <div className="space-y-3 rounded-lg border bg-card p-4">
             <div className="text-sm font-medium">Suggested Update</div>
 
-            <input
+            <Input
               type="text"
               value={suggestion.title}
               onChange={e => setSuggestion({ ...suggestion, title: e.target.value })}
-              className="w-full rounded border border-input bg-background px-3 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full font-medium"
             />
 
-            <textarea
+            <Textarea
               value={suggestion.description}
               onChange={e => setSuggestion({ ...suggestion, description: e.target.value })}
               rows={4}
-              className="w-full rounded border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full"
             />
 
             <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
                 <label className="text-xs text-muted-foreground">Points:</label>
-                <select
+                <Select
                   value={suggestion.storyPoints}
                   onChange={e =>
                     setSuggestion({ ...suggestion, storyPoints: parseInt(e.target.value) })
                   }
-                  className="rounded border border-input bg-background px-2 py-1 text-xs"
+                  size="sm"
+                  className="w-auto"
                 >
                   {[1, 2, 3, 5, 8, 13].map(p => (
                     <option key={p} value={p}>
                       {p}
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               <div className="flex items-center gap-2">
                 <label className="text-xs text-muted-foreground">Priority:</label>
-                <select
+                <Select
                   value={suggestion.priority}
                   onChange={e =>
                     setSuggestion({ ...suggestion, priority: e.target.value as Suggestion["priority"] })
                   }
-                  className="rounded border border-input bg-background px-2 py-1 text-xs"
+                  size="sm"
+                  className="w-auto"
                 >
                   <option value="CRITICAL">Critical</option>
                   <option value="HIGH">High</option>
                   <option value="MEDIUM">Medium</option>
                   <option value="LOW">Low</option>
-                </select>
+                </Select>
               </div>
             </div>
           </div>

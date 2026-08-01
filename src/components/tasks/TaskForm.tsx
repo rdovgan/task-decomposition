@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Task, Epic, User, CreateTaskRequest, TaskStatus, Priority } from "@/types";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useApp } from "@/contexts/AppContext";
 
 interface TaskFormProps {
@@ -94,13 +97,13 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
         <label htmlFor="title" className="block text-sm font-medium">
           Title <span className="text-destructive">*</span>
         </label>
-        <input
+        <Input
           type="text"
           id="title"
           required
           value={formData.title}
           onChange={e => setFormData({ ...formData, title: e.target.value })}
-          className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="mt-1 w-full"
           placeholder="Enter task title"
         />
       </div>
@@ -109,12 +112,12 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
         <label htmlFor="description" className="block text-sm font-medium">
           Description
         </label>
-        <textarea
+        <Textarea
           id="description"
           rows={4}
           value={formData.description}
           onChange={e => setFormData({ ...formData, description: e.target.value })}
-          className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="mt-1 w-full"
           placeholder="Enter task description"
         />
       </div>
@@ -123,12 +126,12 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
         <label htmlFor="epicId" className="block text-sm font-medium">
           Epic <span className="text-destructive">*</span>
         </label>
-        <select
+        <Select
           id="epicId"
           required
           value={formData.epicId}
           onChange={e => setFormData({ ...formData, epicId: e.target.value })}
-          className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="mt-1 w-full"
           disabled={!!epicId}
         >
           <option value="">Select an epic</option>
@@ -137,18 +140,18 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
               {ep.title}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       <div>
         <label htmlFor="assigneeId" className="block text-sm font-medium">
           Assignee
         </label>
-        <select
+        <Select
           id="assigneeId"
           value={formData.assigneeId}
           onChange={e => setFormData({ ...formData, assigneeId: e.target.value })}
-          className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="mt-1 w-full"
         >
           <option value="">Unassigned</option>
           {users.map(user => (
@@ -156,7 +159,7 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
               {user.name}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {task && (
@@ -164,11 +167,11 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
           <label htmlFor="status" className="block text-sm font-medium">
             Status
           </label>
-          <select
+          <Select
             id="status"
             value={formData.status}
             onChange={e => setFormData({ ...formData, status: e.target.value as TaskStatus })}
-            className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="mt-1 w-full"
           >
             <option value="TODO">To Do</option>
             <option value="IN_PROGRESS">In Progress</option>
@@ -176,7 +179,7 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
             <option value="DONE">Done</option>
             <option value="BLOCKED">Blocked</option>
             <option value="CANCELLED">Cancelled</option>
-          </select>
+          </Select>
         </div>
       )}
 
@@ -184,17 +187,17 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
         <label htmlFor="priority" className="block text-sm font-medium">
           Priority
         </label>
-        <select
+        <Select
           id="priority"
           value={formData.priority}
           onChange={e => setFormData({ ...formData, priority: e.target.value as Priority })}
-          className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="mt-1 w-full"
         >
           <option value="LOW">Low</option>
           <option value="MEDIUM">Medium</option>
           <option value="HIGH">High</option>
           <option value="CRITICAL">Critical</option>
-        </select>
+        </Select>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -202,7 +205,7 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
           <label htmlFor="storyPoints" className="block text-sm font-medium">
             Story Points
           </label>
-          <input
+          <Input
             type="number"
             id="storyPoints"
             min="0"
@@ -213,7 +216,7 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
                 storyPoints: e.target.value ? parseInt(e.target.value) : null,
               })
             }
-            className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="mt-1 w-full"
             placeholder="0"
           />
         </div>
@@ -222,7 +225,7 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
           <label htmlFor="estimatedHours" className="block text-sm font-medium">
             Estimated Hours <span className="font-normal text-muted-foreground">(optional)</span>
           </label>
-          <input
+          <Input
             type="number"
             id="estimatedHours"
             min="0"
@@ -234,7 +237,7 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
                 estimatedHours: e.target.value ? parseFloat(e.target.value) : null,
               })
             }
-            className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="mt-1 w-full"
             placeholder="0"
           />
         </div>
@@ -245,7 +248,7 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
           <label htmlFor="actualHours" className="block text-sm font-medium">
             Actual Hours
           </label>
-          <input
+          <Input
             type="number"
             id="actualHours"
             min="0"
@@ -257,7 +260,7 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
                 actualHours: e.target.value ? parseFloat(e.target.value) : null,
               })
             }
-            className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="mt-1 w-full"
             placeholder="0"
           />
         </div>
@@ -268,12 +271,12 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
           <label htmlFor="startDate" className="block text-sm font-medium">
             Start Date
           </label>
-          <input
+          <Input
             type="date"
             id="startDate"
             value={formData.startDate}
             onChange={e => setFormData({ ...formData, startDate: e.target.value })}
-            className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="mt-1 w-full"
           />
         </div>
 
@@ -281,12 +284,12 @@ export function TaskForm({ task, epicId, epic, users = [], epics = [] }: TaskFor
           <label htmlFor="dueDate" className="block text-sm font-medium">
             Due Date
           </label>
-          <input
+          <Input
             type="date"
             id="dueDate"
             value={formData.dueDate}
             onChange={e => setFormData({ ...formData, dueDate: e.target.value })}
-            className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="mt-1 w-full"
           />
         </div>
       </div>

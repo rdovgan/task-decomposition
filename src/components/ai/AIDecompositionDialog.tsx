@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { Loader2, Sparkles, CheckCircle2, AlertCircle, Download } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { PriorityBadge } from "@/components/ui/priority-badge";
 import { AITaskSuggestion, AIDecompositionResponse, TeamConfig } from "@/types";
 import { tasksApi, teamConfigApi, ApiErrorClass } from "@/lib/api-client";
@@ -212,11 +215,11 @@ export function AIDecompositionDialog({
             <label htmlFor="team-config-select" className="text-sm font-medium">
               Team (Optional)
             </label>
-            <select
+            <Select
               id="team-config-select"
               value={selectedTeamConfigId}
               onChange={e => setSelectedTeamConfigId(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full"
             >
               <option value="">No team specified</option>
               {teamConfigs.map(config => (
@@ -224,7 +227,7 @@ export function AIDecompositionDialog({
                   {config.name}
                 </option>
               ))}
-            </select>
+            </Select>
             <p className="text-xs text-muted-foreground">
               If the team has a QA member, testing tasks may be suggested separately; otherwise
               testing time is folded into each dev task.
@@ -247,11 +250,11 @@ export function AIDecompositionDialog({
               </Button>
             </div>
             {showCustomPrompt && (
-              <textarea
+              <Textarea
                 value={customPrompt}
                 onChange={e => setCustomPrompt(e.target.value)}
                 placeholder="Provide additional context or requirements for the task decomposition..."
-                className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="min-h-[100px] w-full"
               />
             )}
           </div>
@@ -326,31 +329,32 @@ export function AIDecompositionDialog({
                   />
                   <div className="flex-1 space-y-3">
                     {/* Title */}
-                    <input
+                    <Input
                       type="text"
                       value={suggestion.title}
                       onChange={e => handleEditSuggestion(index, "title", e.target.value)}
-                      className="w-full rounded border border-input bg-background px-3 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="w-full font-medium"
                     />
 
                     {/* Description */}
-                    <textarea
+                    <Textarea
                       value={suggestion.description}
                       onChange={e => handleEditSuggestion(index, "description", e.target.value)}
                       rows={3}
-                      className="w-full rounded border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="w-full"
                     />
 
                     {/* Meta */}
                     <div className="flex flex-wrap items-center gap-4">
                       <div className="flex items-center gap-2">
                         <label className="text-xs text-muted-foreground">Points:</label>
-                        <select
+                        <Select
                           value={suggestion.storyPoints}
                           onChange={e =>
                             handleEditSuggestion(index, "storyPoints", parseInt(e.target.value))
                           }
-                          className="rounded border border-input bg-background px-2 py-1 text-xs"
+                          size="sm"
+                          className="w-auto"
                         >
                           <option value={1}>1</option>
                           <option value={2}>2</option>
@@ -358,21 +362,22 @@ export function AIDecompositionDialog({
                           <option value={5}>5</option>
                           <option value={8}>8</option>
                           <option value={13}>13</option>
-                        </select>
+                        </Select>
                       </div>
 
                       <div className="flex items-center gap-2">
                         <label className="text-xs text-muted-foreground">Priority:</label>
-                        <select
+                        <Select
                           value={suggestion.priority}
                           onChange={e => handleEditSuggestion(index, "priority", e.target.value)}
-                          className="rounded border border-input bg-background px-2 py-1 text-xs"
+                          size="sm"
+                          className="w-auto"
                         >
                           <option value="CRITICAL">Critical</option>
                           <option value="HIGH">High</option>
                           <option value="MEDIUM">Medium</option>
                           <option value="LOW">Low</option>
-                        </select>
+                        </Select>
                       </div>
                     </div>
                   </div>

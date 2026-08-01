@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { Task, Epic, User, CreateTaskRequest, TaskStatus, Priority } from "@/types";
 import { TaskFormData } from "@/lib/validations/task";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Dialog } from "@/components/ui/dialog";
 import { taskFormSchema } from "@/lib/validations/task";
 import { useApp } from "@/contexts/AppContext";
@@ -212,14 +215,14 @@ export function TaskFormModal({
             <label htmlFor="title" className="block text-sm font-medium mb-1">
               Title <span className="text-destructive">*</span>
             </label>
-            <input
+            <Input
               ref={titleInputRef}
               type="text"
               id="title"
               required
               value={formData.title}
               onChange={e => setFormData({ ...formData, title: e.target.value })}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full"
               placeholder="Enter task title"
               aria-invalid={!!errors.title}
               aria-describedby={errors.title ? "title-error" : undefined}
@@ -236,12 +239,12 @@ export function TaskFormModal({
             <label htmlFor="description" className="block text-sm font-medium mb-1">
               Description
             </label>
-            <textarea
+            <Textarea
               id="description"
               rows={4}
               value={formData.description}
               onChange={e => setFormData({ ...formData, description: e.target.value })}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full"
               placeholder="Enter task description (supports Markdown)"
               aria-invalid={!!errors.description}
               aria-describedby={errors.description ? "description-error" : undefined}
@@ -258,12 +261,12 @@ export function TaskFormModal({
             <label htmlFor="epicId" className="block text-sm font-medium mb-1">
               Epic <span className="text-destructive">*</span>
             </label>
-            <select
+            <Select
               id="epicId"
               required
               value={formData.epicId}
               onChange={e => setFormData({ ...formData, epicId: e.target.value })}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full"
               disabled={!!epicId || !!epic}
               aria-invalid={!!errors.epicId}
               aria-describedby={errors.epicId ? "epicId-error" : undefined}
@@ -274,7 +277,7 @@ export function TaskFormModal({
                   {ep.title}
                 </option>
               ))}
-            </select>
+            </Select>
             {errors.epicId && (
               <p id="epicId-error" className="mt-1 text-xs text-destructive">
                 {errors.epicId}
@@ -287,11 +290,11 @@ export function TaskFormModal({
             <label htmlFor="assigneeId" className="block text-sm font-medium mb-1">
               Assignee
             </label>
-            <select
+            <Select
               id="assigneeId"
               value={formData.assigneeId}
               onChange={e => setFormData({ ...formData, assigneeId: e.target.value })}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full"
             >
               <option value="">Unassigned</option>
               {users.map(user => (
@@ -299,7 +302,7 @@ export function TaskFormModal({
                   {user.name} ({user.email})
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           {/* Status (only for edit mode) */}
@@ -308,11 +311,11 @@ export function TaskFormModal({
               <label htmlFor="status" className="block text-sm font-medium mb-1">
                 Status
               </label>
-              <select
+              <Select
                 id="status"
                 value={formData.status}
                 onChange={e => setFormData({ ...formData, status: e.target.value as TaskStatus })}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full"
               >
                 <option value="TODO">To Do</option>
                 <option value="IN_PROGRESS">In Progress</option>
@@ -320,7 +323,7 @@ export function TaskFormModal({
                 <option value="DONE">Done</option>
                 <option value="BLOCKED">Blocked</option>
                 <option value="CANCELLED">Cancelled</option>
-              </select>
+              </Select>
             </div>
           )}
 
@@ -329,11 +332,11 @@ export function TaskFormModal({
             <label htmlFor="priority" className="block text-sm font-medium mb-1">
               Priority <span className="text-destructive">*</span>
             </label>
-            <select
+            <Select
               id="priority"
               value={formData.priority}
               onChange={e => setFormData({ ...formData, priority: e.target.value as Priority })}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full"
               aria-invalid={!!errors.priority}
               aria-describedby={errors.priority ? "priority-error" : undefined}
             >
@@ -341,7 +344,7 @@ export function TaskFormModal({
               <option value="MEDIUM">Medium</option>
               <option value="HIGH">High</option>
               <option value="CRITICAL">Critical</option>
-            </select>
+            </Select>
             {errors.priority && (
               <p id="priority-error" className="mt-1 text-xs text-destructive">
                 {errors.priority}
@@ -355,14 +358,14 @@ export function TaskFormModal({
               <label htmlFor="storyPoints" className="block text-sm font-medium mb-1">
                 Story Points
               </label>
-              <input
+              <Input
                 type="number"
                 id="storyPoints"
                 min="0"
                 max="13"
                 value={formData.storyPoints}
                 onChange={e => setFormData({ ...formData, storyPoints: e.target.value })}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full"
                 placeholder="1-13"
                 aria-invalid={!!errors.storyPoints}
                 aria-describedby={errors.storyPoints ? "storyPoints-error" : undefined}
@@ -378,14 +381,14 @@ export function TaskFormModal({
               <label htmlFor="estimatedHours" className="block text-sm font-medium mb-1">
                 Estimated Hours <span className="font-normal text-muted-foreground">(optional)</span>
               </label>
-              <input
+              <Input
                 type="number"
                 id="estimatedHours"
                 min="0"
                 step="0.5"
                 value={formData.estimatedHours}
                 onChange={e => setFormData({ ...formData, estimatedHours: e.target.value })}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full"
                 placeholder="0"
                 aria-invalid={!!errors.estimatedHours}
                 aria-describedby={errors.estimatedHours ? "estimatedHours-error" : undefined}
@@ -404,14 +407,14 @@ export function TaskFormModal({
               <label htmlFor="actualHours" className="block text-sm font-medium mb-1">
                 Actual Hours
               </label>
-              <input
+              <Input
                 type="number"
                 id="actualHours"
                 min="0"
                 step="0.5"
                 value={formData.actualHours}
                 onChange={e => setFormData({ ...formData, actualHours: e.target.value })}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full"
                 placeholder="0"
                 aria-invalid={!!errors.actualHours}
                 aria-describedby={errors.actualHours ? "actualHours-error" : undefined}
@@ -430,12 +433,12 @@ export function TaskFormModal({
               <label htmlFor="startDate" className="block text-sm font-medium mb-1">
                 Start Date
               </label>
-              <input
+              <Input
                 type="date"
                 id="startDate"
                 value={formData.startDate}
                 onChange={e => setFormData({ ...formData, startDate: e.target.value })}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full"
               />
             </div>
 
@@ -443,12 +446,12 @@ export function TaskFormModal({
               <label htmlFor="dueDate" className="block text-sm font-medium mb-1">
                 Due Date
               </label>
-              <input
+              <Input
                 type="date"
                 id="dueDate"
                 value={formData.dueDate}
                 onChange={e => setFormData({ ...formData, dueDate: e.target.value })}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full"
               />
             </div>
           </div>

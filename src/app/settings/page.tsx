@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Key, Loader2, CheckCircle2, AlertCircle, Eye, EyeOff, Trash2, Link2, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { userSettingsApi, jiraApi, ApiErrorClass } from "@/lib/api-client";
 import { JiraConnectionStatus } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
@@ -281,12 +282,12 @@ export default function SettingsPage() {
               <label className="text-sm font-medium">API Key</label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <input
+                  <Input
                     type={showApiKey ? "text" : "password"}
                     value={apiKey}
                     onChange={e => setApiKey(e.target.value)}
                     placeholder="sk-ant-api03-..."
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm pr-10 ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-full pr-10"
                   />
                   <button
                     type="button"
@@ -399,24 +400,24 @@ export default function SettingsPage() {
             {/* Site URL */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Jira Site URL</label>
-              <input
+              <Input
                 type="text"
                 value={jiraSiteUrl}
                 onChange={e => setJiraSiteUrl(e.target.value)}
                 placeholder={jiraStatus?.siteUrl || "https://your-domain.atlassian.net"}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full"
               />
             </div>
 
             {/* Email */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Email</label>
-              <input
+              <Input
                 type="email"
                 value={jiraEmail}
                 onChange={e => setJiraEmail(e.target.value)}
                 placeholder={jiraStatus?.email || "you@example.com"}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full"
               />
             </div>
 
@@ -425,12 +426,12 @@ export default function SettingsPage() {
               <label className="text-sm font-medium">API Token</label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <input
+                  <Input
                     type={showJiraToken ? "text" : "password"}
                     value={jiraApiToken}
                     onChange={e => setJiraApiToken(e.target.value)}
                     placeholder={jiraStatus?.connected ? "••••••••••••" : "Your Jira API token"}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm pr-10 ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-full pr-10"
                   />
                   <button
                     type="button"

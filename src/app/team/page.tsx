@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { teamConfigApi, ApiErrorClass } from "@/lib/api-client";
 import { TeamConfig, TeamMember } from "@/types";
 
@@ -154,48 +156,50 @@ export default function TeamPage() {
           <h2 className="text-lg font-semibold mb-4">New Team Preset</h2>
 
           <div className="space-y-3">
-            <input
+            <Input
               type="text"
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
               placeholder="Team name (e.g. 'Mobile Squad')"
-              className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm"
+              size="lg"
+              className="w-full"
             />
-            <input
+            <Input
               type="text"
               value={formDesc}
               onChange={(e) => setFormDesc(e.target.value)}
               placeholder="Description (optional)"
-              className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm"
+              size="lg"
+              className="w-full"
             />
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Members</label>
               {formMembers.map((m, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <select
+                  <Select
                     value={m.role}
                     onChange={(e) => updateMember(i, "role", e.target.value)}
-                    className="rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+                    className="w-auto"
                   >
                     {ROLES.map((r) => (
                       <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
                     ))}
-                  </select>
-                  <select
+                  </Select>
+                  <Select
                     value={m.specialty}
                     onChange={(e) => updateMember(i, "specialty", e.target.value)}
-                    className="rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+                    className="w-auto"
                   >
                     {SPECIALTIES.map((s) => (
                       <option key={s} value={s}>{s.toUpperCase()}</option>
                     ))}
-                  </select>
-                  <input
+                  </Select>
+                  <Input
                     type="number" min={1} max={20}
                     value={m.count || 1}
                     onChange={(e) => updateMember(i, "count", parseInt(e.target.value) || 1)}
-                    className="w-16 rounded-md border border-input bg-background px-2 py-1.5 text-sm text-center"
+                    className="w-16 text-center"
                   />
                   <button onClick={() => removeMember(i)} className="p-1.5 text-muted-foreground hover:text-destructive">
                     <Trash2 className="h-4 w-4" />

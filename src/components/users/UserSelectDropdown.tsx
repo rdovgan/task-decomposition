@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Check, Search, User as UserIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { usersApi, tasksApi, ApiErrorClass } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { User } from "@/types";
@@ -260,7 +261,7 @@ export function UserSelectDropdown({
           <div className="p-2 border-b">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
+              <Input
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
@@ -268,7 +269,7 @@ export function UserSelectDropdown({
                   setSearchQuery(e.target.value);
                   setHighlightedIndex(-1);
                 }}
-                className="w-full pl-9 pr-3 py-2 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full pl-9"
                 placeholder="Search users..."
                 aria-label="Search users"
               />

@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { UpdateEpicRequest, EpicStatus, Priority, Epic } from "@/types";
 import { epicsApi, ApiErrorClass } from "@/lib/api-client";
 
@@ -114,13 +117,13 @@ export default function EditEpicPage({ params }: { params: Promise<{ id: string 
           <label htmlFor="title" className="block text-sm font-medium mb-2">
             Epic Title <span className="text-destructive">*</span>
           </label>
-          <input
+          <Input
             type="text"
             id="title"
             required
             value={formData.title}
             onChange={e => setFormData({ ...formData, title: e.target.value })}
-            className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full"
           />
         </div>
 
@@ -128,12 +131,12 @@ export default function EditEpicPage({ params }: { params: Promise<{ id: string 
           <label htmlFor="description" className="block text-sm font-medium mb-2">
             Description
           </label>
-          <textarea
+          <Textarea
             id="description"
             rows={4}
             value={formData.description}
             onChange={e => setFormData({ ...formData, description: e.target.value })}
-            className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full"
           />
         </div>
 
@@ -142,35 +145,35 @@ export default function EditEpicPage({ params }: { params: Promise<{ id: string 
             <label htmlFor="status" className="block text-sm font-medium mb-2">
               Status
             </label>
-            <select
+            <Select
               id="status"
               value={formData.status}
               onChange={e => setFormData({ ...formData, status: e.target.value as EpicStatus })}
-              className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full"
             >
               <option value="BACKLOG">Backlog</option>
               <option value="IN_PROGRESS">In Progress</option>
               <option value="IN_REVIEW">In Review</option>
               <option value="DONE">Done</option>
               <option value="CANCELLED">Cancelled</option>
-            </select>
+            </Select>
           </div>
 
           <div>
             <label htmlFor="priority" className="block text-sm font-medium mb-2">
               Priority
             </label>
-            <select
+            <Select
               id="priority"
               value={formData.priority}
               onChange={e => setFormData({ ...formData, priority: e.target.value as Priority })}
-              className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full"
             >
               <option value="CRITICAL">Critical</option>
               <option value="HIGH">High</option>
               <option value="MEDIUM">Medium</option>
               <option value="LOW">Low</option>
-            </select>
+            </Select>
           </div>
         </div>
 
