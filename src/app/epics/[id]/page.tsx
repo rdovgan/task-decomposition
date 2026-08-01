@@ -52,6 +52,7 @@ export default function EpicDetailPage({ params }: { params: Promise<{ id: strin
   const [bulkStatus, setBulkStatus] = useState<TaskStatus | "">("");
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
   const [jiraDialogOpen, setJiraDialogOpen] = useState(false);
+  const [jiraImportOpen, setJiraImportOpen] = useState(false);
 
   // Sorting state
   const [sortKey, setSortKey] = useState<string>("title");
@@ -231,12 +232,21 @@ export default function EpicDetailPage({ params }: { params: Promise<{ id: strin
     }
   };
 
-  const handleJiraDialogClose = async () => {
-    setJiraDialogOpen(false);
+  const refreshTasksAfterJiraSend = async () => {
     // Refresh so any newly-created Jira TaskLinks show up
     const tasksData = await tasksApi.list({ epicId: id, limit: 100 });
     setTasks(tasksData.data);
     setSelectedTaskIds(new Set());
+  };
+
+  const handleJiraDialogClose = async () => {
+    setJiraDialogOpen(false);
+    await refreshTasksAfterJiraSend();
+  };
+
+  const handleJiraImportClose = async () => {
+    setJiraImportOpen(false);
+    await refreshTasksAfterJiraSend();
   };
 
   const handleBulkDelete = async () => {
@@ -405,6 +415,15 @@ export default function EpicDetailPage({ params }: { params: Promise<{ id: strin
             >
               <Download className="mr-2 h-4 w-4" />
               Export .md{selectedTaskIds.size > 0 ? ` (${selectedTaskIds.size})` : ""}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={tasks.length === 0}
+              onClick={() => setJiraImportOpen(true)}
+            >
+              <Send className="mr-2 h-4 w-4" />
+              Import to Jira
             </Button>
             <Button variant="outline" size="sm" onClick={() => router.push(`/epics/${epic.id}/edit`)}>
               <Edit className="mr-2 h-4 w-4" />
@@ -593,6 +612,21 @@ export default function EpicDetailPage({ params }: { params: Promise<{ id: strin
             storyPoints: t.storyPoints ?? undefined,
             priority: t.priority,
           }))}
+        suggestedEpicTitle={epic.title}
+        suggestedEpicDescription={epic.description ?? undefined}
+      />
+
+      {/* Import Whole Epic to Jira Dialog */}
+      <SendToJiraDialog
+        open={jiraImportOpen}
+        onClose={handleJiraImportClose}
+        tasks={tasks.map(t => ({
+          taskId: t.id,
+          title: t.title,
+          description: t.description ?? undefined,
+          storyPoints: t.storyPoints ?? undefined,
+          priority: t.priority,
+        }))}
         suggestedEpicTitle={epic.title}
         suggestedEpicDescription={epic.description ?? undefined}
       />
