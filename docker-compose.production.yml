@@ -49,10 +49,21 @@ services:
       NODE_ENV: production
       DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
       PORT: 3001
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-4-6}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-https://yourdomain.com}
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      # Z.AI (OpenAI-compatible) — powers AI task decomposition
+      ZAI_API_KEY: ${ZAI_API_KEY:-}
+      ZAI_BASE_URL: ${ZAI_BASE_URL:-https://api.z.ai/api/coding/paas/v4}
+      ZAI_MODEL: ${ZAI_MODEL:-glm-5-turbo}
+      API_TIMEOUT_MS: ${API_TIMEOUT_MS:-3000000}
+      # Encryption key for user API keys stored at rest
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+      # Public decompose API (X-API-Key header); empty disables it (503)
+      DECOMPOSE_API_KEY: ${DECOMPOSE_API_KEY:-}
+      # Feature flags
+      ENABLE_AI_DECOMPOSITION: ${ENABLE_AI_DECOMPOSITION:-true}
+      ENABLE_TASK_GRAPH: ${ENABLE_TASK_GRAPH:-true}
+      ENABLE_COMMENTS: ${ENABLE_COMMENTS:-true}
     depends_on:
       postgres:
         condition: service_healthy
@@ -67,9 +78,12 @@ services:
     build:
       context: .
       target: frontend
+      args:
+        # Inlined into the client bundle at `next build` time
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
     container_name: task-decomp-frontend-prod
     ports:
-      - "3000:3000"
+      - "8080:3000"
     environment:
       NODE_ENV: production
       DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}

@@ -22,6 +22,7 @@ docker-compose.override.yml
 
 # production
 /build
+/dist
 
 # misc
 .DS_Store

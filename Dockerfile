@@ -29,6 +29,10 @@ CMD ["npm", "run", "dev"]
 
 # ─── Builder (production) ──────────────────────────────────────────
 FROM base AS builder
+# NEXT_PUBLIC_* vars are inlined into the client bundle at build time.
+# Pass via compose build args so the same image is configurable per env.
+ARG NEXT_PUBLIC_API_URL=http://localhost:3001
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate
@@ -68,13 +72,16 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 appuser
 
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+# Copy the full runtime dependency tree (express, cors, pg + transitive deps,
+# @prisma/client + adapter-pg, openai, zod, multer, ...). Copying individual
+# packages breaks because transitive deps (pg-types, pg-protocol, ...) are missed.
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/node_modules/pg ./node_modules/pg
-COPY --from=builder /app/node_modules/@prisma/adapter-pg ./node_modules/@prisma/adapter-pg
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/package.json ./package.json
-RUN npx prisma generate
+RUN npx prisma generate && \
+    # Let the non-root runtime user regenerate the client from the entrypoint
+    chown -R appuser:nodejs node_modules/.prisma node_modules/@prisma
 
 COPY --from=builder --chown=appuser:nodejs /app/dist/server ./dist/server
 

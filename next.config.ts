@@ -3,7 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   output: "standalone",
-  allowedDevOrigins: ["task.dovg.cloud"],
+  // App is served at https://codereview.mybookingpal.com/task
+  basePath: "/task",
+  allowedDevOrigins: ["codereview.mybookingpal.com"],
   devIndicators: false,
 };
 
