@@ -59,7 +59,7 @@ services:
       ZAI_BASE_URL: ${ZAI_BASE_URL:-https://api.z.ai/api/coding/paas/v4}
       ZAI_MODEL: ${ZAI_MODEL:-glm-5-turbo}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
-      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:3001,https://task.dovg.cloud,http://task.dovg.cloud,https://codereview.mybookingpal.com
+      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,https://task.dovg.cloud,http://task.dovg.cloud,https://codereview.mybookingpal.com
       JWT_SECRET: ${JWT_SECRET:-dev-secret-key-change-in-production}
     depends_on:
       postgres:
@@ -86,7 +86,7 @@ services:
     environment:
       NODE_ENV: development
       DATABASE_URL: postgresql://taskdecomp:taskdecomp@postgres:5432/task_decomposition?schema=public
-      NEXT_PUBLIC_API_URL: https://task.dovg.cloud
+      NEXT_PUBLIC_API_URL: http://localhost:3001
     depends_on:
       postgres:
         condition: service_healthy
