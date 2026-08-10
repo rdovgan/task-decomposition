@@ -26,6 +26,18 @@ interface SendToJiraDialogProps {
   onSent?: (results: JiraCreateIssuesResponse) => void;
 }
 
+/**
+ * A "BP space" is the Jira project this app exports to by default for a user.
+ * We detect it by project key prefix (e.g. "BP", "BPROD", "BP2024"). When one
+ * (or more) is present, the Send-to-Jira dialog restricts the target to BP
+ * projects only; otherwise the full project list is offered as a fallback.
+ */
+const BP_PROJECT_PREFIX = "BP";
+
+function isBpProject(project: { key: string }): boolean {
+  return project.key.toUpperCase().startsWith(BP_PROJECT_PREFIX);
+}
+
 export function SendToJiraDialog({
   open,
   onClose,
@@ -48,6 +60,13 @@ export function SendToJiraDialog({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<JiraCreateIssuesResponse | null>(null);
+
+  // Once projects are loaded, prefer the user's BP space(s). When at least one
+  // BP project exists we restrict the picker to BP projects only; otherwise we
+  // fall back to showing every project the account can see.
+  const bpProjects = projects.filter(isBpProject);
+  const hasBpSpace = bpProjects.length > 0;
+  const visibleProjects = hasBpSpace ? bpProjects : projects;
 
   useEffect(() => {
     if (!open) return;
@@ -78,7 +97,15 @@ export function SendToJiraDialog({
           setLoadingProjects(true);
           return jiraApi
             .listProjects()
-            .then(setProjects)
+            .then(fetched => {
+              setProjects(fetched);
+              // Default to the first BP space when one is available so the user
+              // can export without manually picking a project.
+              const bp = fetched.filter(isBpProject);
+              if (bp.length > 0) {
+                setSelectedProjectKey(bp[0].key);
+              }
+            })
             .catch(() => setError("Failed to load Jira projects"))
             .finally(() => setLoadingProjects(false));
         }
@@ -189,12 +216,17 @@ export function SendToJiraDialog({
                 <option value="">
                   {loadingProjects ? "Loading projects..." : "Select a project"}
                 </option>
-                {projects.map(project => (
+                {visibleProjects.map(project => (
                   <option key={project.id} value={project.key}>
                     {project.name} ({project.key})
                   </option>
                 ))}
               </Select>
+              {hasBpSpace && (
+                <p className="text-xs text-muted-foreground">
+                  Exporting to your BP space{bpProjects.length > 1 ? "s" : ""} — only BP projects are shown.
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
